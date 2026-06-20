@@ -1,0 +1,27 @@
+{
+  "name": "brom-casino",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Brom Casino — full-featured online casino platform",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:migrate": "pnpm --filter api prisma migrate dev",
+    "db:seed": "pnpm --filter api prisma db seed",
+    "db:studio": "pnpm --filter api prisma studio",
+    "docker:up": "docker compose -f infrastructure/docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infrastructure/docker/docker-compose.yml down"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}
