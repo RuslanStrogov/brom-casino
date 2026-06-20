@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { playSoundIfEnabled } from '@/lib/sounds';
 
 interface BlackjackGameProps {
   balance: number;
@@ -70,6 +71,7 @@ export default function BlackjackGame({ balance, onBalanceChange }: BlackjackGam
     setGameState('playing');
     setResult(null);
     setLastWin(null);
+    playSoundIfEnabled('cardDeal');
 
     // Check for natural blackjack
     const pScore = calculateScore(pCards);

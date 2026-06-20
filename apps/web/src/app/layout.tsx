@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/providers/AuthProvider';
@@ -13,6 +13,20 @@ export const metadata: Metadata = {
   title: 'Brom Casino - Premium Crypto Casino',
   description: 'The premier crypto casino experience. Provably fair games, instant payouts, and the best odds in the house.',
   keywords: ['casino', 'crypto', 'gambling', 'provably fair', 'bitcoin'],
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Brom Casino',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0a0a0f',
 };
 
 export default function RootLayout({
@@ -22,7 +36,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="bg-casino-dark text-white font-sans min-h-screen flex flex-col">
+      <body className="bg-casino-dark text-white font-sans min-h-screen flex flex-col no-tap-highlight">
         <AuthProvider>
           <GameProvider>
             <Header />

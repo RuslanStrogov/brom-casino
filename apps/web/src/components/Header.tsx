@@ -1,17 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
 import { useBalance } from '@/hooks/useBalance';
 import { BalanceWidget } from './BalanceWidget';
 import { AuthModal } from './AuthModal';
+import { isSoundEnabled, toggleSound } from '@/lib/sounds';
 
 export function Header() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const { balance } = useBalance();
   const [showAuth, setShowAuth] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  useEffect(() => {
+    setSoundEnabled(isSoundEnabled());
+  }, []);
+
+  const handleToggleSound = () => {
+    const newState = !soundEnabled;
+    setSoundEnabled(newState);
+    toggleSound(newState);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-casino-darker/95 backdrop-blur-md border-b border-casino-border">
@@ -39,7 +51,25 @@ export function Header() {
           </nav>
 
           {/* Right Side */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Sound Toggle */}
+            <button
+              onClick={handleToggleSound}
+              className="p-2 text-gray-400 hover:text-casino-gold transition-colors"
+              title={soundEnabled ? 'Mute sounds' : 'Enable sounds'}
+            >
+              {soundEnabled ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+              )}
+            </button>
+
             {isAuthenticated ? (
               <>
                 <BalanceWidget balance={balance} />
@@ -59,13 +89,13 @@ export function Header() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="px-4 py-2 text-sm rounded-lg border border-casino-gold/50 text-casino-gold hover:bg-casino-gold/10 transition-all"
+                  className="px-3 py-1.5 text-sm rounded-lg border border-casino-gold/50 text-casino-gold hover:bg-casino-gold/10 transition-all"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => setShowAuth(true)}
-                  className="px-4 py-2 text-sm rounded-lg bg-gradient-gold text-casino-dark font-medium hover:opacity-90 transition-all"
+                  className="px-3 py-1.5 text-sm rounded-lg bg-gradient-gold text-casino-dark font-medium hover:opacity-90 transition-all"
                 >
                   Sign Up
                 </button>
@@ -92,7 +122,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-casino-border">
+          <div className="md:hidden py-4 border-t border-casino-border animate-fade-in">
             <nav className="flex flex-col gap-3">
               <Link href="/" className="text-sm text-gray-300 hover:text-casino-gold transition-colors py-2">
                 Home
@@ -104,12 +134,20 @@ export function Header() {
                 Provably Fair
               </Link>
               {isAuthenticated && (
-                <button
-                  onClick={logout}
-                  className="text-sm text-left text-gray-400 hover:text-white py-2"
-                >
-                  Logout
-                </button>
+                <>
+                  <div className="border-t border-casino-border pt-3 mt-2">
+                    <p className="text-xs text-gray-500 mb-2">Balance: <span className="text-casino-gold font-bold">{balance.toFixed(2)}</span></p>
+                    <p className="text-sm text-gray-400 mb-2">
+                      @{user?.username || 'Player'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="text-sm text-left text-red-400 hover:text-red-300 py-2"
+                  >
+                    Logout
+                  </button>
+                </>
               )}
             </nav>
           </div>

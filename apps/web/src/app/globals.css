@@ -86,6 +86,8 @@ body {
   pointer-events: none;
 }
 
+/* ===== Animations ===== */
+
 /* Pulse animation for win amounts */
 @keyframes win-pulse {
   0%, 100% { transform: scale(1); }
@@ -105,4 +107,166 @@ body {
 /* Smooth transitions */
 .transition-smooth {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Scale in animation */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* Shimmer effect for loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Glow pulse for big wins */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(212, 168, 67, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(212, 168, 67, 0.6), 0 0 40px rgba(212, 168, 67, 0.3); }
+}
+
+.glow-pulse {
+  animation: glowPulse 1s ease-in-out infinite;
+}
+
+/* Crash graph line animation */
+@keyframes graphLine {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+.graph-line {
+  stroke-dasharray: 1000;
+  animation: graphLine 2s linear infinite;
+}
+
+/* Coin spin */
+@keyframes coinSpin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.coin-spin {
+  animation: coinSpin 1s linear infinite;
+}
+
+/* Roulette wheel spin */
+@keyframes rouletteSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(1800deg); }
+}
+
+.roulette-spin {
+  animation: rouletteSpin 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+}
+
+/* Card deal animation */
+@keyframes dealCard {
+  from { opacity: 0; transform: translateY(-30px) rotate(-10deg); }
+  to { opacity: 1; transform: translateY(0) rotate(0); }
+}
+
+.deal-card {
+  animation: dealCard 0.4s ease-out;
+}
+
+/* Bounce in */
+@keyframes bounceIn {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.bounce-in {
+  animation: bounceIn 0.5s ease-out;
+}
+
+/* Notification badge pulse */
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.badge-pulse {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* ===== Mobile Responsive ===== */
+
+@media (max-width: 640px) {
+  .game-container {
+    padding: 1rem;
+  }
+  
+  .game-title {
+    font-size: 1.5rem;
+  }
+  
+  .game-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .bet-chip {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* ===== Utility Classes ===== */
+
+/* No tap highlight on mobile */
+.no-tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Disable text selection on game elements */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Smooth font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

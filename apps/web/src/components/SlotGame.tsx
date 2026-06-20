@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { playSoundIfEnabled } from '@/lib/sounds';
 
 const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '💎', '7️⃣', '⭐', '🔔'];
 const REEL_COUNT = 3;
@@ -50,6 +51,7 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
   const spin = useCallback(() => {
     if (spinning || balance < bet) return;
 
+    playSoundIfEnabled('spin');
     onBalanceChange(balance - bet);
     setSpinning(true);
     setLastWin(null);
@@ -90,9 +92,11 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
               setGlowWin(true);
               onBalanceChange(balance - bet + winAmount);
               setMessage(`🎉 You won ${winAmount.toFixed(2)}!`);
+              playSoundIfEnabled(winAmount >= bet * 10 ? 'bigWin' : 'win');
               setTimeout(() => setGlowWin(false), 2000);
             } else {
               setMessage('Try again!');
+              playSoundIfEnabled('lose');
             }
           }, 200);
         }
