@@ -1,0 +1,38 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy root configs
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest-9 --activate
+
+# Copy source
+COPY . .
+
+# Install deps
+RUN pnpm install --frozen-lockfile
+
+# Build API
+RUN pnpm --filter @brom-casino/api build
+
+# --- Production ---
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest-9 --activate
+
+COPY --from=builder /app/services/api/dist ./dist
+COPY --from=builder /app/services/api/package.json ./
+COPY --from=builder /app/services/api/prisma ./prisma
+COPY --from=builder /app/node_modules/.pnpm ./node_modules/.pnpm
+COPY --from=builder /app/services/api/node_modules ./node_modules
+
+# Install production deps only
+RUN pnpm prune --prod
+
+EXPOSE 4000
+
+CMD ["node", "dist/main.js"]
