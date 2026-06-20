@@ -250,6 +250,39 @@ export class GamesService {
     return session;
   }
 
+  /**
+   * Get Pragmatic Play launch URL for a specific game.
+   * Uses the PP Integration Service v3 to get a real iframe URL.
+   */
+  async getPragmaticPlayLaunchUrl(
+    userId: string,
+    gameId: string,
+    mode: 'real' | 'demo',
+    currency: string = 'USDT',
+    language: string = 'en',
+  ): Promise<{ url: string; gameId: string; provider: string }> {
+    const game = await this.prisma.game.findFirst({
+      where: { externalId: gameId, providerId: 'pragmatic-play' },
+    });
+
+    if (!game) {
+      throw new NotFoundException('Pragmatic Play game not found');
+    }
+
+    const launchUrl = await this.pragmaticPlayProvider.getLaunchUrl(game.externalId, {
+      userId,
+      mode,
+      currency,
+      language,
+    });
+
+    return {
+      url: launchUrl,
+      gameId: game.externalId,
+      provider: 'pragmatic-play',
+    };
+  }
+
   private calculateSpinResult(
     serverSeed: string,
     clientSeed: string,

@@ -101,4 +101,27 @@ export class GamesController {
   async getSession(@Param('sessionToken') sessionToken: string, @Req() req: any) {
     return this.gamesService.getSession(sessionToken, req.user.sub);
   }
+
+  /**
+   * Get Pragmatic Play launch URL for a specific game.
+   * Frontend uses this to construct the iframe src.
+   */
+  @Post('pragmatic-play/:gameId/url')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get Pragmatic Play game launch URL' })
+  async getPragmaticPlayUrl(
+    @Param('gameId') gameId: string,
+    @Req() req: any,
+    @Body() dto: { mode?: 'real' | 'demo'; currency?: string; language?: string } = {},
+  ) {
+    return this.gamesService.getPragmaticPlayLaunchUrl(
+      req.user.sub,
+      gameId,
+      dto.mode || 'demo',
+      dto.currency || 'USDT',
+      dto.language || 'en',
+    );
+  }
 }

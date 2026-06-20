@@ -1,7 +1,7 @@
 export interface GameLaunchParams {
   userId: string;
   mode: 'real' | 'demo';
-  sessionToken: string;
+  sessionToken?: string;
   currency?: string;
   language?: string;
   returnUrl?: string;

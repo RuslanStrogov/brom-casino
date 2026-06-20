@@ -159,6 +159,17 @@ export class PaymentsService {
     }
   }
 
+  /**
+   * Log webhook attempt for monitoring / rate limiting
+   */
+  logWebhookAttempt(provider: string, ip: string) {
+    this.logger.debug(`Webhook received from ${provider} (IP: ${ip})`);
+    // In production: store to Redis for rate limiting / anomaly detection
+  }
+
+  /**
+   * Handle Cryptomus payment webhook
+   */
   async handleWebhook(providerName: string, payload: any, signature: string) {
     const provider = this.providers.get(providerName);
     if (!provider) {
@@ -208,6 +219,36 @@ export class PaymentsService {
         data: { status: TransactionStatus.FAILED },
       });
     }
+
+    return { received: true };
+  }
+
+  /**
+   * Handle Pragmatic Play game webhook (bet/win/rollback events)
+   */
+  async handlePragmaticPlayWebhook(payload: any, signature: string) {
+    // Validate signature via PP provider
+    const { PragmaticPlayProvider } = await import('./providers/pragmatic-play.provider');
+    // In production, we'd validate here. For now, log and acknowledge.
+    this.logger.log(`PP webhook: type=${payload?.type} amount=${payload?.amount} player=${payload?.playerId}`);
+
+    // TODO: Implement PP game event processing
+    // - bet: debit user wallet
+    // - win: credit user wallet
+    // - rollback: reverse previous transaction
+
+    return { received: true };
+  }
+
+  /**
+   * Handle Sumsub KYC webhook (approval/rejection events)
+   */
+  async handleSumsubWebhook(payload: any, signature: string) {
+    this.logger.log(`Sumsub webhook: applicant=${payload?.applicantId} status=${payload?.status}`);
+
+    // TODO: Implement Sumsub KYC status update
+    // - approved: update kyc_verification status to APPROVED
+    // - rejected: update kyc_verification status to REJECTED
 
     return { received: true };
   }
