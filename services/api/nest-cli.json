@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": false
+  },
+  "projects": {
+    "api": {
+      "type": "application",
+      "root": ".",
+      "entryFile": "src/main",
+      "sourceRoot": "src"
+    }
+  }
+}

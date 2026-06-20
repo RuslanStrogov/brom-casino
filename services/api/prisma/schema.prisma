@@ -1,0 +1,461 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USERS ====================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  phone         String?   @unique
+  username      String?   @unique
+  passwordHash  String?
+  telegramId    String?   @unique
+  firstName     String?
+  lastName      String?
+  avatarUrl     String?
+  role          Role      @default(PLAYER)
+  status        UserStatus @default(ACTIVE)
+  isEmailVerified   Boolean @default(false)
+  isPhoneVerified   Boolean @default(false)
+  is2faEnabled      Boolean @default(false)
+  twoFactorSecret   String?
+  referralCode      String? @unique
+  referredBy        String?
+  referrer          User?   @relation("Referrals", fields: [referredBy], references: [id])
+  referrals         User[]  @relation("Referrals")
+  vipLevel          Int     @default(0)
+  totalWagered      Decimal @default(0)
+  totalWon          Decimal @default(0)
+  selfExcludeUntil  DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  lastLoginAt       DateTime?
+
+  sessions      Session[]
+  wallet        Wallet?
+  kyc           KycVerification?
+  bonuses       UserBonus[]
+  transactions  Transaction[]
+  gameSessions  GameSession[]
+  bets          Bet[]
+  withdrawals   Withdrawal[]
+  deposits      Deposit[]
+  auditLogs     AuditLog[]
+  chatMessages  ChatMessage[]
+
+  @@index([email])
+  @@index([telegramId])
+  @@index([referralCode])
+  @@index([status])
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String   @unique
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([refreshToken])
+  @@map("sessions")
+}
+
+// ==================== WALLET ====================
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance   Decimal  @default(0)
+  bonusBalance Decimal @default(0)
+  currency  String   @default("USDT")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+  deposits     Deposit[]
+  withdrawals  Withdrawal[]
+
+  @@index([userId])
+  @@map("wallets")
+}
+
+// ==================== GAMES ====================
+
+model Game {
+  id              String       @id @default(cuid())
+  providerId      String
+  externalId      String
+  name            String
+  slug            String       @unique
+  category        GameCategory
+  description     String?
+  thumbnailUrl    String?
+  bannerUrl       String?
+  rtp             Decimal?
+  volatility      Volatility?
+  minBet          Decimal      @default(0.1)
+  maxBet          Decimal      @default(10000)
+  isFeatured      Boolean      @default(false)
+  isActive        Boolean      @default(true)
+  isNew           Boolean      @default(false)
+  isJackpot       Boolean      @default(false)
+  freeSpins       Boolean      @default(false)
+  demoAvailable   Boolean      @default(true)
+  config          Json?
+  sortOrder       Int          @default(0)
+  tags            String[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  gameSessions GameSession[]
+  bets         Bet[]
+
+  @@unique([providerId, externalId])
+  @@index([category])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@map("games")
+}
+
+model GameSession {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId        String
+  game          Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  sessionToken  String    @unique
+  mode          String    @default("real") // "real" | "demo"
+  totalBet      Decimal   @default(0)
+  totalWin      Decimal   @default(0)
+  spinsCount    Int       @default(0)
+  serverSeed    String?
+  serverHash    String?
+  clientSeed    String?
+  nonce         Int       @default(0)
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+
+  bets Bet[]
+
+  @@index([userId])
+  @@index([gameId])
+  @@map("game_sessions")
+}
+
+model Bet {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId        String
+  game          Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameSessionId String
+  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  transactionId String?  @unique
+  amount        Decimal
+  winAmount     Decimal  @default(0)
+  multiplier    Decimal  @default(0)
+  currency      String   @default("USDT")
+  serverSeed    String?
+  serverHash    String?
+  clientSeed    String?
+  nonce         Int?
+  result        Json?
+  provablyFair  Json?
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([gameId])
+  @@index([createdAt])
+  @@map("bets")
+}
+
+// ==================== PAYMENTS ====================
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId    String
+  wallet      Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type        TransactionType
+  status      TransactionStatus @default(PENDING)
+  amount      Decimal
+  fee         Decimal         @default(0)
+  currency    String          @default("USDT")
+  balanceBefore Decimal?
+  balanceAfter  Decimal?
+  description String?
+  metadata    Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([walletId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model Deposit {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId        String
+  wallet          Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount          Decimal
+  fee             Decimal   @default(0)
+  currency        String    @default("USDT")
+  paymentMethod   String
+  providerRef     String?   @unique
+  providerData    Json?
+  status          TransactionStatus @default(PENDING)
+  txHash          String?
+  confirmedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([providerRef])
+  @@map("deposits")
+}
+
+model Withdrawal {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId        String
+  wallet          Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount          Decimal
+  fee             Decimal   @default(0)
+  currency        String    @default("USDT")
+  paymentMethod   String
+  destination     String    // wallet address or bank details
+  providerRef     String?   @unique
+  providerData    Json?
+  status          TransactionStatus @default(PENDING)
+  txHash          String?
+  processedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("withdrawals")
+}
+
+// ==================== BONUSES ====================
+
+model Bonus {
+  id                String      @id @default(cuid())
+  name              String
+  description       String?
+  type              BonusType
+  status            BonusStatus @default(ACTIVE)
+  amount            Decimal?    // fixed amount or match percentage
+  maxAmount         Decimal?    // cap for percentage bonuses
+  freeSpins         Int?
+  wageringRequirement Int       @default(35)
+  minDeposit        Decimal?
+  maxBetWithBonus   Decimal?
+  currency          String      @default("USDT")
+  eligibleGames     String[]    // game IDs, empty = all
+  eligibleCategories GameCategory[]
+  startsAt          DateTime?
+  expiresAt         DateTime?
+  maxClaims         Int?        // null = unlimited
+  currentClaims     Int         @default(0)
+  perUserLimit      Int         @default(1)
+  code              String?     @unique // promo code
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  userBonuses UserBonus[]
+
+  @@index([type])
+  @@index([status])
+  @@index([code])
+  @@map("bonuses")
+}
+
+model UserBonus {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bonusId         String
+  bonus           Bonus       @relation(fields: [bonusId], references: [id], onDelete: Cascade)
+  status          BonusStatus @default(ACTIVE)
+  amount          Decimal
+  wageringRequired Decimal
+  wageringProgress Decimal     @default(0)
+  freeSpinsTotal  Int?
+  freeSpinsUsed   Int         @default(0)
+  expiresAt       DateTime?
+  activatedAt     DateTime    @default(now())
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([bonusId])
+  @@index([status])
+  @@map("user_bonuses")
+}
+
+// ==================== KYC ====================
+
+model KycVerification {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          KycStatus @default(PENDING)
+  level           Int       @default(0) // 0=none, 1=basic, 2=full
+  documentType    String?   // passport, id_card, drivers_license
+  documentNumber  String?
+  documentFrontUrl String?
+  documentBackUrl String?
+  selfieUrl       String?
+  proofOfAddressUrl String?
+  country         String?
+  dateOfBirth     DateTime?
+  reviewedBy      String?
+  reviewNotes     String?
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("kyc_verifications")
+}
+
+// ==================== CHAT ====================
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room      String   @default("global")
+  message   String
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([room])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+// ==================== AUDIT ====================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  oldValue  Json?
+  newValue  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ==================== ENUMS ====================
+
+enum Role {
+  PLAYER
+  ADMIN
+  SUPER_ADMIN
+  SUPPORT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  SELF_EXCLUDED
+}
+
+enum GameCategory {
+  SLOTS
+  TABLE
+  LIVE
+  CRASH
+  KENO
+  LOTTERY
+  DICE
+  PLINKO
+}
+
+enum Volatility {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  BET
+  WIN
+  BONUS
+  REFERRAL
+  ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum BonusType {
+  WELCOME
+  DEPOSIT_MATCH
+  FREE_SPINS
+  CASHBACK
+  NO_DEPOSIT
+  REFERRAL
+  DAILY
+  VIP
+}
+
+enum BonusStatus {
+  ACTIVE
+  WAGERING
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum KycStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+}
