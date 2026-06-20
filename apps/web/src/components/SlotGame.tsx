@@ -20,6 +20,7 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
   const [message, setMessage] = useState('');
   const [reelsSpun, setReelsSpun] = useState([false, false, false]);
   const [glowWin, setGlowWin] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
   const intervalRefs = useRef<NodeJS.Timeout[]>([]);
 
   const cleanupIntervals = useCallback(() => {
@@ -105,9 +106,21 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
 
   return (
     <div className="flex flex-col items-center gap-6 p-6">
-      <h2 className="text-3xl font-display font-bold bg-gradient-gold bg-clip-text text-transparent">
-        🎰 Slot Machine
-      </h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-3xl font-display font-bold bg-gradient-gold bg-clip-text text-transparent">
+          🎰 Slot Machine
+        </h2>
+        <button
+          onClick={() => setIsDemo(!isDemo)}
+          className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+            isDemo
+              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+              : 'bg-green-500/20 text-green-400 border border-green-500/30'
+          }`}
+        >
+          {isDemo ? 'DEMO' : 'REAL'}
+        </button>
+      </div>
 
       {/* Slot Machine Frame */}
       <div className={`bg-casino-card border-2 rounded-2xl p-8 shadow-2xl transition-all duration-500 ${

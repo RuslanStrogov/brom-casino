@@ -5,9 +5,12 @@ interface GameCardProps {
   emoji: string;
   description: string;
   onClick: () => void;
+  provider?: string;
+  rtp?: number;
+  isLive?: boolean;
 }
 
-export function GameCard({ name, emoji, description, onClick }: GameCardProps) {
+export function GameCard({ name, emoji, description, onClick, provider, rtp, isLive }: GameCardProps) {
   return (
     <button
       onClick={onClick}
@@ -33,6 +36,25 @@ export function GameCard({ name, emoji, description, onClick }: GameCardProps) {
         <p className="text-sm text-casino-muted mb-4">
           {description}
         </p>
+
+        {/* Badges */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          {provider && (
+            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+              {provider}
+            </span>
+          )}
+          {rtp && (
+            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+              RTP {rtp}%
+            </span>
+          )}
+          {isLive && (
+            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+              LIVE
+            </span>
+          )}
+        </div>
 
         {/* Play button */}
         <div className="flex items-center gap-2 text-casino-gold text-sm font-medium">
