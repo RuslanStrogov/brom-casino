@@ -132,6 +132,54 @@ brom-casino/
 - 👑 **Админ-панель** — управление пользователями, играми, платежами, бонусами
 - 📊 **Аналитика** — ClickHouse для хранения событий и построения отчётов
 - 🐳 **DevOps** — Docker Compose, Nginx, GitHub Actions CI/CD
+- 🎰 **Pragmatic Play API** — реальные игры от провайдера (20+ слотов, live, настольные)
+- 💳 **Cryptomus PSP** — крипто-платежи (USDT, BTC, TON, ETH), webhooks, выплаты
+- 🛡️ **Sumsub KYC** — верификация личности, документы, AML compliance
+
+### Интеграции провайдеров
+
+Все интеграции поддерживают **три режима работы**:
+
+| Режим | Описание | Как включить |
+|-------|----------|-------------|
+| **REAL** | Реальные API-вызовы к провайдеру | Заполните ключи в .env + `*_MODE=real` |
+| **DEMO** | Моковые данные для разработки | Не заполняйте ключи или `*_MODE=demo` |
+| **HYBRID** | Попытка реального API, fallback на мок | `*_MODE=hybrid` (по умолчанию) |
+
+#### Pragmatic Play
+
+```bash
+# .env
+PRAGMATIC_PLAY_API_URL="https://api.pragmaticplay.net"
+PRAGMATIC_PLAY_API_KEY="your-api-key"
+PRAGMATIC_PLAY_CASINO_NAME="your-casino"
+PRAGMATIC_PLAY_SECRET_KEY="your-secret"
+PRAGMATIC_PLAY_MODE="hybrid"
+```
+
+Получить ключи: https://pragmaticplay.net/en/integrations/api/
+
+#### Cryptomus
+
+```bash
+# .env
+CRYPTOMUS_API_KEY="your-api-key"
+CRYPTOMUS_MERCHANT_ID="your-merchant-uuid"
+CRYPTOMUS_MODE="hybrid"
+```
+
+Получить ключи: https://cryptomus.com/
+
+#### Sumsub KYC
+
+```bash
+# .env
+SUMSUB_API_TOKEN="your-api-token"
+SUMSUB_APP_TOKEN="your-app-token"
+SUMSUB_WEBHOOK_SECRET="your-webhook-secret"
+```
+
+Получить ключи: https://sumsub.com/
 
 ---
 
@@ -170,6 +218,18 @@ pnpm db:migrate
 # 6. Заполнить начальными данными (игры, бонусы)
 pnpm db:seed
 ```
+
+### Деплой на VPS (одна команда)
+
+```bash
+# На чистом Ubuntu 22.04 VPS (4GB RAM, 2 vCPU):
+curl -fsSL https://raw.githubusercontent.com/RuslanStrogov/brom-casino/main/infrastructure/deploy.sh | sudo bash
+
+# С доменом и SSL:
+sudo DOMAIN=yourdomain.com EMAIL=you@email.com bash infrastructure/deploy.sh
+```
+
+Скрипт автоматически установит Docker, Node.js, Nginx, настроит SSL, firewall, создаст админа.
 
 ### Доступ к сервисам
 
