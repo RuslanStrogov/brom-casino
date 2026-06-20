@@ -14,6 +14,8 @@ import {
   BarChart3,
   Wallet,
   FileText,
+  Server,
+  Webhook,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -28,6 +30,8 @@ const NAV_ITEMS = [
   { href: '/kyc', icon: Shield, label: 'KYC Queue' },
   { href: '/wallet', icon: Wallet, label: 'Wallets' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/providers', icon: Server, label: 'Providers' },
+  { href: '/webhooks', icon: Webhook, label: 'Webhooks' },
   { href: '/reports', icon: FileText, label: 'Reports' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
