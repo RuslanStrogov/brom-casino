@@ -1,6 +1,7 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException, Inject } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
 import { KycStatus, PaginationMeta } from '@brom-casino/shared';
+import { SumsubProvider } from './providers/sumsub.provider';
 
 interface KycLimits {
   level: number;
@@ -42,7 +43,10 @@ export class KycService {
     },
   ];
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sumsubProvider: SumsubProvider,
+  ) {}
 
   async getStatus(userId: string) {
     const kyc = await this.prisma.kycVerification.findUnique({ where: { userId } });
