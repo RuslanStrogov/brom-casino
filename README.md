@@ -4,8 +4,9 @@
 
 ![Brom Casino Banner](assets/screenshots/banner.png)
 
-> Полнофункциональный клон онлайн-казино — веб-приложение, Telegram Mini App и админ-панель.
+> Полнофункциональная платформа онлайн-казино — веб, Telegram Mini App, админ-панель.
 > Монорепозиторий на базе **Turborepo + pnpm**, стек: **NestJS + Next.js + React + TypeScript + PostgreSQL + Redis**.
+> Интеграции: **Pragmatic Play API**, **Cryptomus PSP**, **Sumsub KYC** — все с тремя режимами (real/demo/hybrid).
 
 [![CI](https://github.com/RuslanStrogov/brom-casino/actions/workflows/ci.yml/badge.svg)](https://github.com/RuslanStrogov/brom-casino/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
