@@ -1,4 +1,4 @@
-import { TonConnectUI, type Wallet } from '@tonconnect/ui-react';
+import type { Wallet } from '@tonconnect/ui-react';
 
 const TON_MANIFEST_URL = import.meta.env.VITE_TON_MANIFEST_URL || '';
 
@@ -15,16 +15,6 @@ export function useTonConnect() {
   // The actual connection state comes from TonConnectUIProvider context
   // Use useTonConnectUI() from @tonconnect/ui-react in components
 
-  const getTonConnectUI = (): TonConnectUI | null => {
-    try {
-      const { useTonConnectUI } = require('@tonconnect/ui-react');
-      const [tonConnectUI] = useTonConnectUI();
-      return tonConnectUI;
-    } catch {
-      return null;
-    }
-  };
-
   const sendTransaction = async (transaction: {
     validUntil: number;
     messages: Array<{
@@ -34,19 +24,23 @@ export function useTonConnect() {
       stateInit?: string;
     }>;
   }) => {
-    const tonConnectUI = getTonConnectUI();
-    if (!tonConnectUI) {
+    try {
+      const { useTonConnectUI } = await import('@tonconnect/ui-react');
+      const [tonConnectUI] = useTonConnectUI();
+      const result = await tonConnectUI.sendTransaction(transaction);
+      return result;
+    } catch {
       throw new Error('TON Connect not initialized');
     }
-
-    const result = await tonConnectUI.sendTransaction(transaction);
-    return result;
   };
 
   const disconnect = async () => {
-    const tonConnectUI = getTonConnectUI();
-    if (tonConnectUI) {
+    try {
+      const { useTonConnectUI } = await import('@tonconnect/ui-react');
+      const [tonConnectUI] = useTonConnectUI();
       await tonConnectUI.disconnect();
+    } catch {
+      // Not initialized, ignore
     }
   };
 
@@ -93,7 +87,7 @@ export const ton = {
   },
 
   // Convert to user-friendly address
-  toUserFriendly: (address: string, testnet: boolean = false): string => {
+  toUserFriendly: (address: string, _testnet: boolean = false): string => {
     try {
       // This would use ton-core in production
       // For now, return as-is if already user-friendly

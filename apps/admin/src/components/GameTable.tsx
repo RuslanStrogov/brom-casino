@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MoreHorizontal, TrendingUp, TrendingDown, Play } from 'lucide-react';
+import { MoreHorizontal, TrendingUp, ArrowDownRight, Play } from 'lucide-react';
 
 interface Game {
   id: string;

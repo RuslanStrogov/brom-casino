@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../hooks/useTelegram';
 import { api } from '../lib/api';
-import { Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, Rocket, Zap, Star, Trophy, Coins } from 'lucide-react';
+import { Dice6, Rocket, Star, Trophy, Coins } from 'lucide-react';
 
 interface Game {
   id: string;
@@ -19,8 +19,8 @@ interface Game {
 const GAME_ICONS: Record<string, React.ReactNode> = {
   slots: <Coins className="w-8 h-8" />,
   crash: <Rocket className="w-8 h-8" />,
-  dice: <Dice1 className="w-8 h-8" />,
-  roulette: <Dice2 className="w-8 h-8" />,
+  dice: <Dice6 className="w-8 h-8" />,
+  roulette: <Dice6 className="w-8 h-8" />,
   blackjack: <Trophy className="w-8 h-8" />,
 };
 

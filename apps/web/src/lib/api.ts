@@ -2,7 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface RequestOptions {
   method?: string;
-  body?: any;
+  body?: unknown;
   token?: string;
 }
 
@@ -39,27 +39,27 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 export const api = {
   // Auth
   login: (username: string, password: string) =>
-    request<{ token: string; user: any }>('/api/auth/login', {
+    request<{ token: string; user: unknown }>('/api/auth/login', {
       method: 'POST',
       body: { username, password },
     }),
 
   register: (username: string, password: string) =>
-    request<{ token: string; user: any }>('/api/auth/register', {
+    request<{ token: string; user: unknown }>('/api/auth/register', {
       method: 'POST',
       body: { username, password },
     }),
 
   // User
   getProfile: (token: string) =>
-    request<any>('/api/user/profile', { token }),
+    request<unknown>('/api/user/profile', { token }),
 
   getBalance: (token: string) =>
     request<{ balance: number }>('/api/user/balance', { token }),
 
   // Games
-  placeBet: (token: string, game: string, amount: number, data?: any) =>
-    request<{ result: any; balance: number }>('/api/games/bet', {
+  placeBet: (token: string, game: string, amount: number, data?: unknown) =>
+    request<{ result: unknown; balance: number }>('/api/games/bet', {
       method: 'POST',
       token,
       body: { game, amount, ...data },
@@ -78,11 +78,11 @@ export const api = {
 
   // Leaderboard
   getLeaderboard: () =>
-    request<any[]>('/api/leaderboard'),
+    request<unknown[]>('/api/leaderboard'),
 
   // Transactions
   getTransactions: (token: string, limit = 20) =>
-    request<any[]>(`/api/user/transactions?limit=${limit}`, { token }),
+    request<unknown[]>(`/api/user/transactions?limit=${limit}`, { token }),
 
   // Deposit/Withdraw
   deposit: (token: string, amount: number, address: string) =>
