@@ -1,10 +1,113 @@
 # 🎰 Brom Casino
 
+<div align="center">
+
+![Brom Casino Banner](assets/screenshots/banner.png)
+
 > Полнофункциональный клон онлайн-казино — веб-приложение, Telegram Mini App и админ-панель.
 > Монорепозиторий на базе **Turborepo + pnpm**, стек: **NestJS + Next.js + React + TypeScript + PostgreSQL + Redis**.
 
 [![CI](https://github.com/RuslanStrogov/brom-casino/actions/workflows/ci.yml/badge.svg)](https://github.com/RuslanStrogov/brom-casino/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+</div>
+
+---
+
+## 📱 Screenshots
+
+### Главный экран — мобильное приложение
+
+<div align="center">
+
+![Mobile Home](assets/screenshots/mobile-home.png)
+
+*Главная страница: бонусный баннер, карусель featured-игр, сетка популярных игр, нижняя навигация*
+
+</div>
+
+### Игровой экран — Слот-машина
+
+<div align="center">
+
+![Slot Game](assets/screenshots/slot-game.png)
+
+*Слот-машина с 5 барабанами, выбор ставки, кнопка SPIN, таблица выплат*
+
+</div>
+
+### Экран бонусов
+
+<div align="center">
+
+![Bonuses](assets/screenshots/bonuses.png)
+
+*Приветственный бонус, ежедневный бонус, кэшбэк, VIP-программа, реферальная система*
+
+</div>
+
+### Панель администратора
+
+<div align="center">
+
+![Admin Panel](assets/screenshots/admin-panel.png)
+
+*Дашборд: GGR, NGR, активные игроки, депозиты, транзакции, активные игры, графики*
+
+</div>
+
+---
+
+## 🏗 Архитектура
+
+<div align="center">
+
+![Architecture](assets/screenshots/architecture.png)
+
+*Клиенты → API Gateway → Микросервисы → Слой данных. DevOps: Docker, Nginx, CI/CD*
+
+</div>
+
+### Структура монорепозитория
+
+```
+brom-casino/
+├── apps/
+│   ├── web/                   # Next.js 14 — основной фронтенд для игроков
+│   ├── admin/                 # Next.js 14 — панель администратора
+│   └── telegram-mini-app/     # React + Vite — Telegram Mini App
+├── packages/
+│   ├── shared/                # Общие типы, утилиты, константы, енумы
+│   ├── ui/                    # Общие UI-компоненты (shadcn/ui)
+│   ├── game-engine/           # Игровая логика: RNG, слоты, crash, dice, plinko
+│   └── config/                # Общие конфигурации (ESLint, TypeScript, Tailwind)
+├── services/
+│   ├── api/                   # NestJS — основной backend (REST + WebSocket)
+│   ├── game-server/           # Node.js — игровая логика в реальном времени
+│   └── payment-worker/        # Node.js — обработка платежей (Bull queue)
+├── infrastructure/
+│   ├── docker/                # Docker Compose, Dockerfile'ы
+│   └── nginx/                 # Конфигурации nginx (reverse proxy)
+├── docs/                      # Документация
+├── assets/screenshots/        # Скриншоты интерфейса
+├── .github/workflows/         # CI/CD (GitHub Actions)
+├── package.json               # Root package.json (Turborepo)
+├── turbo.json                 # Turborepo pipeline config
+└── pnpm-workspace.yaml        # pnpm workspace definition
+```
+
+### Технологический стек
+
+| Слой | Технология |
+|------|-----------|
+| **Frontend** | Next.js 14, React 18, TypeScript, Tailwind CSS, shadcn/ui, Zustand |
+| **Telegram** | React 18, Vite, Telegram Web App SDK, TON Connect |
+| **Backend** | NestJS 10, TypeScript, Prisma ORM, Passport.js |
+| **Database** | PostgreSQL 16, Redis 7, ClickHouse |
+| **Queue** | Bull (Redis) |
+| **Real-time** | Socket.io |
+| **DevOps** | Docker, Docker Compose, Nginx, GitHub Actions |
+| **Monitoring** | Sentry, Grafana (заглушки) |
 
 ---
 
@@ -29,48 +132,6 @@
 - 👑 **Админ-панель** — управление пользователями, играми, платежами, бонусами
 - 📊 **Аналитика** — ClickHouse для хранения событий и построения отчётов
 - 🐳 **DevOps** — Docker Compose, Nginx, GitHub Actions CI/CD
-
----
-
-## 🏗 Архитектура
-
-```
-brom-casino/
-├── apps/
-│   ├── web/                   # Next.js 14 — основной фронтенд для игроков
-│   ├── admin/                 # Next.js 14 — панель администратора
-│   └── telegram-mini-app/     # React + Vite — Telegram Mini App
-├── packages/
-│   ├── shared/                # Общие типы, утилиты, константы, енумы
-│   ├── ui/                    # Общие UI-компоненты (shadcn/ui)
-│   ├── game-engine/           # Игровая логика: RNG, слоты, crash, dice, plinko
-│   └── config/                # Общие конфигурации (ESLint, TypeScript, Tailwind)
-├── services/
-│   ├── api/                   # NestJS — основной backend (REST + WebSocket)
-│   ├── game-server/           # Node.js — игровая логика в реальном времени
-│   └── payment-worker/        # Node.js — обработка платежей (Bull queue)
-├── infrastructure/
-│   ├── docker/                # Docker Compose, Dockerfile'ы
-│   └── nginx/                 # Конфигурации nginx (reverse proxy)
-├── docs/                      # Документация
-├── .github/workflows/         # CI/CD (GitHub Actions)
-├── package.json               # Root package.json (Turborepo)
-├── turbo.json                 # Turborepo pipeline config
-└── pnpm-workspace.yaml        # pnpm workspace definition
-```
-
-### Технологический стек
-
-| Слой | Технология |
-|------|-----------|
-| **Frontend** | Next.js 14, React 18, TypeScript, Tailwind CSS, shadcn/ui, Zustand |
-| **Telegram** | React 18, Vite, Telegram Web App SDK, TON Connect |
-| **Backend** | NestJS 10, TypeScript, Prisma ORM, Passport.js |
-| **Database** | PostgreSQL 16, Redis 7, ClickHouse |
-| **Queue** | Bull (Redis) |
-| **Real-time** | Socket.io |
-| **DevOps** | Docker, Docker Compose, Nginx, GitHub Actions |
-| **Monitoring** | Sentry, Grafana (заглушки) |
 
 ---
 
@@ -122,80 +183,6 @@ pnpm db:seed
 | 🗄 PostgreSQL | 5432 | — |
 | ⚡ Redis | 6379 | — |
 | 📊 ClickHouse | 8123 | — |
-
----
-
-## 📦 Структура проекта
-
-### Приложения (`apps/`)
-
-#### `apps/web` — Основной фронтенд
-Игровой интерфейс для игроков. Тёмная тема с золотыми акцентами, адаптивный дизайн.
-
-- Главная страница с сеткой игр и hero-секцией
-- Компоненты игр: **Slot**, **Crash**, **Dice**, **Plinko**
-- Модальное окно авторизации/регистрации
-- Виджет баланса с кнопками депозита/вывода
-- Компонент верификации **Provably Fair**
-- Zustand-хранилища для состояния авторизации и игр
-- Socket.io клиент для обновлений в реальном времени
-
-#### `apps/admin` — Панель администратора
-Управление всеми аспектами казино.
-
-- Дашборд со статистикой (GGR, NGR, активные игроки, депозиты)
-- Управление пользователями (поиск, фильтрация, блокировки)
-- Управление играми (вкл/выкл, настройки RTP)
-- Мониторинг транзакций
-- Управление бонусами и промо-кодами
-- Очередь KYC-верификации
-
-#### `apps/telegram-mini-app` — Telegram Mini App
-Полноценное казино внутри Telegram.
-
-- Интеграция с Telegram Web App SDK
-- Подключение TON Connect для крипто-платежей
-- Список игр с каруселью популярных
-- Слоты и crash-игра
-- Модальные окна депозита и вывода
-- Нативные уведомления и тактильная обратная связь
-
-### Пакеты (`packages/`)
-
-#### `packages/shared` — Общие типы и утилиты
-- TypeScript енумы (Role, UserStatus, GameCategory, TransactionType, BonusType и др.)
-- Интерфейсы (SlotConfig, SpinResult, ProvablyFairData, JwtPayload)
-- Константы (валюты, лимиты, настройки по умолчанию)
-- Типы WebSocket-событий
-
-#### `packages/game-engine` — Игровая логика
-- **Provably Fair RNG** — криптографически верифицируемый генератор (HMAC-SHA256)
-- **SlotEngine** — механика слотов с барабанами, paylines, wild/scatter
-- **CrashEngine** — crash-игра (Aviator-style) с house edge 1%
-- **DiceEngine** — игра в кости с предсказанием
-- **PlinkoEngine** — физика шарика с отскоками от колышков
-
-#### `packages/config` — Общие конфигурации
-- ESLint конфигурация
-- TypeScript конфигурация с path aliases
-
-### Сервисы (`services/`)
-
-#### `services/api` — Backend (NestJS)
-Основной сервер приложения с REST API и WebSocket.
-
-**Модули:**
-- `auth` — Аутентификация (JWT, Local, Telegram стратегии, 2FA)
-- `users` — Пользователи (профиль, баланс, рефералы, история)
-- `games` — Игры (список, запуск, спин, интеграция с Pragmatic Play)
-- `wallet` — Кошелёк (баланс, транзакции, переводы)
-- `payments` — Платежи (депозиты, выводы, Cryptomus PSP, webhooks)
-- `bonuses` — Бонусы (активация, вейджер, промо-коды)
-- `kyc` — KYC/AML (документы, верификация, лимиты)
-- `admin` — Администрирование (дашборд, отчёты, управление)
-- `gateways` — WebSocket (игры в реальном времени, чат, crash)
-
-**База данных:** 12 моделей, 8 енумов (Prisma ORM)
 
 ---
 
@@ -299,8 +286,8 @@ DATABASE_URL="postgresql://brom:***@localhost:5432/brom_casino?schema=public"
 REDIS_URL="redis://localhost:6379"
 
 # JWT
-JWT_SECRET="your-super-secret-key-min-32-chars"
-JWT_REFRESH_SECRET="your-refresh-secret-key"
+JWT_SECRET="your-s...hars"
+JWT_REFRESH_SECRET="your-r...-key"
 
 # Приложение
 NODE_ENV="development"
@@ -309,14 +296,14 @@ API_URL="http://localhost:4000"
 WEB_URL="http://localhost:3000"
 
 # Telegram
-TELEGRAM_BOT_TOKEN="your-bot-token"
+TELEGRAM_BOT_TOKEN="***"
 
 # Платежи
-CRYPTOMUS_API_KEY="your-cryptomus-key"
-NOWPAYMENTS_API_KEY="your-nowpayments-key"
+CRYPTOMUS_API_KEY="your-c...-key"
+NOWPAYMENTS_API_KEY="your-n...-key"
 
 # KYC
-SUMUB_API_TOKEN="your-sumsub-key"
+SUMUB_API_TOKEN="***"
 
 # Мониторинг
 SENTRY_DSN="your-sentry-dsn"
@@ -365,7 +352,7 @@ SENTRY_DSN="your-sentry-dsn"
 Этот проект создан **исключительно в образовательных и демонстрационных целях**.
 Он показывает архитектуру и технические решения для создания платформы онлайн-казино.
 
-Перед использованием в продакшене необходимо:
+Перед использованием в продакшне необходимо:
 - Получить игровую лицензию (Кюрасао, Мальта, и т.д.)
 - Пройти сертификацию RNG (iTech Labs, GLI, eCOGRA)
 - Настроить KYC/AML в соответствии с законодательством
