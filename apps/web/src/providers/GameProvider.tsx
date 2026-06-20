@@ -1,38 +1,52 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { useSocketEvent, BalanceUpdate, GameResult } from '@/lib/socket';
+import { getSocket } from '@/lib/socket';
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, updateBalance } = useAuthStore();
   const [initialized, setInitialized] = useState(false);
-
-  // Listen for game results via socket
-  useSocketEvent('game:result', (data: GameResult) => {
-    // Game results are handled by individual game components
-    console.log('Game result received:', data);
-  });
-
-  // Listen for balance updates
-  useSocketEvent('balance:update', (data: BalanceUpdate) => {
-    // Balance updates are handled by useBalance hook
-    console.log('Balance update received:', data);
-  });
-
-  // Listen for crash game updates
-  useSocketEvent('crash:update', (data: any) => {
-    console.log('Crash update:', data);
-  });
-
-  // Listen for leaderboard updates
-  useSocketEvent('leaderboard:update', (data: any) => {
-    console.log('Leaderboard update:', data);
-  });
+  const listenersAttached = useRef(false);
 
   useEffect(() => {
     setInitialized(true);
   }, []);
+
+  // Attach socket listeners once
+  useEffect(() => {
+    if (listenersAttached.current) return;
+    listenersAttached.current = true;
+
+    const socket = getSocket();
+
+    socket.on('game:result', (data: any) => {
+      if (data.winAmount > 0 && data.balance !== undefined) {
+        updateBalance(data.balance);
+      }
+    });
+
+    socket.on('balance:update', (data: any) => {
+      if (data.balance !== undefined) {
+        updateBalance(data.balance);
+      }
+    });
+
+    socket.on('crash:tick', (_data: any) => {
+      // Handled by CrashGame component
+    });
+
+    socket.on('crash:result', (_data: any) => {
+      // Handled by CrashGame component
+    });
+
+    return () => {
+      socket.off('game:result');
+      socket.off('balance:update');
+      socket.off('crash:tick');
+      socket.off('crash:result');
+    };
+  }, [updateBalance]);
 
   if (!initialized) {
     return (

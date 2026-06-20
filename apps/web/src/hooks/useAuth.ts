@@ -1,65 +1,64 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { login as authLogin, register as authRegister, fetchProfile, clearAuth } from '@/lib/auth';
+import { api } from '@/lib/api';
 import { connectSocket, disconnectSocket } from '@/lib/socket';
 
 export function useAuth() {
-  const { user, isAuthenticated, setUser, setAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, token, refreshToken, setUser, setTokens, logout: storeLogout } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const login = useCallback(async (username: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await authLogin(username, password);
+      const data = await api.login(email, password);
+      setTokens(data.accessToken, data.refreshToken);
       setUser(data.user);
-      setAuthenticated(true);
-      connectSocket(data.token);
+      connectSocket(data.accessToken);
     } catch (err: any) {
       setError(err.message);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [setUser, setAuthenticated]);
+  }, [setTokens, setUser]);
 
-  const register = useCallback(async (username: string, password: string) => {
+  const register = useCallback(async (email: string, password: string, username?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await authRegister(username, password);
+      const data = await api.register(email, password, username);
+      setTokens(data.accessToken, data.refreshToken);
       setUser(data.user);
-      setAuthenticated(true);
-      connectSocket(data.token);
+      connectSocket(data.accessToken);
     } catch (err: any) {
       setError(err.message);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [setUser, setAuthenticated]);
+  }, [setTokens, setUser]);
 
-  const logout = useCallback(() => {
-    clearAuth();
+  const logout = useCallback(async () => {
+    try {
+      if (token) await api.logout(token);
+    } catch { /* ignore */ }
     disconnectSocket();
-    setUser(null);
-    setAuthenticated(false);
-  }, [setUser, setAuthenticated]);
+    storeLogout();
+  }, [token, storeLogout]);
 
   const loadProfile = useCallback(async () => {
+    if (!token) return;
     try {
-      const profile = await fetchProfile();
-      setUser(profile);
-      setAuthenticated(true);
+      const profile = await api.getProfile(token);
+      setUser(profile as any);
     } catch {
-      clearAuth();
-      setUser(null);
-      setAuthenticated(false);
+      storeLogout();
     }
-  }, [setUser, setAuthenticated]);
+  }, [token, setUser, storeLogout]);
 
   return {
     user,

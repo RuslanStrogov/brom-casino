@@ -53,7 +53,7 @@ export default function HomePage() {
               <span className="bg-gradient-gold bg-clip-text text-transparent">Brom Casino</span>
             </h1>
             <p className="text-xl text-casino-muted mb-8 max-w-2xl mx-auto">
-              The premier crypto casino experience. Provably fair games, instant payouts, and the best odds in the house.
+              Crypto casino with provably fair games. Instant payouts, best odds, 24/7 available.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <button
@@ -131,8 +131,8 @@ export default function HomePage() {
               <div className="text-casino-muted text-sm mt-1">Games</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-casino-gold">99%</div>
-              <div className="text-casino-muted text-sm mt-1">Fairness</div>
+              <div className="text-3xl font-bold text-casino-gold">96%</div>
+              <div className="text-casino-muted text-sm mt-1">Max RTP</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-casino-gold">0s</div>

@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useBalance } from './useBalance';
 import { useAuthStore } from '@/stores/authStore';
+import { useSocketEvent } from '@/lib/socket';
 
 interface GameConfig {
   name: string;
@@ -12,11 +13,37 @@ interface GameConfig {
 }
 
 export function useGame(config: GameConfig) {
-  const { isAuthenticated } = useAuthStore();
-  const { balance, setBalance } = useBalance();
-  const { gameHistory, addGameResult, currentGame, setCurrentGame } = useGameStore();
+  const { isAuthenticated, token } = useAuthStore();
+  const { balance, subtractBalance, addBalance } = useBalance();
+  const { gameHistory, addGameResult, setIsPlaying } = useGameStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Listen for server-side game results
+  useSocketEvent('game:result', (data: any) => {
+    if (data.game === config.name) {
+      if (data.winAmount > 0) {
+        addBalance(data.winAmount);
+      }
+      addGameResult({
+        id: data.id || crypto.randomUUID(),
+        game: config.name,
+        bet: data.betAmount,
+        winAmount: data.winAmount,
+        multiplier: data.multiplier,
+        result: data.result,
+        timestamp: Date.now(),
+      });
+      setLoading(false);
+      setIsPlaying(false);
+    }
+  });
+
+  useSocketEvent('game:error', (data: any) => {
+    setError(data.message);
+    setLoading(false);
+    setIsPlaying(false);
+  });
 
   const play = useCallback(async (bet: number, gameData?: any) => {
     if (!isAuthenticated) {
@@ -36,54 +63,59 @@ export function useGame(config: GameConfig) {
 
     setLoading(true);
     setError(null);
+    subtractBalance(bet);
+    setIsPlaying(true);
 
     try {
-      // Deduct bet
-      const newBalance = balance - bet;
-      setBalance(newBalance);
-
-      // Simulate game result (in real app, this would be an API call)
-      const result = await simulateGame(config.name, gameData);
-
-      // Update balance if won
-      if (result.winAmount > 0) {
-        setBalance(newBalance + result.winAmount);
+      // Emit game:spin via socket (handled by GameProvider)
+      const socket = (window as any).__brom_socket;
+      if (socket) {
+        socket.emit('game:spin', {
+          game: config.name,
+          betAmount: bet,
+          clientSeed: gameData?.clientSeed,
+          ...gameData,
+        });
+      } else {
+        // Fallback: simulate locally if no socket
+        const result = await simulateGame(config.name, gameData);
+        if (result.winAmount > 0) {
+          addBalance(result.winAmount);
+        }
+        addGameResult({
+          id: crypto.randomUUID(),
+          game: config.name,
+          bet,
+          winAmount: result.winAmount,
+          result: result.data,
+          timestamp: Date.now(),
+        });
+        setLoading(false);
+        setIsPlaying(false);
+        return result;
       }
 
-      // Add to history
-      addGameResult({
-        game: config.name,
-        bet,
-        result: result.data,
-        winAmount: result.winAmount,
-        timestamp: Date.now(),
-      });
-
-      return result;
+      return { pending: true };
     } catch (err: any) {
       setError(err.message);
-      // Refund bet on error
-      setBalance(balance);
-      return null;
-    } finally {
+      addBalance(bet); // Refund
       setLoading(false);
+      setIsPlaying(false);
+      return null;
     }
-  }, [isAuthenticated, balance, config, setBalance, addGameResult]);
+  }, [isAuthenticated, token, balance, config, subtractBalance, addBalance, addGameResult, setIsPlaying]);
 
   return {
     play,
     loading,
     error,
     gameHistory: gameHistory.filter(g => g.game === config.name),
-    currentGame,
-    setCurrentGame,
     clearError: () => setError(null),
   };
 }
 
-// Simulate game results (client-side for demo)
+// Client-side simulation fallback
 async function simulateGame(gameName: string, _data?: any): Promise<{ winAmount: number; data: any }> {
-  // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
 
   switch (gameName) {
@@ -101,23 +133,19 @@ async function simulateGame(gameName: string, _data?: any): Promise<{ winAmount:
       }
       return { winAmount, data: { reels } };
     }
-
     case 'crash': {
       const crashPoint = Math.max(1, 0.99 / (1 - Math.random()));
       return { winAmount: 0, data: { crashPoint: Math.min(crashPoint, 100) } };
     }
-
     case 'dice': {
-      const result = Math.floor(Math.random() * 100) + 1;
+      const result = Math.floor(Math.random() * 10000) / 100;
       return { winAmount: 0, data: { result } };
     }
-
     case 'plinko': {
       const multipliers = [5.6, 2.1, 1.1, 1, 0.5, 1, 1.1, 2.1, 5.6];
       const slot = Math.floor(Math.random() * multipliers.length);
       return { winAmount: multipliers[slot], data: { slot, multiplier: multipliers[slot] } };
     }
-
     default:
       return { winAmount: 0, data: {} };
   }

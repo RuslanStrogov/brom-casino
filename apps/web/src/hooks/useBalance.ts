@@ -2,49 +2,65 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { useSocketEvent } from '@/lib/socket';
-import { BalanceUpdate } from '@/lib/socket';
-
-const INITIAL_BALANCE = 100; // Starting balance for demo
+import { api } from '@/lib/api';
 
 export function useBalance() {
-  const { isAuthenticated } = useAuthStore();
-  const [balance, setBalance] = useState(INITIAL_BALANCE);
+  const { isAuthenticated, token, updateBalance } = useAuthStore();
+  const [balance, setBalance] = useState(0);
+  const [bonusBalance, setBonusBalance] = useState(0);
+  const [currency, setCurrency] = useState('USDT');
   const [loading, setLoading] = useState(false);
 
-  // Listen for balance updates via socket
-  useSocketEvent('balance:update', (data: BalanceUpdate) => {
-    setBalance(data.balance);
-  });
-
   const refreshBalance = useCallback(async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !token) return;
     setLoading(true);
     try {
-      // In a real app, this would fetch from the API
-      // const data = await api.fetchBalance();
-      // setBalance(data.balance);
+      const data = await api.getBalance(token);
+      setBalance(data.balance);
+      setBonusBalance(data.bonusBalance);
+      setCurrency(data.currency);
+      updateBalance(data.balance);
     } catch (err) {
       console.error('Failed to refresh balance:', err);
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token, updateBalance]);
+
+  // Auto-refresh on auth
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshBalance();
+    } else {
+      setBalance(0);
+      setBonusBalance(0);
+    }
+  }, [isAuthenticated, refreshBalance]);
 
   const addBalance = useCallback((amount: number) => {
-    setBalance(prev => prev + amount);
-  }, []);
+    setBalance(prev => {
+      const newBal = prev + amount;
+      updateBalance(newBal);
+      return newBal;
+    });
+  }, [updateBalance]);
 
   const subtractBalance = useCallback((amount: number) => {
-    setBalance(prev => Math.max(0, prev - amount));
-  }, []);
+    setBalance(prev => {
+      const newBal = Math.max(0, prev - amount);
+      updateBalance(newBal);
+      return newBal;
+    });
+  }, [updateBalance]);
 
   return {
     balance,
-    setBalance,
+    bonusBalance,
+    currency,
     loading,
     refreshBalance,
     addBalance,
     subtractBalance,
+    setBalance,
   };
 }

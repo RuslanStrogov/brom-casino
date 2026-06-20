@@ -2,17 +2,36 @@
 
 import { useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { getStoredToken } from '@/lib/auth';
 import { connectSocket, disconnectSocket } from '@/lib/socket';
+import { api } from '@/lib/api';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, setAuthenticated, setUser } = useAuthStore();
+  const { isAuthenticated, token, setUser, setTokens, logout: storeLogout } = useAuthStore();
 
   useEffect(() => {
-    // Check for existing auth on mount
-    const token = getStoredToken();
-    if (token && isAuthenticated) {
-      connectSocket(token);
+    // Try to restore session on mount
+    const storedToken = useAuthStore.getState().token;
+    const storedRefresh = useAuthStore.getState().refreshToken;
+
+    if (storedToken) {
+      connectSocket(storedToken);
+
+      // Refresh profile
+      api.getProfile(storedToken)
+        .then((profile) => setUser(profile as any))
+        .catch(() => {
+          // Try refresh token
+          if (storedRefresh) {
+            api.refreshToken(storedRefresh)
+              .then((data) => {
+                setTokens(data.accessToken, data.refreshToken);
+                connectSocket(data.accessToken);
+              })
+              .catch(() => storeLogout());
+          } else {
+            storeLogout();
+          }
+        });
     }
 
     return () => {
@@ -21,15 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      const token = getStoredToken();
-      if (token) {
-        connectSocket(token);
-      }
+    if (isAuthenticated && token) {
+      connectSocket(token);
     } else {
       disconnectSocket();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   return <>{children}</>;
 }

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+const SOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 let socket: Socket | null = null;
 
@@ -13,6 +13,8 @@ export function getSocket(): Socket {
       transports: ['websocket', 'polling'],
       autoConnect: false,
     });
+    // Expose for useGame hook fallback
+    (window as any).__brom_socket = socket;
   }
   return socket;
 }
@@ -55,7 +57,6 @@ export function useSocket() {
   return { socket: socketRef.current, connected };
 }
 
-// Socket event hooks
 export function useSocketEvent(event: string, callback: (...args: any[]) => void) {
   const { socket } = useSocket();
 
@@ -68,11 +69,13 @@ export function useSocketEvent(event: string, callback: (...args: any[]) => void
   }, [socket, event, callback]);
 }
 
-// Typed socket events
 export interface GameResult {
+  id: string;
   game: string;
-  result: any;
+  betAmount: number;
   winAmount: number;
+  multiplier?: number;
+  result?: Record<string, unknown>;
   balance: number;
 }
 

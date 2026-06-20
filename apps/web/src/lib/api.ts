@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 interface RequestOptions {
   method?: string;
@@ -36,66 +36,164 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   return response.json();
 }
 
+export interface User {
+  id: string;
+  email?: string;
+  username?: string;
+  role: string;
+  balance: number;
+  currency: string;
+  vipLevel: number;
+}
+
+export interface Game {
+  id: string;
+  slug: string;
+  name: string;
+  provider: string;
+  category: string;
+  rtp?: number;
+  thumbnail?: string;
+  isEnabled: boolean;
+  isFeatured: boolean;
+}
+
+export interface GameResult {
+  id: string;
+  gameId: string;
+  betAmount: number;
+  winAmount: number;
+  multiplier?: number;
+  result?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface ProvablyFairSeed {
+  serverHash: string;
+  clientSeed: string;
+  nonce: number;
+}
+
 export const api = {
-  // Auth
-  login: (username: string, password: string) =>
-    request<{ token: string; user: unknown }>('/api/auth/login', {
+  // ===== Auth =====
+  login: (email: string, password: string) =>
+    request<{ accessToken: string; refreshToken: string; user: User }>('/auth/login', {
       method: 'POST',
-      body: { username, password },
+      body: { email, password },
     }),
 
-  register: (username: string, password: string) =>
-    request<{ token: string; user: unknown }>('/api/auth/register', {
+  register: (email: string, password: string, username?: string) =>
+    request<{ accessToken: string; refreshToken: string; user: User }>('/auth/register', {
       method: 'POST',
-      body: { username, password },
+      body: { email, password, username },
     }),
 
-  // User
+  refreshToken: (refreshToken: string) =>
+    request<{ accessToken: string; refreshToken: string }>('/auth/refresh', {
+      method: 'POST',
+      body: { refreshToken },
+    }),
+
+  logout: (token: string) =>
+    request<void>('/auth/logout', { method: 'POST', token }),
+
+  // ===== Users =====
   getProfile: (token: string) =>
-    request<unknown>('/api/user/profile', { token }),
+    request<User>('/users/profile', { token }),
 
+  updateProfile: (token: string, data: { username?: string }) =>
+    request<User>('/users/profile', { method: 'PATCH', token, body: data }),
+
+  // ===== Games =====
+  getGames: (token: string, params?: { category?: string; provider?: string; limit?: number; offset?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.category) search.set('category', params.category);
+    if (params?.provider) search.set('provider', params.provider);
+    if (params?.limit) search.set('limit', String(params.limit));
+    if (params?.offset) search.set('offset', String(params.offset));
+    const qs = search.toString() ? `?${search.toString()}` : '';
+    return request<{ games: Game[]; total: number }>(`/games${qs}`, { token });
+  },
+
+  getGameBySlug: (token: string, slug: string) =>
+    request<Game>(`/games/${slug}`, { token }),
+
+  launchGame: (token: string, slug: string) =>
+    request<{ game: Game; sessionToken: string }>(`/games/${slug}/launch`, { method: 'POST', token }),
+
+  // ===== Wallet =====
   getBalance: (token: string) =>
-    request<{ balance: number }>('/api/user/balance', { token }),
+    request<{ balance: number; currency: string; bonusBalance: number }>('/wallet/balance', { token }),
 
-  // Games
-  placeBet: (token: string, game: string, amount: number, data?: unknown) =>
-    request<{ result: unknown; balance: number }>('/api/games/bet', {
-      method: 'POST',
-      token,
-      body: { game, amount, ...data },
-    }),
+  getTransactions: (token: string, params?: { type?: string; limit?: number; offset?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.type) search.set('type', params.type);
+    if (params?.limit) search.set('limit', String(params.limit));
+    if (params?.offset) search.set('offset', String(params.offset));
+    const qs = search.toString() ? `?${search.toString()}` : '';
+    return request<{ transactions: Transaction[]; total: number }>(`/wallet/transactions${qs}`, { token });
+  },
 
-  // Provably Fair
+  // ===== Payments =====
+  createDeposit: (token: string, currency: string, amount?: number) =>
+    request<{ invoiceId: string; address: string; amount: number; currency: string; expiresAt: string }>(
+      '/payments/deposit',
+      { method: 'POST', token, body: { currency, amount } }
+    ),
+
+  requestWithdrawal: (token: string, currency: string, amount: number, address: string) =>
+    request<{ id: string; status: string; fee: number }>(
+      '/payments/withdraw',
+      { method: 'POST', token, body: { currency, amount, address } }
+    ),
+
+  // ===== Bonuses =====
+  getBonuses: (token: string) =>
+    request<{ bonuses: Array<{ id: string; name: string; type: string; status: string; wageringProgress: number; wageringTarget: number }> }>(
+      '/bonuses',
+      { token }
+    ),
+
+  claimBonus: (token: string, bonusId: string) =>
+    request<{ success: boolean; balance: number }>(`/bonuses/${bonusId}/claim`, { method: 'POST', token }),
+
+  // ===== Provably Fair =====
   getServerSeed: (token: string) =>
-    request<{ seed: string; hash: string }>('/api/fair/seed', { token }),
+    request<{ serverHash: string }>('/provably-fair/seed', { token }),
 
   verifyResult: (token: string, serverSeed: string, clientSeed: string, nonce: number) =>
-    request<{ result: number; valid: boolean }>('/api/fair/verify', {
+    request<{ result: number; hash: string; valid: boolean }>('/provably-fair/verify', {
       method: 'POST',
       token,
       body: { serverSeed, clientSeed, nonce },
     }),
 
-  // Leaderboard
-  getLeaderboard: () =>
-    request<unknown[]>('/api/leaderboard'),
+  // ===== Admin =====
+  adminGetStats: (token: string) =>
+    request<{
+      totalUsers: number;
+      activeUsers: number;
+      totalDeposits: number;
+      totalWithdrawals: number;
+      ggr: number;
+      ngr: number;
+    }>('/admin/stats', { token }),
 
-  // Transactions
-  getTransactions: (token: string, limit = 20) =>
-    request<unknown[]>(`/api/user/transactions?limit=${limit}`, { token }),
-
-  // Deposit/Withdraw
-  deposit: (token: string, amount: number, address: string) =>
-    request<{ txid: string }>('/api/wallet/deposit', {
-      method: 'POST',
-      token,
-      body: { amount, address },
-    }),
-
-  withdraw: (token: string, amount: number, address: string) =>
-    request<{ txid: string }>('/api/wallet/withdraw', {
-      method: 'POST',
-      token,
-      body: { amount, address },
-    }),
+  adminGetUsers: (token: string, params?: { limit?: number; offset?: number; search?: string }) => {
+    const search = new URLSearchParams();
+    if (params?.limit) search.set('limit', String(params.limit));
+    if (params?.offset) search.set('offset', String(params.offset));
+    if (params?.search) search.set('search', params.search);
+    const qs = search.toString() ? `?${search.toString()}` : '';
+    return request<{ users: User[]; total: number }>(`/admin/users${qs}`, { token });
+  },
 };
