@@ -19,6 +19,7 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
   const [lastWin, setLastWin] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [reelsSpun, setReelsSpun] = useState([false, false, false]);
+  const [glowWin, setGlowWin] = useState(false);
   const intervalRefs = useRef<NodeJS.Timeout[]>([]);
 
   const cleanupIntervals = useCallback(() => {
@@ -52,6 +53,7 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
     setSpinning(true);
     setLastWin(null);
     setMessage('');
+    setGlowWin(false);
     setReelsSpun([false, false, false]);
     cleanupIntervals();
 
@@ -84,8 +86,10 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
             setSpinning(false);
             if (winAmount > 0) {
               setLastWin(winAmount);
+              setGlowWin(true);
               onBalanceChange(balance - bet + winAmount);
               setMessage(`🎉 You won ${winAmount.toFixed(2)}!`);
+              setTimeout(() => setGlowWin(false), 2000);
             } else {
               setMessage('Try again!');
             }
@@ -105,16 +109,32 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
         🎰 Slot Machine
       </h2>
 
-      {/* Slot Machine */}
-      <div className="bg-casino-card border border-casino-border rounded-2xl p-8 shadow-2xl">
-        <div className="flex gap-3 mb-6">
+      {/* Slot Machine Frame */}
+      <div className={`bg-casino-card border-2 rounded-2xl p-8 shadow-2xl transition-all duration-500 ${
+        glowWin ? 'border-casino-gold shadow-casino-gold/30' : 'border-casino-border'
+      }`}>
+        {/* Top Light Bar */}
+        <div className="flex justify-center gap-2 mb-4">
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              spinning ? 'bg-casino-gold animate-pulse' : glowWin ? 'bg-green-400' : 'bg-casino-border'
+            }`} />
+          ))}
+        </div>
+
+        {/* Reels */}
+        <div className="flex gap-3 mb-6 bg-casino-darker rounded-xl p-4 border border-casino-border">
           {reels.map((symbol, i) => (
             <div
               key={i}
-              className={`w-24 h-24 bg-casino-darker border-2 border-casino-gold/30 rounded-xl flex items-center justify-center text-5xl
-                ${reelsSpun[i] && !spinning ? 'animate-bounce' : ''}
-                ${spinning && !reelsSpun[i] ? 'blur-[1px]' : ''}
+              className={`w-24 h-24 bg-gradient-to-b from-casino-card to-casino-darker border-2 rounded-xl flex items-center justify-center text-5xl
+                transition-all duration-200
+                ${reelsSpun[i] && !spinning ? 'scale-110 border-casino-gold' : 'border-casino-gold/20'}
+                ${spinning && !reelsSpun[i] ? 'blur-[2px] scale-95' : ''}
               `}
+              style={{
+                animation: spinning && !reelsSpun[i] ? 'spinReel 0.1s linear infinite' : 'none',
+              }}
             >
               {symbol}
             </div>
@@ -122,14 +142,14 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
         </div>
 
         {/* Win Display */}
-        <div className="h-8 text-center mb-4">
+        <div className="h-10 text-center mb-4">
           {lastWin !== null && (
-            <span className="text-casino-gold font-bold text-xl animate-pulse">
-              +{lastWin.toFixed(2)} 💰
+            <span className={`font-bold text-2xl animate-bounce ${glowWin ? 'text-casino-gold' : 'text-green-400'}`}>
+              🏆 +{lastWin.toFixed(2)} 🏆
             </span>
           )}
           {message && lastWin === null && (
-            <span className="text-casino-muted">{message}</span>
+            <span className="text-casino-muted text-lg">{message}</span>
           )}
         </div>
 
@@ -141,10 +161,10 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
               key={amount}
               onClick={() => setBet(amount)}
               disabled={spinning}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-all
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all
                 ${bet === amount
-                  ? 'bg-casino-gold text-casino-dark'
-                  : 'bg-casino-darker text-white border border-casino-border hover:border-casino-gold/50'
+                  ? 'bg-gradient-gold text-casino-dark shadow-lg shadow-casino-gold/20'
+                  : 'bg-casino-darker text-white border border-casino-border hover:border-casino-gold/50 hover:bg-casino-card'
                 }
                 disabled:opacity-50
               `}
@@ -161,26 +181,45 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
           className="w-full py-4 rounded-xl font-bold text-lg transition-all
             bg-gradient-gold text-casino-dark hover:opacity-90
             disabled:opacity-50 disabled:cursor-not-allowed
-            active:scale-95 shadow-lg hover:shadow-casino-gold/20"
+            active:scale-95 shadow-lg hover:shadow-casino-gold/30
+            relative overflow-hidden"
         >
-          {spinning ? '🎰 SPINNING...' : `🎲 SPIN (${bet.toFixed(2)})`}
+          {spinning ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="animate-spin">🎰</span> SPINNING...
+            </span>
+          ) : (
+            `🎲 SPIN (${bet.toFixed(2)})`
+          )}
         </button>
       </div>
 
       {/* Paytable */}
-      <div className="bg-casino-card border border-casino-border rounded-xl p-4 w-full max-w-sm">
-        <h3 className="text-casino-gold font-semibold mb-2 text-center">Paytable</h3>
-        <div className="grid grid-cols-2 gap-1 text-sm text-casino-muted">
-          <span>💎💎💎 = 50x</span>
-          <span>⭐⭐⭐ = 20x</span>
-          <span>7️⃣7️⃣7️⃣ = 30x</span>
-          <span>🔔🔔🔔 = 15x</span>
-          <span>🍇🍇🍇 = 10x</span>
-          <span>🍊🍊🍊 = 8x</span>
-          <span>🍋🍋🍋 = 5x</span>
-          <span>🍒🍒🍒 = 3x</span>
+      <div className="bg-casino-card border border-casino-border rounded-xl p-5 w-full max-w-md">
+        <h3 className="text-casino-gold font-bold mb-3 text-center text-lg">💎 Paytable</h3>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          {[
+            ['💎💎💎', '50x'], ['7️⃣7️⃣7️⃣', '30x'], ['⭐⭐⭐', '20x'], ['🔔🔔🔔', '15x'],
+            ['🍇🍇🍇', '10x'], ['🍊🍊🍊', '8x'], ['🍋🍋🍋', '5x'], ['🍒🍒🍒', '3x'],
+          ].map(([combo, mult]) => (
+            <div key={combo} className="flex justify-between items-center bg-casino-darker rounded-lg px-3 py-2">
+              <span>{combo}</span>
+              <span className="text-casino-gold font-bold">{mult}</span>
+            </div>
+          ))}
+          <div className="col-span-2 text-center text-casino-muted text-xs mt-2">
+            Any 2 matching = 2x • RTP: 96%
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes spinReel {
+          0% { transform: translateY(-8px); opacity: 0.7; }
+          50% { transform: translateY(8px); opacity: 0.7; }
+          100% { transform: translateY(-8px); opacity: 0.7; }
+        }
+      `}</style>
     </div>
   );
 }
