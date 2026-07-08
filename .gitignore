@@ -9,3 +9,6 @@ dist/
 .DS_Store
 coverage/
 .nyc_output/
+
+# Private network data - do not commit
+docs/network-map.md
