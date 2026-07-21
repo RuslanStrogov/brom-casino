@@ -2,12 +2,38 @@
 
 import React from 'react';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
+import { adminApi } from '../../lib/api';
 import { Users, UserCheck, UserX, Activity } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import UserTable from '../../components/UserTable';
 
 export default function UsersPage() {
   const { isAuthenticated, isLoading } = useAdminAuth();
+  const [stats, setStats] = React.useState({ total: 0, active: 0, newToday: 0, pendingKyc: 0 });
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchStats = async () => {
+      try {
+        const res = await adminApi.dashboard.getStats();
+        const data = res.data;
+        setStats({
+          total: data.users.total,
+          active: data.users.active,
+          newToday: data.users.newToday,
+          pendingKyc: data.pendingKyc,
+        });
+      } catch (err) {
+        console.error('Failed to fetch user stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -45,29 +71,29 @@ export default function UsersPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatsCard
           title="Total Users"
-          value="1,234"
-          change={12.5}
+          value={stats.total.toLocaleString()}
+          change={0}
           icon={<Users className="w-5 h-5" />}
           color="amber"
         />
         <StatsCard
-          title="Active Today"
-          value="456"
-          change={8.3}
+          title="Active"
+          value={stats.active.toLocaleString()}
+          change={0}
           icon={<Activity className="w-5 h-5" />}
           color="green"
         />
         <StatsCard
-          title="Suspended"
-          value="12"
-          change={-3.2}
+          title="New Today"
+          value={stats.newToday.toLocaleString()}
+          change={0}
           icon={<UserX className="w-5 h-5" />}
           color="red"
         />
         <StatsCard
-          title="KYC Verified"
-          value="892"
-          change={15.1}
+          title="Pending KYC"
+          value={stats.pendingKyc.toLocaleString()}
+          change={0}
           icon={<UserCheck className="w-5 h-5" />}
           color="blue"
         />
