@@ -66,7 +66,7 @@ server {
         proxy_buffering off;
     }
 
-    # Admin panel — HTML (no cache)
+    # Admin panel — HTML (no cache, override Next.js aggressive caching)
     location /admin {
         proxy_pass http://brom-casino-admin;
         proxy_http_version 1.1;
@@ -79,11 +79,10 @@ server {
         proxy_cache_bypass $http_upgrade;
         proxy_buffering off;
 
-        # Don't cache HTML — always get fresh chunk references
-        location ~* \.html$ {
-            add_header Cache-Control "no-cache, no-store, must-revalidate";
-            proxy_pass http://brom-casino-admin;
-        }
+        # Override Next.js upstream Cache-Control: never cache HTML
+        proxy_hide_header Cache-Control;
+        proxy_hide_header ETag;
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
     }
 
     # Admin static assets (Next.js hashed chunks — safe to cache)
