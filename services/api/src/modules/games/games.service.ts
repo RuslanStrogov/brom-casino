@@ -4,17 +4,50 @@ import { WalletService } from '../wallet/wallet.service';
 import { GameCategory, Volatility, PaginationMeta, ProvablyFairData } from '@brom-casino/shared';
 import { GameProvider } from './providers/base.provider';
 import { PragmaticPlayProvider } from './providers/pragmatic-play.provider';
+import { EvolutionProvider } from './providers/evolution.provider';
+import { SpribeProvider } from './providers/spribe.provider';
+import { GenericProvider } from './providers/generic.provider';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class GamesService {
+  /** Map of DB providerId → provider instance */
+  private readonly providerMap: Record<string, GameProvider>;
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => WalletService))
     private readonly walletService: WalletService,
     @Inject(PragmaticPlayProvider)
     private readonly pragmaticPlayProvider: GameProvider,
-  ) {}
+    @Inject(EvolutionProvider)
+    private readonly evolutionProvider: GameProvider,
+    @Inject(SpribeProvider)
+    private readonly spribeProvider: GameProvider,
+    @Inject(GenericProvider)
+    private readonly genericProvider: GameProvider,
+  ) {
+    this.providerMap = {
+      'pragmatic': pragmaticPlayProvider,
+      'evolution': evolutionProvider,
+      'spribe': spribeProvider,
+      'netent': genericProvider,
+      'microgaming': genericProvider,
+      'playngo': genericProvider,
+      'yggdrasil': genericProvider,
+      'hacksaw': genericProvider,
+      'pushgaming': genericProvider,
+      'redtiger': genericProvider,
+      'playtech': genericProvider,
+      'relaxgaming': genericProvider,
+      'truelab': genericProvider,
+      'elkstudios': genericProvider,
+      'thunderkick': genericProvider,
+      'nolimitcity': genericProvider,
+      'slotmill': genericProvider,
+      'bgaming': genericProvider,
+    };
+  }
 
   async listGames(opts: {
     page: number;
@@ -124,11 +157,15 @@ export class GamesService {
 
     // For third-party providers, get launch URL
     let launchUrl: string | undefined;
-    if (game.providerId === 'pragmatic-play') {
-      launchUrl = await this.pragmaticPlayProvider.getLaunchUrl(game.externalId, {
+    const provider = this.providerMap[game.providerId];
+    if (provider) {
+      launchUrl = await provider.getLaunchUrl(game.externalId, {
         userId,
         mode,
         sessionToken,
+        currency: 'USDT',
+        language: 'en',
+        providerId: game.providerId,
       });
     }
 
@@ -264,7 +301,7 @@ export class GamesService {
     language: string = 'en',
   ): Promise<{ url: string; gameId: string; provider: string }> {
     const game = await this.prisma.game.findFirst({
-      where: { externalId: gameId, providerId: 'pragmatic-play' },
+      where: { externalId: gameId, providerId: 'pragmatic' },
     });
 
     if (!game) {
