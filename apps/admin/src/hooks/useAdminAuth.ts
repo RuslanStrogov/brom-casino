@@ -65,7 +65,20 @@ function useAdminAuthStandalone() {
     setIsLoading(true);
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { admin: adminData, token } = response.data;
+      const { user: userData, accessToken: token } = response.data;
+
+      if (!userData || !token) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Map API user to admin format
+      const adminData = {
+        id: userData.id,
+        email: userData.email,
+        name: userData.username || userData.email,
+        role: (userData.role || '').toLowerCase() as 'super_admin' | 'admin' | 'moderator' | 'support',
+        permissions: ['*'],
+      };
 
       if (typeof window !== 'undefined') {
         document.cookie = `admin_token=${token}; path=/; max-age=86400; secure; samesite=strict`;
