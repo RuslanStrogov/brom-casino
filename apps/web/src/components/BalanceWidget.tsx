@@ -13,7 +13,7 @@ export function BalanceWidget({ balance, showActions = false }: BalanceWidgetPro
         <div className="flex flex-col">
           <span className="text-xs text-casino-muted leading-none">Balance</span>
           <span className="text-sm font-bold text-casino-gold font-mono">
-            {balance.toFixed(2)}
+            {(Number(balance) || 0).toFixed(2)}
           </span>
         </div>
       </div>

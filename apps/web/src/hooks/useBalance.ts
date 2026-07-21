@@ -16,10 +16,10 @@ export function useBalance() {
     setLoading(true);
     try {
       const data = await api.getBalance(token);
-      setBalance(data.balance);
-      setBonusBalance(data.bonusBalance);
+      setBalance(Number(data.balance) || 0);
+      setBonusBalance(Number(data.bonusBalance) || 0);
       setCurrency(data.currency);
-      updateBalance(data.balance);
+      updateBalance(Number(data.balance) || 0);
     } catch (err) {
       console.error('Failed to refresh balance:', err);
     } finally {

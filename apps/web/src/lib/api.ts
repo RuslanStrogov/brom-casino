@@ -108,10 +108,10 @@ export const api = {
 
   // ===== Users =====
   getProfile: (token: string) =>
-    request<User>('/users/profile', { token }),
+    request<User>('/users/me', { token }),
 
   updateProfile: (token: string, data: { username?: string }) =>
-    request<User>('/users/profile', { method: 'PATCH', token, body: data }),
+    request<User>('/users/me', { method: 'PATCH', token, body: data }),
 
   // ===== Games =====
   getGames: (token: string, params?: { category?: string; provider?: string; limit?: number; offset?: number }) => {
