@@ -17,9 +17,13 @@
     "docker:down": "docker compose -f infrastructure/docker/docker-compose.yml down"
   },
   "devDependencies": {
+    "@swc/cli": "^0.8.1",
+    "@swc/core": "^1.15.46",
+    "@swc/helpers": "^0.5.23",
     "turbo": "^2.1.0",
     "typescript": "^5.5.0"
   },
+  "packageManager": "pnpm@11.15.1",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"

@@ -11,6 +11,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { GameGateway } from './gateways/game.gateway';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PrismaModule } from './common/prisma.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AppService } from './app.service';
       isGlobal: true,
       envFilePath: ['.env', '.env.local'],
     }),
+    PrismaModule,
     AuthModule,
     UsersModule,
     GamesModule,

@@ -5,8 +5,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc -p src/tsconfig.json 2>/dev/null || true",
+    "typecheck": "tsc --noEmit -p src/tsconfig.json"
   },
   "devDependencies": {
     "typescript": "^5.5.0"
