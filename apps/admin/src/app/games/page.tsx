@@ -2,12 +2,45 @@
 
 import React from 'react';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
+import { adminApi } from '../../lib/api';
 import { Gamepad2, TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import GameTable from '../../components/GameTable';
 
 export default function GamesPage() {
   const { isAuthenticated, isLoading } = useAdminAuth();
+  const [stats, setStats] = React.useState({ total: 0, totalBets: 0, avgRtp: 0 });
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchData = async () => {
+      try {
+        const [gamesRes, dashboardRes] = await Promise.all([
+          adminApi.games.list({ limit: 100 }),
+          adminApi.dashboard.getStats(),
+        ]);
+
+        const games = gamesRes.data.games || [];
+        const avgRtp = games.length > 0
+          ? games.reduce((sum: number, g: any) => sum + Number(g.rtp || 0), 0) / games.length
+          : 0;
+
+        setStats({
+          total: games.length,
+          totalBets: Number(dashboardRes.data.bets?.today || 0),
+          avgRtp: Math.round(avgRtp * 10) / 10,
+        });
+      } catch (err) {
+        console.error('Failed to fetch game stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -45,29 +78,29 @@ export default function GamesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatsCard
           title="Total Games"
-          value="7"
+          value={stats.total.toLocaleString()}
           change={0}
           icon={<Gamepad2 className="w-5 h-5" />}
           color="purple"
         />
         <StatsCard
-          title="Total Bets (24h)"
-          value="834,000"
-          change={15.2}
+          title="Total Bets"
+          value={stats.totalBets.toLocaleString()}
+          change={0}
           icon={<BarChart3 className="w-5 h-5" />}
           color="amber"
         />
         <StatsCard
-          title="Total Wagered (24h)"
-          value="2,325,000"
-          change={12.8}
+          title="Total Wagered"
+          value={`$${stats.totalBets.toLocaleString()}`}
+          change={0}
           icon={<DollarSign className="w-5 h-5" />}
           color="green"
         />
         <StatsCard
           title="Avg RTP"
-          value="97.5%"
-          change={0.3}
+          value={`${stats.avgRtp}%`}
+          change={0}
           icon={<TrendingUp className="w-5 h-5" />}
           color="blue"
         />
