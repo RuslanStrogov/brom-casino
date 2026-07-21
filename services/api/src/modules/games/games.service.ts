@@ -3,6 +3,7 @@ import { PrismaService } from '../../common/services/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { GameCategory, Volatility, PaginationMeta, ProvablyFairData } from '@brom-casino/shared';
 import { GameProvider } from './providers/base.provider';
+import { PragmaticPlayProvider } from './providers/pragmatic-play.provider';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -11,6 +12,7 @@ export class GamesService {
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => WalletService))
     private readonly walletService: WalletService,
+    @Inject(PragmaticPlayProvider)
     private readonly pragmaticPlayProvider: GameProvider,
   ) {}
 

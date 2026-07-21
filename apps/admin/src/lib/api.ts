@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.brom-casino.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 const API_SECRET_KEY = process.env.API_SECRET_KEY || '';
 
 // Create axios instance

@@ -1,9 +1,10 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../common/services/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { TransactionStatus, PaginationMeta, MIN_DEPOSIT, MAX_DEPOSIT, MIN_WITHDRAWAL, MAX_WITHDRAWAL } from '@brom-casino/shared';
 import { PaymentProvider } from './providers/base.psp';
+import { CryptomusPsp } from './providers/cryptomus.psp';
 
 @Injectable()
 export class PaymentsService {
@@ -14,6 +15,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
     private readonly configService: ConfigService,
+    @Inject(CryptomusPsp)
     private readonly cryptomusPsp: PaymentProvider,
   ) {
     this.providers.set('cryptomus', cryptomusPsp);

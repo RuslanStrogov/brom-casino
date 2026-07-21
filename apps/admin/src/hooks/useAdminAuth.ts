@@ -38,7 +38,7 @@ function useAdminAuthStandalone() {
 
   const checkAuth = useCallback(async () => {
     try {
-      const response = await api.get('/admin/auth/me');
+      const response = await api.get('/auth/me');
       setAdmin(response.data.admin);
     } catch {
       // Check for stored token
@@ -64,7 +64,7 @@ function useAdminAuthStandalone() {
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await api.post('/admin/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password });
       const { admin: adminData, token } = response.data;
 
       if (typeof window !== 'undefined') {
@@ -104,7 +104,7 @@ function useAdminAuthStandalone() {
 
   const logout = useCallback(async () => {
     try {
-      await api.post('/admin/auth/logout');
+      await api.post('/auth/logout');
     } catch {
       // Ignore logout errors
     } finally {
