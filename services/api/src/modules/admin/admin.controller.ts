@@ -139,4 +139,18 @@ export class AdminController {
   async getGameReport() {
     return this.adminService.getGameReport();
   }
+
+  // Bonuses
+  @Get('bonuses')
+  @ApiOperation({ summary: 'List all bonuses' })
+  async listBonuses() {
+    return this.adminService.listBonuses();
+  }
+
+  // KYC
+  @Get('kyc')
+  @ApiOperation({ summary: 'List KYC verifications' })
+  async listKyc() {
+    return this.adminService.listKycVerifications();
+  }
 }

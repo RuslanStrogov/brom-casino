@@ -387,4 +387,38 @@ export class AdminService {
         : 0,
     }));
   }
+
+  async listBonuses() {
+    const bonuses = await this.prisma.bonus.findMany({
+      include: {
+        _count: { select: { userBonuses: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return bonuses.map((b) => ({
+      id: b.id,
+      name: b.name,
+      description: b.description,
+      type: b.type,
+      status: b.status,
+      amount: b.amount,
+      maxAmount: b.maxAmount,
+      freeSpins: b.freeSpins,
+      wageringRequirement: b.wageringRequirement,
+      activeUsers: b._count.userBonuses,
+      createdAt: b.createdAt,
+    }));
+  }
+
+  async listKycVerifications() {
+    return this.prisma.kycVerification.findMany({
+      include: {
+        user: {
+          select: { id: true, email: true, username: true, status: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

@@ -106,7 +106,19 @@ export const adminApi = {
   reports: {
     getRevenue: (params?: { from?: string; to?: string }) =>
       api.get('/admin/reports/revenue', { params }),
+    getFinancial: (params?: { from?: string; to?: string }) =>
+      api.get('/admin/reports/revenue', { params }),
     getGames: () => api.get('/admin/reports/games'),
+  },
+
+  // Bonuses
+  bonuses: {
+    list: () => api.get('/admin/bonuses'),
+  },
+
+  // KYC
+  kyc: {
+    list: () => api.get('/admin/kyc'),
   },
 };
 

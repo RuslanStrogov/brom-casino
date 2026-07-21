@@ -1,13 +1,27 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
-import { Shield, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { adminApi } from '../../lib/api';
+import { Shield, Users, Clock, AlertTriangle } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import KycQueue from '../../components/KycQueue';
 
 export default function KycPage() {
   const { isAuthenticated, isLoading } = useAdminAuth();
+  const [stats, setStats] = useState({ pending: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const dashRes = await adminApi.dashboard.getStats();
+        setStats({ pending: dashRes.data.pendingKyc || 0 });
+      } catch (err) {
+        console.error('Failed to fetch KYC stats:', err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   if (isLoading) {
     return (
@@ -39,29 +53,25 @@ export default function KycPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatsCard
           title="Pending Reviews"
-          value="5"
-          change={33.3}
+          value={String(stats.pending)}
           icon={<Clock className="w-5 h-5" />}
           color="amber"
         />
         <StatsCard
           title="Approved (24h)"
-          value="12"
-          change={20.0}
-          icon={<CheckCircle className="w-5 h-5" />}
+          value="—"
+          icon={<Shield className="w-5 h-5" />}
           color="green"
         />
         <StatsCard
           title="Rejected (24h)"
-          value="2"
-          change={-50.0}
+          value="—"
           icon={<AlertTriangle className="w-5 h-5" />}
           color="red"
         />
         <StatsCard
           title="Verified Users"
-          value="892"
-          change={15.1}
+          value="—"
           icon={<Users className="w-5 h-5" />}
           color="blue"
         />

@@ -1,13 +1,35 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
+import { adminApi } from '../../lib/api';
 import { Gift, Percent, Users, DollarSign } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import BonusManager from '../../components/BonusManager';
 
 export default function BonusesPage() {
   const { isAuthenticated, isLoading } = useAdminAuth();
+  const [stats, setStats] = useState({ active: 0, claimed: 0, avgWagering: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await adminApi.bonuses.list();
+        const data = Array.isArray(res.data) ? res.data : [];
+        const active = data.filter((b: any) => b.status === 'ACTIVE').length;
+        setStats({
+          active,
+          claimed: data.reduce((s: number, b: any) => s + (b.activeUsers || 0), 0),
+          avgWagering: data.length > 0
+            ? Math.round(data.reduce((s: number, b: any) => s + (b.wageringRequirement || 20), 0) / data.length)
+            : 0,
+        });
+      } catch (err) {
+        console.error('Failed to fetch bonus stats:', err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   if (isLoading) {
     return (
@@ -39,29 +61,26 @@ export default function BonusesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatsCard
           title="Active Bonuses"
-          value="4"
-          change={0}
+          value={String(stats.active)}
           icon={<Gift className="w-5 h-5" />}
           color="amber"
         />
         <StatsCard
-          title="Total Claimed"
-          value="1,647"
-          change={23.4}
+          title="Active Users"
+          value={String(stats.claimed)}
           icon={<Users className="w-5 h-5" />}
           color="green"
         />
         <StatsCard
           title="Avg Wagering"
-          value="21x"
-          change={-3.2}
+          value={`${stats.avgWagering}x`}
           icon={<Percent className="w-5 h-5" />}
           color="blue"
         />
         <StatsCard
-          title="Bonus Value (Active)"
-          value="12,500 TON"
-          change={15.8}
+          title="Total Bonuses"
+          value="From DB"
+          change={0}
           icon={<DollarSign className="w-5 h-5" />}
           color="purple"
         />
