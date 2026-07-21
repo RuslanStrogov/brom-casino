@@ -114,7 +114,7 @@ function useAdminAuthStandalone() {
       }
       delete api.defaults.headers.common['Authorization'];
       setAdmin(null);
-      router.push('/login');
+      router.push('/admin/login');
     }
   }, [router]);
 
@@ -144,7 +144,7 @@ export function useRequireAuth() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push('/admin/login');
     }
   }, [isAuthenticated, isLoading, router]);
 
