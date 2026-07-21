@@ -342,17 +342,13 @@ export default function HomePage() {
                   <div
                     key={game.id}
                     onClick={() => {
-                      if (isAuthenticated) {
-                        setProviderGame({
-                          slug: game.slug,
-                          providerId: game.providerId,
-                          providerName: PROVIDER_META[game.providerId]?.name || game.providerId,
-                          name: game.name,
-                          rtp: game.rtp,
-                        });
-                      } else {
-                        setShowAuth(true);
-                      }
+                      setProviderGame({
+                        slug: game.slug,
+                        providerId: game.providerId,
+                        providerName: PROVIDER_META[game.providerId]?.name || game.providerId,
+                        name: game.name,
+                        rtp: game.rtp,
+                      });
                     }}
                     className="group cursor-pointer glass-card rounded-xl p-5 hover:scale-[1.03] transition-all duration-300 animate-fade-up relative overflow-hidden"
                     style={{ animationDelay: `${idx * 0.03}s` }}

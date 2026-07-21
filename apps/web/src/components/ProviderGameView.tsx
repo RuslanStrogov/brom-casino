@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
+import ErrorModal from './ErrorModal';
 
 interface ProviderGameViewProps {
   gameSlug: string;
@@ -76,8 +77,22 @@ export default function ProviderGameView({
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        // Try demo mode without auth
-        setLaunchUrl(`/api/games/${gameSlug}/launch?mode=demo`);
+        // Demo mode without auth — use public GET endpoint
+        try {
+          const res = await fetch(`/api/games/${gameSlug}/demo`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.launchUrl) {
+              setLaunchUrl(data.launchUrl);
+            } else {
+              setError('Failed to load game. Please sign in.');
+            }
+          } else {
+            setError('Failed to load game. Please sign in.');
+          }
+        } catch {
+          setError('Failed to load game. Please sign in.');
+        }
         setLoading(false);
         return;
       }
@@ -183,21 +198,30 @@ export default function ProviderGameView({
             </div>
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-red-400 mb-4">{error}</p>
-              <button
-                onClick={loadGame}
-                className="px-6 py-2 rounded-lg font-bold"
-                style={{
-                  background: `linear-gradient(135deg, ${neonColor}, ${neonColor}cc)`,
-                  color: '#000',
-                }}
-              >
-                Retry
-              </button>
+          <>
+            <ErrorModal
+              open={true}
+              title="Ошибка загрузки"
+              message={error}
+              onClose={() => setError(null)}
+              onRetry={loadGame}
+            />
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <p className="text-gray-500 mb-2">Ошибка загрузки игры</p>
+                <button
+                  onClick={loadGame}
+                  className="px-6 py-2 rounded-lg font-bold"
+                  style={{
+                    background: `linear-gradient(135deg, ${neonColor}, ${neonColor}cc)`,
+                    color: '#000',
+                  }}
+                >
+                  Повторить
+                </button>
+              </div>
             </div>
-          </div>
+          </>
         ) : launchUrl ? (
           <iframe
             src={launchUrl}
