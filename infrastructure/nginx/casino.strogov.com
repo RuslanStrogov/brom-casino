@@ -12,7 +12,7 @@ upstream brom-casino-api {
 
 server {
     listen 80;
-    server_name casino.strogov.com cas.br-design.ru;
+    server_name casino.strogov.com cas.br-design.ru brombet.ru;
 
     # Certbot ACME challenge
     location /.well-known/acme-challenge/ {
@@ -28,7 +28,7 @@ server {
 server {
     listen 443 ssl;
     http2 on;
-    server_name casino.strogov.com cas.br-design.ru;
+    server_name casino.strogov.com cas.br-design.ru brombet.ru;
 
     ssl_certificate /etc/letsencrypt/live/casino.strogov.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/casino.strogov.com/privkey.pem;
