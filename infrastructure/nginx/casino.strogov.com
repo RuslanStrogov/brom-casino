@@ -66,7 +66,7 @@ server {
         proxy_buffering off;
     }
 
-    # Admin panel
+    # Admin panel — HTML (no cache)
     location /admin {
         proxy_pass http://brom-casino-admin;
         proxy_http_version 1.1;
@@ -78,6 +78,23 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
         proxy_buffering off;
+
+        # Don't cache HTML — always get fresh chunk references
+        location ~* \.html$ {
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            proxy_pass http://brom-casino-admin;
+        }
+    }
+
+    # Admin static assets (Next.js hashed chunks — safe to cache)
+    location /admin/_next/static {
+        proxy_pass http://brom-casino-admin;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        expires 365d;
+        add_header Cache-Control "public, immutable, max-age=31536000";
     }
 
     # API
