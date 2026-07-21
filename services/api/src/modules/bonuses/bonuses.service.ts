@@ -18,9 +18,10 @@ export class BonusesService {
     const bonuses = await this.prisma.bonus.findMany({
       where: {
         status: BonusStatus.ACTIVE,
-        OR: [{ startsAt: null }, { startsAt: { lte: now } }],
-        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
-        OR: [{ maxClaims: null }, { currentClaims: { lt: { path: ['maxClaims'] } } }],
+        AND: [
+          { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+          { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+        ],
       },
       orderBy: { createdAt: 'desc' },
     });

@@ -132,7 +132,7 @@ export const api = {
 
   // ===== Wallet =====
   getBalance: (token: string) =>
-    request<{ balance: number; currency: string; bonusBalance: number }>('/wallet/balance', { token }),
+    request<{ balance: number; currency: string; bonusBalance: number }>('/users/me/balance', { token }),
 
   getTransactions: (token: string, params?: { type?: string; limit?: number; offset?: number }) => {
     const search = new URLSearchParams();
@@ -140,7 +140,7 @@ export const api = {
     if (params?.limit) search.set('limit', String(params.limit));
     if (params?.offset) search.set('offset', String(params.offset));
     const qs = search.toString() ? `?${search.toString()}` : '';
-    return request<{ transactions: Transaction[]; total: number }>(`/wallet/transactions${qs}`, { token });
+    return request<{ transactions: Transaction[]; total: number }>(`/users/me/transactions${qs}`, { token });
   },
 
   // ===== Payments =====

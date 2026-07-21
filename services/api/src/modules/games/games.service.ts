@@ -72,7 +72,7 @@ export class GamesService {
       totalPages: Math.ceil(total / opts.limit),
     };
 
-    return { games, meta };
+    return { games, meta, total };
   }
 
   async getCategories() {
