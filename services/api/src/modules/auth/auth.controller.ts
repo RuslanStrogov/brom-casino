@@ -1,4 +1,5 @@
-import { Controller, Post, Body, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, RefreshTokenDto } from './dto';
@@ -27,6 +28,24 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'User profile returned' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getProfile(@Req() req: any) {
+    const payload = req.user;
+    return {
+      admin: {
+        id: payload.sub,
+        email: payload.email || '',
+        name: payload.email?.split('@')[0] || 'Admin',
+        role: payload.role === 'SUPER_ADMIN' ? 'super_admin' : payload.role?.toLowerCase() || 'admin',
+        permissions: ['*'],
+      },
+    };
   }
 
   @Public()
