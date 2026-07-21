@@ -45,8 +45,8 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Redirect to login
-      if (typeof window !== 'undefined') {
+      // Redirect to login if not already there
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin/login')) {
         window.location.href = '/admin/login';
       }
     }
