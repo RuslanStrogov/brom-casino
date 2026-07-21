@@ -2,12 +2,37 @@
 
 import React from 'react';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
+import { adminApi } from '../../lib/api';
 import { ArrowLeftRight, ArrowDownCircle, ArrowUpCircle, Clock } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 import TransactionTable from '../../components/TransactionTable';
 
 export default function TransactionsPage() {
   const { isAuthenticated, isLoading } = useAdminAuth();
+  const [stats, setStats] = React.useState({ deposits: 0, withdrawals: 0, pending: 0 });
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchStats = async () => {
+      try {
+        const res = await adminApi.dashboard.getStats();
+        const data = res.data;
+        setStats({
+          deposits: Number(data.deposits?.today || 0),
+          withdrawals: Number(data.withdrawals?.today || 0),
+          pending: data.withdrawals?.pending || 0,
+        });
+      } catch (err) {
+        console.error('Failed to fetch transaction stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -31,7 +56,7 @@ export default function TransactionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Transactions</h1>
-          <p className="text-gray-400 text-sm mt-1">Monitor deposits, withdrawals, bets, and all financial activity</p>
+          <p className="text-gray-400 text-sm mt-1">Monitor deposits, withdrawals, and financial activity</p>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 hover:border-amber-500/50 transition-colors text-sm">
@@ -45,28 +70,28 @@ export default function TransactionsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatsCard
           title="Total Transactions"
-          value="15,234"
-          change={18.7}
+          value={(stats.deposits + stats.withdrawals).toLocaleString()}
+          change={0}
           icon={<ArrowLeftRight className="w-5 h-5" />}
           color="amber"
         />
         <StatsCard
-          title="Deposits (24h)"
-          value="12,500 TON"
-          change={22.3}
+          title="Deposits"
+          value={`$${stats.deposits.toLocaleString()}`}
+          change={0}
           icon={<ArrowDownCircle className="w-5 h-5" />}
           color="green"
         />
         <StatsCard
-          title="Withdrawals (24h)"
-          value="8,200 TON"
-          change={-5.1}
+          title="Withdrawals"
+          value={`$${stats.withdrawals.toLocaleString()}`}
+          change={0}
           icon={<ArrowUpCircle className="w-5 h-5" />}
           color="red"
         />
         <StatsCard
           title="Pending"
-          value="3"
+          value={stats.pending.toLocaleString()}
           change={0}
           icon={<Clock className="w-5 h-5" />}
           color="blue"
