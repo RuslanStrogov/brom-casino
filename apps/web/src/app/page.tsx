@@ -10,12 +10,13 @@ import DiceGame from '@/components/DiceGame';
 import PlinkoGame from '@/components/PlinkoGame';
 import RouletteGame from '@/components/RouletteGame';
 import BlackjackGame from '@/components/BlackjackGame';
-import PragmaticPlayGame from '@/components/PragmaticPlayGame';
+import ProviderGameView from '@/components/ProviderGameView';
 import { GameCard } from '@/components/GameCard';
 import { AuthModal } from '@/components/AuthModal';
 import { ProvablyFair } from '@/components/ProvablyFair';
+import { api } from '@/lib/api';
 
-const GAMES = [
+const IN_HOUSE_GAMES = [
   { id: 'slots', name: 'Slots', emoji: '🎰', description: 'Classic slot machine with big wins', component: 'slots', color: '#ff2d95' },
   { id: 'crash', name: 'Crash', emoji: '🚀', description: 'Ride the multiplier before it crashes', component: 'crash', color: '#b44aff' },
   { id: 'dice', name: 'Dice', emoji: '🎲', description: 'Predict the roll, win big', component: 'dice', color: '#00d4ff' },
@@ -24,16 +25,48 @@ const GAMES = [
   { id: 'blackjack', name: 'Blackjack', emoji: '🃏', description: 'Beat the dealer to 21', component: 'blackjack', color: '#ffd60a' },
 ];
 
-const PP_GAMES = [
-  { id: 'pp-gates', name: 'Gates of Olympus', emoji: '⚡', provider: 'Pragmatic Play', rtp: 96.5 },
-  { id: 'pp-sweet', name: 'Sweet Bonanza', emoji: '🍬', provider: 'Pragmatic Play', rtp: 96.48 },
-  { id: 'pp-dog', name: 'The Dog House', emoji: '🐕', provider: 'Pragmatic Play', rtp: 96.51 },
-  { id: 'pp-wolf', name: 'Wolf Gold', emoji: '🐺', provider: 'Pragmatic Play', rtp: 96.01 },
-  { id: 'pp-bass', name: 'Big Bass Bonanza', emoji: '🎣', provider: 'Pragmatic Play', rtp: 96.71 },
-  { id: 'pp-roulette', name: 'Mega Roulette Live', emoji: '🎡', provider: 'Pragmatic Play', rtp: 97.0 },
-];
+const PROVIDER_META: Record<string, { name: string; emoji: string }> = {
+  pragmatic: { name: 'Pragmatic Play', emoji: '🎰' },
+  evolution: { name: 'Evolution', emoji: '🎡' },
+  spribe: { name: 'Spribe', emoji: '✈️' },
+  netent: { name: 'NetEnt', emoji: '⭐' },
+  microgaming: { name: 'Microgaming', emoji: '🎮' },
+  playngo: { name: 'Play\'n GO', emoji: '🎲' },
+  yggdrasil: { name: 'Yggdrasil', emoji: '🌳' },
+  hacksaw: { name: 'Hacksaw Gaming', emoji: '🪚' },
+  pushgaming: { name: 'Push Gaming', emoji: '🔥' },
+  redtiger: { name: 'Red Tiger', emoji: '🐯' },
+  playtech: { name: 'Playtech', emoji: '🎯' },
+  relaxgaming: { name: 'Relax Gaming', emoji: '🧘' },
+  truelab: { name: 'TrueLab', emoji: '🔬' },
+  elkstudios: { name: 'ELK Studios', emoji: '🦌' },
+  thunderkick: { name: 'Thunderkick', emoji: '⚡' },
+  nolimitcity: { name: 'Nolimit City', emoji: '🏙️' },
+  slotmill: { name: 'Slotmill', emoji: '⚙️' },
+  bgaming: { name: 'BGaming', emoji: '🎪' },
+};
 
 const CATEGORIES = ['All', 'Slots', 'Table', 'Live', 'Jackpot', 'New'];
+
+interface ApiGame {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  thumbnailUrl: string | null;
+  bannerUrl: string | null;
+  providerId: string;
+  rtp: number | null;
+  volatility: string | null;
+  minBet: number;
+  maxBet: number;
+  isFeatured: boolean;
+  isNew: boolean;
+  isJackpot: boolean;
+  freeSpins: number;
+  demoAvailable: boolean;
+  tags: string[];
+}
 
 export default function HomePage() {
   const { isAuthenticated } = useAuthStore();
@@ -42,10 +75,52 @@ export default function HomePage() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [showAuth, setShowAuth] = useState(false);
   const [showProvablyFair, setShowProvablyFair] = useState(false);
-  const [ppGame, setPpGame] = useState<string | null>(null);
+  const [providerGame, setProviderGame] = useState<{ slug: string; providerId: string; providerName: string; name: string; rtp?: number | null } | null>(null);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeProviderTab, setActiveProviderTab] = useState<string>('pragmatic');
+  const [apiGames, setApiGames] = useState<ApiGame[]>([]);
+  const [loadingGames, setLoadingGames] = useState(true);
+  const [providers, setProviders] = useState<{ id: string; gameCount: number }[]>([]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // Fetch games from API
+  useEffect(() => {
+    const fetchGames = async () => {
+      setLoadingGames(true);
+      try {
+        const token = localStorage.getItem('accessToken');
+        const data = token
+          ? await api.getGames(token, { limit: 50 })
+          : await fetch('/api/games?limit=50').then(r => r.json());
+        
+        setApiGames(data?.games || data || []);
+      } catch (err) {
+        console.error('Failed to fetch games:', err);
+      } finally {
+        setLoadingGames(false);
+      }
+    };
+    fetchGames();
+  }, []);
+
+  // Fetch providers list
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const data = await fetch('/api/games/providers').then(r => r.json());
+        if (Array.isArray(data)) {
+          setProviders(data);
+          if (data.length > 0 && !data.find(p => p.id === activeProviderTab)) {
+            setActiveProviderTab(data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch providers:', err);
+      }
+    };
+    fetchProviders();
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -73,10 +148,9 @@ export default function HomePage() {
     }
   };
 
-  const renderPpGame = () => {
-    if (!ppGame) return null;
-    return <PragmaticPlayGame gameId={ppGame} onClose={() => setPpGame(null)} />;
-  };
+  const providerGames = apiGames.filter(g => g.providerId !== 'in-house');
+  const filteredProviderGames = providerGames.filter(g => g.providerId === activeProviderTab);
+  const inHouseGamesFromApi = apiGames.filter(g => g.providerId === 'in-house');
 
   return (
     <div className="min-h-screen bg-miami-sky">
@@ -89,7 +163,7 @@ export default function HomePage() {
       </div>
 
       {/* ===== HERO SECTION ===== */}
-      {!activeGame && !ppGame && (
+      {!activeGame && !providerGame && (
         <section ref={heroRef} className="relative z-10 min-h-[90vh] flex items-center justify-center overflow-hidden">
           {/* Sunset Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-miami-purple/[0.03] to-transparent" />
@@ -109,7 +183,9 @@ export default function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-up">
               <span className="w-2 h-2 rounded-full bg-miami-cyan animate-neon-pulse" />
-              <span className="text-xs text-miami-cyan font-medium tracking-wider uppercase">Live Casino • 24/7</span>
+              <span className="text-xs text-miami-cyan font-medium tracking-wider uppercase">
+                {providers.length} Providers • 24/7
+              </span>
             </div>
 
             {/* Main Title */}
@@ -123,7 +199,7 @@ export default function HomePage() {
             {/* Subtitle */}
             <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: '0.2s' }}>
               <span className="text-miami-cyan">Provably fair</span> crypto casino with instant payouts, 
-              <span className="text-miami-pink"> best odds</span>, and exclusive games
+              <span className="text-miami-pink"> {apiGames.length}+ games</span>, and exclusive originals
             </p>
 
             {/* CTA Buttons */}
@@ -153,8 +229,8 @@ export default function HomePage() {
             {/* Stats Bar */}
             <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto animate-fade-up" style={{ animationDelay: '0.4s' }}>
               {[
-                { value: '10+', label: 'Games', color: 'text-miami-pink' },
-                { value: '97%', label: 'Max RTP', color: 'text-miami-cyan' },
+                { value: `${apiGames.length}+`, label: 'Games', color: 'text-miami-pink' },
+                { value: `${providers.length}`, label: 'Providers', color: 'text-miami-cyan' },
                 { value: '0s', label: 'Payout Time', color: 'text-miami-purple' },
                 { value: '24/7', label: 'Available', color: 'text-miami-orange' },
               ].map((stat) => (
@@ -196,12 +272,12 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ===== PRAGMATIC PLAY GAME VIEW ===== */}
-      {ppGame && (
+      {/* ===== PROVIDER GAME VIEW ===== */}
+      {providerGame && (
         <section className="relative z-10 py-8 px-4">
           <div className="max-w-4xl mx-auto">
             <button
-              onClick={() => setPpGame(null)}
+              onClick={() => setProviderGame(null)}
               className="mb-6 text-miami-cyan hover:text-miami-cyan/80 transition-colors flex items-center gap-2 group"
             >
               <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,73 +285,149 @@ export default function HomePage() {
               </svg>
               Back to Games
             </button>
-            {renderPpGame()}
+            <ProviderGameView
+              gameSlug={providerGame.slug}
+              providerId={providerGame.providerId}
+              providerName={providerGame.providerName}
+              gameName={providerGame.name}
+              rtp={providerGame.rtp}
+              onClose={() => setProviderGame(null)}
+            />
           </div>
         </section>
       )}
 
-      {/* ===== PRAGMATIC PLAY SECTION ===== */}
-      {!activeGame && !ppGame && (
+      {/* ===== PROVIDER GAMES SECTION ===== */}
+      {!activeGame && !providerGame && (
         <section className="relative z-10 py-16 px-4" id="games">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center gap-4 mb-10">
               <div className="flex-1 h-px bg-gradient-miami opacity-30" />
-              <div className="flex items-center gap-3">
-                <h2 className="text-3xl md:text-4xl font-heading font-bold">
-                  <span className="bg-gradient-miami bg-clip-text text-transparent">Live Casino</span>
-                </h2>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-miami-purple/20 text-miami-purple border border-miami-purple/30 animate-neon-pulse">
-                  Pragmatic Play
-                </span>
-              </div>
+              <h2 className="text-3xl md:text-4xl font-heading font-bold">
+                <span className="bg-gradient-miami bg-clip-text text-transparent">Provider Games</span>
+              </h2>
               <div className="flex-1 h-px bg-gradient-miami opacity-30" />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {PP_GAMES.map((game, idx) => (
-                <div
-                  key={game.id}
-                  onClick={() => {
-                    if (isAuthenticated) setPpGame(game.id);
-                    else setShowAuth(true);
-                  }}
-                  className="group cursor-pointer glass-card rounded-xl p-5 hover:scale-[1.03] transition-all duration-300 animate-fade-up relative overflow-hidden"
-                  style={{ animationDelay: `${idx * 0.05}s` }}
-                >
-                  {/* Hover Glow */}
-                  <div className="absolute inset-0 bg-gradient-miami opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-                  
-                  <div className="relative z-10">
-                    <div className="text-4xl mb-3 text-center group-hover:scale-110 transition-transform duration-300">{game.emoji}</div>
-                    <h3 className="text-sm font-bold text-center text-white group-hover:text-miami-cyan transition-colors">
-                      {game.name}
-                    </h3>
-                    <p className="text-xs text-gray-500 text-center mt-1">{game.provider}</p>
-                    <p className="text-xs text-gray-500 text-center">RTP {game.rtp}%</p>
-                    <div className="mt-3 text-center">
-                      <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-medium bg-miami-pink/20 text-miami-pink border border-miami-pink/30 animate-neon-pulse-fast">
-                        LIVE
-                      </span>
+            {/* Provider Tabs */}
+            <div className="flex flex-wrap justify-center gap-2 mb-10">
+              {providers.map((p) => {
+                const meta = PROVIDER_META[p.id];
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setActiveProviderTab(p.id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                      activeProviderTab === p.id
+                        ? 'bg-gradient-miami text-white shadow-[0_0_15px_rgba(255,45,149,0.2)]'
+                        : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>{meta?.emoji || '🎮'}</span>
+                    <span>{meta?.name || p.id}</span>
+                    <span className="text-xs opacity-60">({p.gameCount})</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Provider Games Grid */}
+            {loadingGames ? (
+              <div className="flex justify-center py-20">
+                <div className="w-12 h-12 border-4 border-miami-pink border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : filteredProviderGames.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {filteredProviderGames.map((game, idx) => (
+                  <div
+                    key={game.id}
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        setProviderGame({
+                          slug: game.slug,
+                          providerId: game.providerId,
+                          providerName: PROVIDER_META[game.providerId]?.name || game.providerId,
+                          name: game.name,
+                          rtp: game.rtp,
+                        });
+                      } else {
+                        setShowAuth(true);
+                      }
+                    }}
+                    className="group cursor-pointer glass-card rounded-xl p-5 hover:scale-[1.03] transition-all duration-300 animate-fade-up relative overflow-hidden"
+                    style={{ animationDelay: `${idx * 0.03}s` }}
+                  >
+                    {/* Hover Glow */}
+                    <div className="absolute inset-0 bg-gradient-miami opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                    
+                    {/* Thumbnail */}
+                    <div className="relative z-10">
+                      {game.thumbnailUrl ? (
+                        <div className="w-full aspect-[4/3] mb-3 rounded-lg overflow-hidden bg-black/30">
+                          <img
+                            src={game.thumbnailUrl}
+                            alt={game.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full aspect-[4/3] mb-3 rounded-lg bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center">
+                          <span className="text-5xl opacity-30 group-hover:scale-125 transition-transform duration-300">
+                            {PROVIDER_META[game.providerId]?.emoji || '🎮'}
+                          </span>
+                        </div>
+                      )}
+                      <h3 className="text-sm font-bold text-center text-white group-hover:text-miami-cyan transition-colors">
+                        {game.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 text-center mt-1">
+                        {PROVIDER_META[game.providerId]?.name || game.providerId}
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-1 mt-2">
+                        {game.rtp && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-cyan/20 text-miami-cyan border border-miami-cyan/30">
+                            RTP {game.rtp}%
+                          </span>
+                        )}
+                        {game.isNew && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-purple/20 text-miami-purple border border-miami-purple/30">
+                            NEW
+                          </span>
+                        )}
+                        {game.isJackpot && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-pink/20 text-miami-pink border border-miami-pink/30 animate-neon-pulse-fast">
+                            JACKPOT
+                          </span>
+                        )}
+                        {game.category === 'live' && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-orange/20 text-miami-orange border border-miami-orange/30">
+                            LIVE
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-10">No games found for this provider</p>
+            )}
           </div>
         </section>
       )}
 
-      {/* ===== FEATURED GAMES SECTION ===== */}
-      {!activeGame && !ppGame && (
+      {/* ===== IN-HOUSE GAMES SECTION ===== */}
+      {!activeGame && !providerGame && (
         <section className="relative z-10 py-16 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <div className="flex-1 h-px bg-gradient-miami opacity-20" />
               <h2 className="text-3xl md:text-4xl font-heading font-bold mb-3">
-                <span className="bg-gradient-miami bg-clip-text text-transparent">Featured Games</span>
+                <span className="bg-gradient-miami bg-clip-text text-transparent">Original Games</span>
               </h2>
               <p className="text-gray-500 max-w-xl mx-auto">
-                Choose your game and start winning in seconds
+                Exclusive provably fair games built for BROM Casino
               </p>
             </div>
 
@@ -297,7 +449,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {GAMES.map((game, idx) => (
+              {IN_HOUSE_GAMES.map((game, idx) => (
                 <div
                   key={game.id}
                   style={{ animationDelay: `${idx * 0.1}s` }}
@@ -319,8 +471,28 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* ===== PROVIDER LOGOS BAR ===== */}
+      {!activeGame && !providerGame && (
+        <section className="relative z-10 py-12 px-4">
+          <div className="max-w-5xl mx-auto text-center">
+            <p className="text-xs text-gray-600 uppercase tracking-widest mb-6">Game Providers</p>
+            <div className="flex flex-wrap justify-center gap-6 items-center opacity-40">
+              {providers.map((p) => {
+                const meta = PROVIDER_META[p.id];
+                return (
+                  <div key={p.id} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10">
+                    <span className="text-lg">{meta?.emoji || '🎮'}</span>
+                    <span className="text-sm text-gray-400">{meta?.name || p.id}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ===== WHY CHOOSE US ===== */}
-      {!activeGame && !ppGame && (
+      {!activeGame && !providerGame && (
         <section className="relative z-10 py-20 px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-14">
@@ -349,8 +521,8 @@ export default function HomePage() {
                 },
                 {
                   icon: '🎮',
-                  title: 'Exclusive Games',
-                  desc: 'Original crypto games you won\'t find anywhere else + top providers.',
+                  title: `${providers.length} Game Providers`,
+                  desc: `Top studios including Pragmatic Play, Evolution, NetEnt and ${providers.length - 3} more.`,
                   gradient: 'from-miami-purple/20 to-miami-pink/20',
                   border: 'border-miami-purple/20',
                 },

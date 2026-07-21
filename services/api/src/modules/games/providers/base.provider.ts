@@ -5,6 +5,7 @@ export interface GameLaunchParams {
   currency?: string;
   language?: string;
   returnUrl?: string;
+  providerId?: string;
 }
 
 export interface GameLaunchResult {

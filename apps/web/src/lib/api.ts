@@ -128,7 +128,7 @@ export const api = {
     request<Game>(`/games/${slug}`, { token }),
 
   launchGame: (token: string, slug: string) =>
-    request<{ game: Game; sessionToken: string }>(`/games/${slug}/launch`, { method: 'POST', token }),
+    request<{ sessionToken: string; mode: string; launchUrl?: string; serverHash?: string; clientSeed?: string; game: any }>(`/games/${slug}/launch`, { method: 'POST', token }),
 
   // ===== Wallet =====
   getBalance: (token: string) =>
