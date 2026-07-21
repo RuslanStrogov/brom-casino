@@ -6,7 +6,7 @@ import Header from './Header';
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthPage = pathname.startsWith('/admin/login');
+  const isAuthPage = pathname.startsWith('/login');
 
   if (isAuthPage) {
     return <>{children}</>;
