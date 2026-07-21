@@ -59,112 +59,54 @@ api.interceptors.response.use(
   }
 );
 
-// Admin API methods
+// Admin API methods — mapped to actual backend endpoints
 export const adminApi = {
   // Dashboard
   dashboard: {
-    getStats: () => api.get('/admin/dashboard/stats'),
-    getRevenueChart: (period: 'day' | 'week' | 'month' = 'week') =>
-      api.get('/admin/dashboard/revenue', { params: { period } }),
-    getActivity: () => api.get('/admin/dashboard/activity'),
+    getStats: () => api.get('/admin/dashboard'),
   },
 
   // Users
   users: {
     list: (params?: { page?: number; limit?: number; search?: string; status?: string }) =>
       api.get('/admin/users', { params }),
-    getById: (id: number) => api.get(`/admin/users/${id}`),
-    update: (id: number, data: Record<string, unknown>) =>
+    getById: (id: string) => api.get(`/admin/users/${id}`),
+    update: (id: string, data: Record<string, unknown>) =>
       api.patch(`/admin/users/${id}`, data),
-    ban: (id: number, reason: string) =>
-      api.post(`/admin/users/${id}/ban`, { reason }),
-    unban: (id: number) => api.post(`/admin/users/${id}/unban`),
-    suspend: (id: number, duration: number, reason: string) =>
-      api.post(`/admin/users/${id}/suspend`, { duration, reason }),
-    getTransactions: (id: number) => api.get(`/admin/users/${id}/transactions`),
-    getGameHistory: (id: number) => api.get(`/admin/users/${id}/game-history`),
-    adjustBalance: (id: number, amount: number, reason: string) =>
-      api.post(`/admin/users/${id}/adjust-balance`, { amount, reason }),
+    adjustBalance: (id: string, amount: number, reason: string) =>
+      api.patch(`/admin/users/${id}/balance`, { amount: String(amount), reason, type: 'credit' }),
   },
 
   // Games
   games: {
-    list: () => api.get('/admin/games'),
+    list: (params?: { page?: number; limit?: number }) =>
+      api.get('/admin/games', { params }),
     getById: (id: string) => api.get(`/admin/games/${id}`),
     update: (id: string, data: Record<string, unknown>) =>
       api.patch(`/admin/games/${id}`, data),
-    create: (data: Record<string, unknown>) => api.post('/admin/games', data),
-    delete: (id: string) => api.delete(`/admin/games/${id}`),
-    getStats: (id: string) => api.get(`/admin/games/${id}/stats`),
-    setRtp: (id: string, rtp: number) =>
-      api.post(`/admin/games/${id}/rtp`, { rtp }),
+    sync: () => api.post('/admin/games/sync'),
   },
 
-  // Transactions
+  // Transactions (via deposits/withdrawals endpoints)
   transactions: {
-    list: (params?: { page?: number; limit?: number; type?: string; status?: string }) =>
-      api.get('/admin/transactions', { params }),
-    getById: (id: string) => api.get(`/admin/transactions/${id}`),
-    approveWithdrawal: (id: string) =>
-      api.post(`/admin/transactions/${id}/approve`),
-    rejectWithdrawal: (id: string, reason: string) =>
-      api.post(`/admin/transactions/${id}/reject`, { reason }),
-    processDeposit: (id: string) =>
-      api.post(`/admin/transactions/${id}/process`),
+    list: () => api.get('/admin/deposits/pending'), // simplified — returns pending deposits
+    getPendingDeposits: () => api.get('/admin/deposits/pending'),
+    getPendingWithdrawals: () => api.get('/admin/withdrawals/pending'),
+    processWithdrawal: (id: string, action: 'approve' | 'reject', notes?: string) =>
+      api.post(`/admin/withdrawals/${id}/process`, { action, notes }),
   },
 
-  // Bonuses
-  bonuses: {
-    list: () => api.get('/admin/bonuses'),
-    create: (data: Record<string, unknown>) => api.post('/admin/bonuses', data),
-    update: (id: string, data: Record<string, unknown>) =>
-      api.patch(`/admin/bonuses/${id}`, data),
-    delete: (id: string) => api.delete(`/admin/bonuses/${id}`),
-    toggle: (id: string) => api.post(`/admin/bonuses/${id}/toggle`),
-    getClaims: (id: string) => api.get(`/admin/bonuses/${id}/claims`),
-  },
-
-  // KYC
-  kyc: {
-    list: (params?: { status?: string; risk?: string }) =>
-      api.get('/admin/kyc', { params }),
-    getById: (id: string) => api.get(`/admin/kyc/${id}`),
-    approve: (id: string) => api.post(`/admin/kyc/${id}/approve`),
-    reject: (id: string, reason: string) =>
-      api.post(`/admin/kyc/${id}/reject`, { reason }),
-    requestMoreInfo: (id: string, message: string) =>
-      api.post(`/admin/kyc/${id}/request-info`, { message }),
-  },
-
-  // Wallets
-  wallets: {
-    getHotWallet: () => api.get('/admin/wallets/hot'),
-    getColdWallet: () => api.get('/admin/wallets/cold'),
-    getBalance: () => api.get('/admin/wallets/balance'),
-    transfer: (data: { from: string; to: string; amount: number }) =>
-      api.post('/admin/wallets/transfer', data),
-    getPendingWithdrawals: () => api.get('/admin/wallets/pending-withdrawals'),
+  // Audit logs
+  audit: {
+    list: (params?: { page?: number; limit?: number; action?: string; userId?: string }) =>
+      api.get('/admin/audit-logs', { params }),
   },
 
   // Reports
   reports: {
-    getFinancial: (params: { from: string; to: string }) =>
-      api.get('/admin/reports/financial', { params }),
-    getUserActivity: (params: { from: string; to: string }) =>
-      api.get('/admin/reports/user-activity', { params }),
-    getGamePerformance: (params: { from: string; to: string }) =>
-      api.get('/admin/reports/game-performance', { params }),
-    export: (type: string, params: Record<string, string>) =>
-      api.get(`/admin/reports/export/${type}`, { params, responseType: 'blob' }),
-  },
-
-  // Settings
-  settings: {
-    get: () => api.get('/admin/settings'),
-    update: (data: Record<string, unknown>) => api.patch('/admin/settings', data),
-    getGameSettings: () => api.get('/admin/settings/games'),
-    updateGameSettings: (data: Record<string, unknown>) =>
-      api.patch('/admin/settings/games', data),
+    getRevenue: (params?: { from?: string; to?: string }) =>
+      api.get('/admin/reports/revenue', { params }),
+    getGames: () => api.get('/admin/reports/games'),
   },
 };
 

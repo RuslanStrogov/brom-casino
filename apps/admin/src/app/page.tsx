@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useAdminAuth } from '../hooks/useAdminAuth';
+import { adminApi } from '../lib/api';
 import StatsCard from '../components/StatsCard';
 import UserTable from '../components/UserTable';
 import TransactionTable from '../components/TransactionTable';
@@ -19,32 +20,67 @@ import {
   Wallet,
 } from 'lucide-react';
 
+interface DashboardStats {
+  totalUsers: number;
+  activeUsers: number;
+  newUsersToday: number;
+  totalDeposits: number;
+  totalWithdrawals: number;
+  pendingWithdrawals: number;
+  totalBets: number;
+  grossGamingRevenue: number;
+  pendingKyc: number;
+}
+
 export default function DashboardPage() {
   const { isAuthenticated, isLoading } = useAdminAuth();
-  const [stats, setStats] = React.useState({
-    totalRevenue: 125430.5,
-    totalUsers: 15847,
-    activeUsers: 3241,
-    totalBets: 892341,
-    totalWagered: 2450000.0,
-    grossProfit: 73500.0,
-    houseEdge: 3.0,
-    avgBetSize: 2.75,
-    pendingWithdrawals: 45,
-    pendingWithdrawalAmount: 12500.0,
-    newUsersToday: 127,
-    revenueToday: 4230.5,
-  });
+  const [stats, setStats] = React.useState<DashboardStats | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const [revenueChart, setRevenueChart] = React.useState([
-    { date: 'Mon', revenue: 3200, bets: 1200 },
-    { date: 'Tue', revenue: 4100, bets: 1500 },
-    { date: 'Wed', revenue: 3800, bets: 1400 },
-    { date: 'Thu', revenue: 5200, bets: 1800 },
-    { date: 'Fri', revenue: 6100, bets: 2100 },
-    { date: 'Sat', revenue: 7500, bets: 2500 },
-    { date: 'Sun', revenue: 6800, bets: 2300 },
-  ]);
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const res = await adminApi.dashboard.getStats();
+        const data = res.data;
+        
+        setStats({
+          totalUsers: data.users.total,
+          activeUsers: data.users.active,
+          newUsersToday: data.users.newToday,
+          totalDeposits: Number(data.deposits.today),
+          totalWithdrawals: Number(data.withdrawals.today),
+          pendingWithdrawals: data.withdrawals.pending,
+          totalBets: Number(data.bets.today),
+          grossGamingRevenue: data.grossGamingRevenue,
+          pendingKyc: data.pendingKyc,
+        });
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch dashboard stats:', err);
+        // Fallback: show zeroes instead of mock data
+        setStats({
+          totalUsers: 0,
+          activeUsers: 0,
+          newUsersToday: 0,
+          totalDeposits: 0,
+          totalWithdrawals: 0,
+          pendingWithdrawals: 0,
+          totalBets: 0,
+          grossGamingRevenue: 0,
+          pendingKyc: 0,
+        });
+        setError('Failed to load stats');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -81,37 +117,43 @@ export default function DashboardPage() {
           <Activity className="w-4 h-4 text-green-400" />
           <span>Live</span>
           <span className="text-gray-600">•</span>
-          <span>Last updated: just now</span>
+          <span>{loading ? 'Loading...' : 'Updated live'}</span>
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-900/30 border border-red-800 rounded-xl p-4 text-red-400 text-sm">
+          {error} — showing zero values
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="Total Revenue"
-          value={`$${stats.totalRevenue.toLocaleString()}`}
-          change={12.5}
+          title="Total Deposits"
+          value={`$${(stats?.totalDeposits ?? 0).toLocaleString()}`}
+          change={0}
           icon={<DollarSign className="w-5 h-5" />}
           color="amber"
         />
         <StatsCard
           title="Total Users"
-          value={stats.totalUsers.toLocaleString()}
-          change={8.2}
+          value={(stats?.totalUsers ?? 0).toLocaleString()}
+          change={0}
           icon={<Users className="w-5 h-5" />}
           color="blue"
         />
         <StatsCard
           title="Active Users"
-          value={stats.activeUsers.toLocaleString()}
-          change={-2.1}
+          value={(stats?.activeUsers ?? 0).toLocaleString()}
+          change={0}
           icon={<Activity className="w-5 h-5" />}
           color="green"
         />
         <StatsCard
           title="Total Bets"
-          value={stats.totalBets.toLocaleString()}
-          change={15.3}
+          value={(stats?.totalBets ?? 0).toLocaleString()}
+          change={0}
           icon={<Gamepad2 className="w-5 h-5" />}
           color="purple"
         />
@@ -121,24 +163,23 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-400">Total Wagered</span>
+            <span className="text-sm text-gray-400">Total Bets Amount</span>
             <Wallet className="w-4 h-4 text-gray-500" />
           </div>
-          <p className="text-2xl font-bold">{stats.totalWagered.toLocaleString()} TON</p>
-          <div className="flex items-center gap-1 mt-1 text-green-400 text-sm">
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>+18.2% vs last week</span>
+          <p className="text-2xl font-bold">${(stats?.totalBets ?? 0).toLocaleString()}</p>
+          <div className="flex items-center gap-1 mt-1 text-gray-400 text-sm">
+            <span>Today</span>
           </div>
         </div>
 
         <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-400">Gross Profit</span>
+            <span className="text-sm text-gray-400">Gross Gaming Revenue</span>
             <TrendingUp className="w-4 h-4 text-gray-500" />
           </div>
-          <p className="text-2xl font-bold text-green-400">${stats.grossProfit.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-green-400">${(stats?.grossGamingRevenue ?? 0).toLocaleString()}</p>
           <div className="flex items-center gap-1 mt-1 text-gray-400 text-sm">
-            <span>House edge: {stats.houseEdge}%</span>
+            <span>This month</span>
           </div>
         </div>
 
@@ -147,31 +188,35 @@ export default function DashboardPage() {
             <span className="text-sm text-gray-400">Pending Withdrawals</span>
             <ArrowDownRight className="w-4 h-4 text-gray-500" />
           </div>
-          <p className="text-2xl font-bold text-yellow-400">{stats.pendingWithdrawals}</p>
+          <p className="text-2xl font-bold text-yellow-400">{stats?.pendingWithdrawals ?? 0}</p>
           <div className="flex items-center gap-1 mt-1 text-gray-400 text-sm">
-            <span>{stats.pendingWithdrawalAmount.toLocaleString()} TON</span>
+            <span>Awaiting approval</span>
           </div>
         </div>
       </div>
 
-      {/* Revenue Chart */}
-      <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
-        <h2 className="text-lg font-semibold mb-4">Revenue (Last 7 Days)</h2>
-        <div className="flex items-end gap-3 h-48">
-          {revenueChart.map((day, i) => {
-            const maxRevenue = Math.max(...revenueChart.map(d => d.revenue));
-            const height = (day.revenue / maxRevenue) * 100;
-            return (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-xs text-gray-400">${(day.revenue / 1000).toFixed(1)}k</span>
-                <div
-                  className="w-full bg-gradient-to-t from-amber-600 to-amber-400 rounded-t-md transition-all hover:from-amber-500 hover:to-amber-300"
-                  style={{ height: `${height}%` }}
-                />
-                <span className="text-xs text-gray-500">{day.date}</span>
-              </div>
-            );
-          })}
+      {/* KYC & New Users Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-gray-400">New Users Today</span>
+            <Users className="w-4 h-4 text-gray-500" />
+          </div>
+          <p className="text-2xl font-bold">{stats?.newUsersToday ?? 0}</p>
+          <div className="flex items-center gap-1 mt-1 text-gray-400 text-sm">
+            <span>Registered today</span>
+          </div>
+        </div>
+
+        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-gray-400">Pending KYC</span>
+            <Activity className="w-4 h-4 text-gray-500" />
+          </div>
+          <p className="text-2xl font-bold text-amber-400">{stats?.pendingKyc ?? 0}</p>
+          <div className="flex items-center gap-1 mt-1 text-gray-400 text-sm">
+            <span>Awaiting verification</span>
+          </div>
         </div>
       </div>
 
