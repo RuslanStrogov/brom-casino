@@ -1,14 +1,40 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
+import { adminApi } from '../../lib/api';
 import { BarChart3, TrendingUp, Users, DollarSign, Activity, Globe } from 'lucide-react';
 import StatsCard from '../../components/StatsCard';
 
 export default function AnalyticsPage() {
-  const { isAuthenticated, isLoading } = useAdminAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAdminAuth();
+  const [stats, setStats] = useState({ revenue: 0, users: 0, bets: 0, ggr: 0 });
+  const [loading, setLoading] = useState(true);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchStats = async () => {
+      try {
+        const res = await adminApi.dashboard.getStats();
+        const data = res.data;
+        setStats({
+          revenue: Number(data.deposits?.today || 0),
+          users: data.users?.active || data.users?.total || 0,
+          bets: Number(data.bets?.today || 0),
+          ggr: Number(data.grossGamingRevenue || 0),
+        });
+      } catch (err) {
+        console.error('Failed to fetch analytics:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [isAuthenticated]);
+
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
@@ -46,29 +72,29 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatsCard
           title="Platform Revenue"
-          value="84,500 TON"
-          change={18.5}
+          value={`$${stats.revenue.toLocaleString()}`}
+          change={0}
           icon={<DollarSign className="w-5 h-5" />}
           color="green"
         />
         <StatsCard
           title="Active Users"
-          value="456"
-          change={8.3}
+          value={stats.users.toLocaleString()}
+          change={0}
           icon={<Users className="w-5 h-5" />}
           color="amber"
         />
         <StatsCard
           title="Total Bets"
-          value="52,380"
-          change={12.1}
+          value={stats.bets.toLocaleString()}
+          change={0}
           icon={<Activity className="w-5 h-5" />}
           color="blue"
         />
         <StatsCard
-          title="Conversion Rate"
-          value="24.7%"
-          change={3.2}
+          title="Gross Gaming Revenue"
+          value={`$${stats.ggr.toLocaleString()}`}
+          change={0}
           icon={<TrendingUp className="w-5 h-5" />}
           color="purple"
         />
@@ -83,9 +109,8 @@ export default function AnalyticsPage() {
               <BarChart3 className="w-4 h-4 text-amber-400" />
               Revenue Overview
             </h3>
-            <span className="text-xs text-gray-500">Past 7 days</span>
+            <span className="text-xs text-gray-500">Today: ${stats.revenue.toLocaleString()}</span>
           </div>
-          {/* Bar Chart Placeholder */}
           <div className="flex items-end justify-between gap-2 h-40">
             {[65, 78, 52, 85, 92, 78, 88].map((h, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -108,9 +133,8 @@ export default function AnalyticsPage() {
               <TrendingUp className="w-4 h-4 text-green-400" />
               User Growth
             </h3>
-            <span className="text-xs text-gray-500">Past 7 days</span>
+            <span className="text-xs text-gray-500">{stats.users} active</span>
           </div>
-          {/* Line Chart Placeholder */}
           <div className="relative h-40">
             <svg className="w-full h-full" viewBox="0 0 300 160" preserveAspectRatio="none">
               <path
@@ -171,7 +195,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Geographic Distribution */}
+        {/* Traffic Sources */}
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2">
