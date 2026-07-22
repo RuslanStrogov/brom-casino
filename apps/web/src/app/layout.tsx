@@ -6,6 +6,7 @@ import { AuthProvider } from '@/providers/AuthProvider';
 import { GameProvider } from '@/providers/GameProvider';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { ChatWidget } from '@/components/ChatWidget';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
@@ -71,6 +72,9 @@ export default function RootLayout({
         <noscript>
           <img src="https://mc.yandex.ru/watch/110928475" style={{position:'absolute',left:-9999}} alt="" />
         </noscript>
+
+        {/* Chat Widget */}
+        <ChatWidget />
       </body>
     </html>
   );
