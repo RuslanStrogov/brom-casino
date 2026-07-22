@@ -131,30 +131,58 @@ export const api = {
     request<{ sessionToken: string; mode: string; launchUrl?: string; serverHash?: string; clientSeed?: string; game: any }>(`/games/${slug}/launch`, { method: 'POST', token }),
 
   // ===== Wallet =====
-  getBalance: (token: string) =>
-    request<{ balance: number; currency: string; bonusBalance: number }>('/users/me/balance', { token }),
+  getWallet: (token: string) =>
+    request<{ id: string; userId: string; balance: number; bonusBalance: number; currency: string; createdAt: string }>('/wallet', { token }),
 
-  getTransactions: (token: string, params?: { type?: string; limit?: number; offset?: number }) => {
+  getBalance: (token: string) =>
+    request<{ balance: number; currency: string; bonusBalance: number }>('/wallet', { token }).then(w => ({
+      balance: Number(w.balance) || 0,
+      currency: w.currency,
+      bonusBalance: Number(w.bonusBalance) || 0,
+    })),
+
+  getTransactions: (token: string, params?: { type?: string; page?: number; limit?: number }) => {
     const search = new URLSearchParams();
     if (params?.type) search.set('type', params.type);
+    if (params?.page) search.set('page', String(params.page));
     if (params?.limit) search.set('limit', String(params.limit));
-    if (params?.offset) search.set('offset', String(params.offset));
     const qs = search.toString() ? `?${search.toString()}` : '';
-    return request<{ transactions: Transaction[]; total: number }>(`/users/me/transactions${qs}`, { token });
+    return request<{ transactions: Transaction[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/wallet/transactions${qs}`, { token });
   },
 
+  transferBalance: (token: string, from: 'real' | 'bonus', to: 'real' | 'bonus', amount: string) =>
+    request<{ balance: number; bonusBalance: number }>('/wallet/transfer', {
+      method: 'POST', token, body: { from, to, amount },
+    }),
+
   // ===== Payments =====
-  createDeposit: (token: string, currency: string, amount?: number) =>
-    request<{ invoiceId: string; address: string; amount: number; currency: string; expiresAt: string }>(
-      '/payments/deposit',
-      { method: 'POST', token, body: { currency, amount } }
+  createDeposit: (token: string, amount: string, currency?: string, paymentMethod?: string) =>
+    request<{ depositId: string; amount: number; currency: string; paymentUrl: string; expiresAt: string; status: string }>(
+      '/payments/deposits',
+      { method: 'POST', token, body: { amount, currency, paymentMethod } }
     ),
 
-  requestWithdrawal: (token: string, currency: string, amount: number, address: string) =>
-    request<{ id: string; status: string; fee: number }>(
-      '/payments/withdraw',
-      { method: 'POST', token, body: { currency, amount, address } }
+  getDeposits: (token: string, params?: { page?: number; limit?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.page) search.set('page', String(params.page));
+    if (params?.limit) search.set('limit', String(params.limit));
+    const qs = search.toString() ? `?${search.toString()}` : '';
+    return request<{ deposits: any[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/payments/deposits${qs}`, { token });
+  },
+
+  requestWithdrawal: (token: string, amount: string, destination: string, currency?: string, paymentMethod?: string) =>
+    request<{ withdrawalId: string; amount: number; currency: string; destination: string; status: string; estimatedArrival: string }>(
+      '/payments/withdrawals',
+      { method: 'POST', token, body: { amount, destination, currency, paymentMethod } }
     ),
+
+  getWithdrawals: (token: string, params?: { page?: number; limit?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.page) search.set('page', String(params.page));
+    if (params?.limit) search.set('limit', String(params.limit));
+    const qs = search.toString() ? `?${search.toString()}` : '';
+    return request<{ withdrawals: any[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/payments/withdrawals${qs}`, { token });
+  },
 
   // ===== Bonuses =====
   getBonuses: (token: string) =>

@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 interface BalanceWidgetProps {
   balance: number;
   showActions?: boolean;
@@ -7,7 +9,7 @@ interface BalanceWidgetProps {
 
 export function BalanceWidget({ balance, showActions = false }: BalanceWidgetProps) {
   return (
-    <div className="flex items-center gap-3 bg-casino-card border border-casino-border rounded-xl px-4 py-2">
+    <Link href="/wallet" className="flex items-center gap-3 bg-casino-card border border-casino-border rounded-xl px-4 py-2 hover:border-miami-pink/30 transition-all group cursor-pointer">
       <div className="flex items-center gap-2">
         <span className="text-lg">💰</span>
         <div className="flex flex-col">
@@ -38,6 +40,6 @@ export function BalanceWidget({ balance, showActions = false }: BalanceWidgetPro
           </button>
         </div>
       )}
-    </div>
+    </Link>
   );
 }
