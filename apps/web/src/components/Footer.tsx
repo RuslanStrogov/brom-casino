@@ -42,7 +42,7 @@ export function Footer() {
               {['Slots', 'Crash', 'Dice', 'Roulette', 'Blackjack', 'Plinko'].map((game) => (
                 <li key={game}>
                   <Link
-                    href={`/${game.toLowerCase()}`}
+                    href="/#games"
                     className="text-sm text-gray-500 hover:text-miami-cyan transition-colors duration-200"
                   >
                     {game}
