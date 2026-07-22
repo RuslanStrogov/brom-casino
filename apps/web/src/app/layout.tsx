@@ -1,16 +1,37 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Playfair_Display, Outfit } from 'next/font/google';
+import localFont from 'next/font/local';
 import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { GameProvider } from '@/providers/GameProvider';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { ChatWidget } from '@/components/ChatWidget';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
+const inter = localFont({
+  src: [
+    { path: './fonts/Inter.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/Inter-Variable.woff2', weight: '100 900', style: 'normal' },
+  ],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const playfair = localFont({
+  src: [
+    { path: './fonts/PlayfairDisplay.woff2', weight: '400 900', style: 'normal' },
+  ],
+  variable: '--font-playfair',
+  display: 'swap',
+});
+
+const outfit = localFont({
+  src: [
+    { path: './fonts/Outfit.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/Outfit-Variable.woff2', weight: '100 900', style: 'normal' },
+  ],
+  variable: '--font-outfit',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Brom Casino - Premium Crypto Casino',
@@ -72,9 +93,6 @@ export default function RootLayout({
         <noscript>
           <img src="https://mc.yandex.ru/watch/110928475" style={{position:'absolute',left:-9999}} alt="" />
         </noscript>
-
-        {/* Chat Widget */}
-        <ChatWidget />
       </body>
     </html>
   );
