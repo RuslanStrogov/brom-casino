@@ -339,18 +339,10 @@ export default function HomePage() {
             ) : filteredProviderGames.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredProviderGames.map((game, idx) => (
-                  <div
+                  <a
                     key={game.id}
-                    onClick={() => {
-                      setProviderGame({
-                        slug: game.slug,
-                        providerId: game.providerId,
-                        providerName: PROVIDER_META[game.providerId]?.name || game.providerId,
-                        name: game.name,
-                        rtp: game.rtp,
-                      });
-                    }}
-                    className="group cursor-pointer glass-card rounded-xl p-5 hover:scale-[1.03] transition-all duration-300 animate-fade-up relative overflow-hidden"
+                    href={`/games/${game.slug}`}
+                    className="group cursor-pointer glass-card rounded-xl p-5 hover:scale-[1.03] transition-all duration-300 animate-fade-up relative overflow-hidden block"
                     style={{ animationDelay: `${idx * 0.03}s` }}
                   >
                     {/* Hover Glow */}
@@ -368,10 +360,23 @@ export default function HomePage() {
                           />
                         </div>
                       ) : (
-                        <div className="w-full aspect-[4/3] mb-3 rounded-lg bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center">
-                          <span className="text-5xl opacity-30 group-hover:scale-125 transition-transform duration-300">
-                            {PROVIDER_META[game.providerId]?.emoji || '🎮'}
-                          </span>
+                        <div className="w-full aspect-[4/3] mb-3 rounded-lg overflow-hidden bg-black/30">
+                          <img
+                            src={`/games/${game.slug}.svg`}
+                            alt={game.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                const fallback = document.createElement('span');
+                                fallback.className = 'text-5xl opacity-30';
+                                fallback.textContent = PROVIDER_META[game.providerId]?.emoji || '🎮';
+                                parent.appendChild(fallback);
+                              }
+                            }}
+                          />
                         </div>
                       )}
                       <h3 className="text-sm font-bold text-center text-white group-hover:text-miami-cyan transition-colors">
@@ -403,7 +408,7 @@ export default function HomePage() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             ) : (
