@@ -132,7 +132,11 @@ export const api = {
 
   // ===== Wallet =====
   getWallet: (token: string) =>
-    request<{ id: string; userId: string; balance: number; bonusBalance: number; currency: string; createdAt: string }>('/wallet', { token }),
+    request<{ id: string; userId: string; balance: number; bonusBalance: number; currency: string; createdAt: string }>('/wallet', { token }).then(w => ({
+      ...w,
+      balance: Number(w.balance) || 0,
+      bonusBalance: Number(w.bonusBalance) || 0,
+    })),
 
   getBalance: (token: string) =>
     request<{ balance: number; currency: string; bonusBalance: number }>('/wallet', { token }).then(w => ({

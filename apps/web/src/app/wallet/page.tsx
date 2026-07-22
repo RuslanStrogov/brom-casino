@@ -162,7 +162,7 @@ export default function WalletPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-miami/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-gradient-miami/10 transition-all" />
             <p className="text-sm text-gray-400 mb-2">Real Balance</p>
             <p className="text-3xl font-bold text-white font-mono">
-              {(wallet?.balance || 0).toFixed(2)}
+              {(Number(wallet?.balance) || 0).toFixed(2)}
             </p>
             <p className="text-xs text-gray-500 mt-1">{wallet?.currency || 'USDT'}</p>
           </div>
@@ -170,7 +170,7 @@ export default function WalletPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-miami-pink/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-miami-pink/10 transition-all" />
             <p className="text-sm text-gray-400 mb-2">Bonus Balance</p>
             <p className="text-3xl font-bold text-casino-gold font-mono">
-              {(wallet?.bonusBalance || 0).toFixed(2)}
+              {(Number(wallet?.bonusBalance) || 0).toFixed(2)}
             </p>
             <p className="text-xs text-gray-500 mt-1">Wagering requirements apply</p>
           </div>
@@ -314,7 +314,7 @@ export default function WalletPage() {
                   <div className="mb-6">
                     <p className="flex items-center gap-2 mb-4 p-3 bg-casino-dark border border-casino-border rounded-xl">
                       <span className="text-sm text-gray-400">Available balance:</span>
-                      <span className="text-white font-mono font-bold">{(wallet?.balance || 0).toFixed(2)} {wallet?.currency || 'USDT'}</span>
+                      <span className="text-white font-mono font-bold">{(Number(wallet?.balance) || 0).toFixed(2)} {wallet?.currency || 'USDT'}</span>
                     </p>
                   </div>
 
@@ -337,7 +337,7 @@ export default function WalletPage() {
                       onClick={() => setWithdrawAmount(String(wallet?.balance || 0))}
                       className="text-xs text-miami-cyan hover:text-miami-cyan/80 mt-1 transition-colors"
                     >
-                      Max: {(wallet?.balance || 0).toFixed(2)} USDT
+                      Max: {(Number(wallet?.balance) || 0).toFixed(2)} USDT
                     </button>
                   </div>
 
