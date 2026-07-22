@@ -395,16 +395,11 @@ export class PragmaticPlayProvider implements GameProvider {
   }
 
   private buildDemoLaunchUrl(externalGameId: string, params: GameLaunchParams): string {
-    const base = this.apiUrl || 'https://pragmatic-play.demo';
+    const base = this.apiUrl || 'https://demogamesfree.pragmaticplay.net';
     const qp = new URLSearchParams({
-      gameId: externalGameId,
-      playerId: params.userId,
-      currency: params.currency || 'USDT',
-      mode: params.mode === 'demo' ? 'fun' : 'real',
-      language: params.language || 'en',
-      lobbyUrl: params.returnUrl || '',
+      gameSymbol: externalGameId,
     });
-    return `${base}/demo/launch?${qp.toString()}`;
+    return `${base}/gs2c/openGame.do?${qp.toString()}`;
   }
 
   private mapCategory(category: string | undefined): string {
