@@ -77,10 +77,12 @@ export default function HomePage() {
   const [showProvablyFair, setShowProvablyFair] = useState(false);
   const [providerGame, setProviderGame] = useState<{ slug: string; providerId: string; providerName: string; name: string; rtp?: number | null } | null>(null);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeProviderCategory, setActiveProviderCategory] = useState('All');
   const [activeProviderTab, setActiveProviderTab] = useState<string>('pragmatic');
   const [apiGames, setApiGames] = useState<ApiGame[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
   const [providers, setProviders] = useState<{ id: string; gameCount: number }[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -149,8 +151,15 @@ export default function HomePage() {
   };
 
   const providerGames = apiGames.filter(g => g.providerId !== 'in-house');
-  const filteredProviderGames = providerGames.filter(g => g.providerId === activeProviderTab);
+  const filteredProviderGames = providerGames.filter(g => {
+    const matchesProvider = g.providerId === activeProviderTab;
+    const matchesCategory = activeProviderCategory === 'All' || g.category === activeProviderCategory;
+    const matchesSearch = !searchQuery || g.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesProvider && matchesCategory && matchesSearch;
+  });
   const inHouseGamesFromApi = apiGames.filter(g => g.providerId === 'in-house');
+
+  const providerCategories = ['All', ...new Set(providerGames.map(g => g.category))];
 
   return (
     <div className="min-h-screen bg-miami-sky">
@@ -310,7 +319,7 @@ export default function HomePage() {
             </div>
 
             {/* Provider Tabs */}
-            <div className="flex flex-wrap justify-center gap-2 mb-10">
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
               {providers.map((p) => {
                 const meta = PROVIDER_META[p.id];
                 return (
@@ -329,6 +338,49 @@ export default function HomePage() {
                   </button>
                 );
               })}
+            </div>
+
+            {/* Category Tabs */}
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {providerCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveProviderCategory(cat)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    activeProviderCategory === cat
+                      ? 'bg-miami-pink/30 text-miami-pink border border-miami-pink/50'
+                      : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-transparent'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div className="max-w-md mx-auto mb-8">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search games..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2.5 pl-10 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-miami-cyan/50 focus:ring-1 focus:ring-miami-cyan/30 transition-all"
+                />
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Provider Games Grid */}
@@ -412,7 +464,11 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-10">No games found for this provider</p>
+              <p className="text-center text-gray-500 py-10">
+                {searchQuery
+                  ? `No games matching "${searchQuery}"`
+                  : `No games found for this category`}
+              </p>
             )}
           </div>
         </section>
