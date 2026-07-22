@@ -15,6 +15,7 @@ import { GameCard } from '@/components/GameCard';
 import { AuthModal } from '@/components/AuthModal';
 import { ProvablyFair } from '@/components/ProvablyFair';
 import { api } from '@/lib/api';
+import { useFavoritesStore, useRecentStore, FavoriteGame } from '@/stores/favoritesStore';
 
 const IN_HOUSE_GAMES = [
   { id: 'slots', name: 'Slots', emoji: '🎰', description: 'Classic slot machine with big wins', component: 'slots', color: '#ff2d95' },
@@ -85,6 +86,8 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLDivElement>(null);
+  const { favorites, toggleFavorite, isFavorite } = useFavoritesStore();
+  const { recents } = useRecentStore();
 
   // Fetch games from API
   useEffect(() => {
@@ -306,6 +309,114 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* ===== FAVORITES & RECENT SECTION ===== */}
+      {!activeGame && !providerGame && (favorites.length > 0 || recents.length > 0) && (
+        <section className="relative z-10 py-12 px-4">
+          <div className="max-w-6xl mx-auto">
+            {/* Recent Games */}
+            {recents.length > 0 && (
+              <>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="flex-1 h-px bg-gradient-miami opacity-20" />
+                  <h2 className="text-2xl md:text-3xl font-heading font-bold">
+                    <span className="bg-gradient-miami bg-clip-text text-transparent flex items-center gap-2">
+                      🕐 Recent
+                    </span>
+                  </h2>
+                  <div className="flex-1 h-px bg-gradient-miami opacity-20" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-10">
+                  {recents.slice(0, 6).map((game) => {
+                    const apiGame = apiGames.find(g => g.id === game.id);
+                    return (
+                      <a
+                        key={game.id}
+                        href={apiGame ? `/games/${apiGame.slug}` : '#'}
+                        className="group glass-card rounded-xl p-3 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-miami opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                        <div className="relative z-10 text-center">
+                          <div className="text-3xl mb-2">{game.emoji || '🎮'}</div>
+                          <h3 className="text-xs font-bold text-white group-hover:text-miami-cyan transition-colors truncate">
+                            {game.name}
+                          </h3>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Favorites */}
+            {favorites.length > 0 && (
+              <>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="flex-1 h-px bg-gradient-miami opacity-20" />
+                  <h2 className="text-2xl md:text-3xl font-heading font-bold">
+                    <span className="bg-gradient-miami bg-clip-text text-transparent flex items-center gap-2">
+                      ❤️ Favorites
+                    </span>
+                  </h2>
+                  <div className="flex-1 h-px bg-gradient-miami opacity-20" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-10">
+                  {favorites.slice(0, 10).map((game) => {
+                    const apiGame = apiGames.find(g => g.id === game.id);
+                    const inHouse = IN_HOUSE_GAMES.find(g => g.id === game.id);
+                    return (
+                      <div key={game.id} className="relative group">
+                        {apiGame ? (
+                          <a
+                            href={`/games/${apiGame.slug}`}
+                            className="block glass-card rounded-xl p-4 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden"
+                          >
+                            <div className="absolute inset-0 bg-gradient-miami opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                            <div className="relative z-10 text-center">
+                              {apiGame.thumbnailUrl ? (
+                                <div className="w-full aspect-[4/3] mb-2 rounded-lg overflow-hidden bg-black/30">
+                                  <img src={apiGame.thumbnailUrl} alt={game.name} className="w-full h-full object-cover" />
+                                </div>
+                              ) : (
+                                <div className="text-3xl mb-2">{game.emoji || '🎮'}</div>
+                              )}
+                              <h3 className="text-xs font-bold text-white group-hover:text-miami-cyan transition-colors truncate">{game.name}</h3>
+                            </div>
+                          </a>
+                        ) : inHouse ? (
+                          <button
+                            onClick={() => { if (isAuthenticated) setActiveGame(inHouse.component); else setShowAuth(true); }}
+                            className="w-full glass-card rounded-xl p-4 hover:scale-[1.03] transition-all duration-300 relative overflow-hidden text-center"
+                          >
+                            <div className="text-3xl mb-2">{inHouse.emoji}</div>
+                            <h3 className="text-xs font-bold text-white group-hover:text-miami-cyan transition-colors">{inHouse.name}</h3>
+                          </button>
+                        ) : (
+                          <div className="glass-card rounded-xl p-4 text-center">
+                            <div className="text-3xl mb-2">{game.emoji || '🎮'}</div>
+                            <h3 className="text-xs font-bold text-white truncate">{game.name}</h3>
+                          </div>
+                        )}
+                        {/* Remove from favorites */}
+                        <button
+                          onClick={() => toggleFavorite(game)}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/40 hover:bg-black/60 transition-all z-10"
+                          aria-label="Remove from favorites"
+                        >
+                          <svg className="w-4 h-4 text-miami-pink" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* ===== PROVIDER GAMES SECTION ===== */}
       {!activeGame && !providerGame && (
         <section className="relative z-10 py-16 px-4" id="games">
@@ -390,78 +501,122 @@ export default function HomePage() {
               </div>
             ) : filteredProviderGames.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {filteredProviderGames.map((game, idx) => (
-                  <a
-                    key={game.id}
-                    href={`/games/${game.slug}`}
-                    className="group cursor-pointer glass-card rounded-xl p-5 hover:scale-[1.03] transition-all duration-300 animate-fade-up relative overflow-hidden block"
-                    style={{ animationDelay: `${idx * 0.03}s` }}
-                  >
-                    {/* Hover Glow */}
-                    <div className="absolute inset-0 bg-gradient-miami opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-                    
-                    {/* Thumbnail */}
-                    <div className="relative z-10">
-                      {game.thumbnailUrl ? (
-                        <div className="w-full aspect-[4/3] mb-3 rounded-lg overflow-hidden bg-black/30">
-                          <img
-                            src={game.thumbnailUrl}
-                            alt={game.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
+                {filteredProviderGames.map((game, idx) => {
+                  const liked = isFavorite(game.id);
+                  return (
+                    <div key={game.id} className="relative group">
+                      <a
+                        href={`/games/${game.slug}`}
+                        onClick={() => {
+                          // Track recent game
+                          useRecentStore.getState().addRecent({
+                            id: game.id,
+                            name: game.name,
+                            slug: game.slug,
+                            timestamp: Date.now(),
+                          });
+                        }}
+                        className="cursor-pointer glass-card rounded-xl p-5 hover:scale-[1.03] transition-all duration-300 animate-fade-up relative overflow-hidden block"
+                        style={{ animationDelay: `${idx * 0.03}s` }}
+                      >
+                        {/* Hover Glow */}
+                        <div className="absolute inset-0 bg-gradient-miami opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                        
+                        {/* Thumbnail */}
+                        <div className="relative z-10">
+                          {game.thumbnailUrl ? (
+                            <div className="w-full aspect-[4/3] mb-3 rounded-lg overflow-hidden bg-black/30">
+                              <img
+                                src={game.thumbnailUrl}
+                                alt={game.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-full aspect-[4/3] mb-3 rounded-lg overflow-hidden bg-black/30">
+                              <img
+                                src={`/games/${game.slug}.svg`}
+                                alt={game.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    const fallback = document.createElement('span');
+                                    fallback.className = 'text-5xl opacity-30';
+                                    fallback.textContent = PROVIDER_META[game.providerId]?.emoji || '🎮';
+                                    parent.appendChild(fallback);
+                                  }
+                                }}
+                              />
+                            </div>
+                          )}
+                          <h3 className="text-sm font-bold text-center text-white group-hover:text-miami-cyan transition-colors">
+                            {game.name}
+                          </h3>
+                          <p className="text-xs text-gray-500 text-center mt-1">
+                            {PROVIDER_META[game.providerId]?.name || game.providerId}
+                          </p>
+                          <div className="flex flex-wrap justify-center gap-1 mt-2">
+                            {game.rtp && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-cyan/20 text-miami-cyan border border-miami-cyan/30">
+                                RTP {game.rtp}%
+                              </span>
+                            )}
+                            {game.isNew && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-purple/20 text-miami-purple border border-miami-purple/30">
+                                NEW
+                              </span>
+                            )}
+                            {game.isJackpot && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-pink/20 text-miami-pink border border-miami-pink/30 animate-neon-pulse-fast">
+                                JACKPOT
+                              </span>
+                            )}
+                            {game.category === 'live' && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-orange/20 text-miami-orange border border-miami-orange/30">
+                                LIVE
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      ) : (
-                        <div className="w-full aspect-[4/3] mb-3 rounded-lg overflow-hidden bg-black/30">
-                          <img
-                            src={`/games/${game.slug}.svg`}
-                            alt={game.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const parent = target.parentElement;
-                              if (parent) {
-                                const fallback = document.createElement('span');
-                                fallback.className = 'text-5xl opacity-30';
-                                fallback.textContent = PROVIDER_META[game.providerId]?.emoji || '🎮';
-                                parent.appendChild(fallback);
-                              }
-                            }}
+                      </a>
+                      {/* Heart button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite({
+                            id: game.id,
+                            name: game.name,
+                            slug: game.slug,
+                            provider: PROVIDER_META[game.providerId]?.name || game.providerId,
+                          });
+                        }}
+                        className="absolute top-2 right-2 p-1.5 rounded-full z-10 transition-all hover:scale-110"
+                        aria-label={liked ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        <svg
+                          className={`w-4 h-4 transition-all ${
+                            liked ? 'text-miami-pink drop-shadow-[0_0_6px_rgba(255,45,149,0.6)]' : 'text-gray-500 group-hover:text-gray-300'
+                          }`}
+                          viewBox="0 0 24 24"
+                          fill={liked ? 'currentColor' : 'none'}
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
                           />
-                        </div>
-                      )}
-                      <h3 className="text-sm font-bold text-center text-white group-hover:text-miami-cyan transition-colors">
-                        {game.name}
-                      </h3>
-                      <p className="text-xs text-gray-500 text-center mt-1">
-                        {PROVIDER_META[game.providerId]?.name || game.providerId}
-                      </p>
-                      <div className="flex flex-wrap justify-center gap-1 mt-2">
-                        {game.rtp && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-cyan/20 text-miami-cyan border border-miami-cyan/30">
-                            RTP {game.rtp}%
-                          </span>
-                        )}
-                        {game.isNew && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-purple/20 text-miami-purple border border-miami-purple/30">
-                            NEW
-                          </span>
-                        )}
-                        {game.isJackpot && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-pink/20 text-miami-pink border border-miami-pink/30 animate-neon-pulse-fast">
-                            JACKPOT
-                          </span>
-                        )}
-                        {game.category === 'live' && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-miami-orange/20 text-miami-orange border border-miami-orange/30">
-                            LIVE
-                          </span>
-                        )}
-                      </div>
+                        </svg>
+                      </button>
                     </div>
-                  </a>
-                ))}
+                    );
+                  })}
               </div>
             ) : (
               <p className="text-center text-gray-500 py-10">
@@ -516,6 +671,8 @@ export default function HomePage() {
                     emoji={game.emoji}
                     description={game.description}
                     color={game.color}
+                    gameId={game.id}
+                    slug={game.id}
                     onClick={() => {
                       if (isAuthenticated) setActiveGame(game.component);
                       else setShowAuth(true);

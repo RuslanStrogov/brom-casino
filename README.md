@@ -1,186 +1,171 @@
-# 🎰 Brom Casino
+# 🎰 BROM BET — Premium Crypto Casino
 
 <div align="center">
 
-![Brom Casino Banner](assets/screenshots/banner.png)
+![BROM BET Logo](public/logo-brom-bet.png)
 
-> Полнофункциональная платформа онлайн-казино — веб, Telegram Mini App, админ-панель.
-> Монорепозиторий на базе **Turborepo + pnpm**, стек: **NestJS + Next.js + React + TypeScript + PostgreSQL + Redis**.
-> Интеграции: **Pragmatic Play API**, **Cryptomus PSP**, **Sumsub KYC** — все с тремя режимами (real/demo/hybrid).
-
-[![CI](https://github.com/RuslanStrogov/brom-casino/actions/workflows/ci.yml/badge.svg)](https://github.com/RuslanStrogov/brom-casino/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+> **Live:** [https://brombet.ru/](https://brombet.ru/)  
+> Полнофункциональная платформа онлайн-казино с собственными играми, интеграцией Pragmatic Play, крипто-кошельком и PWA.
 
 </div>
-
----
-
-## 📱 Screenshots
-
-### Главный экран — мобильное приложение
-
-<div align="center">
-
-![Mobile Home](assets/screenshots/mobile-home.png)
-
-*Главная страница: бонусный баннер, карусель featured-игр, сетка популярных игр, нижняя навигация*
-
-</div>
-
-### Игровой экран — Слот-машина
-
-<div align="center">
-
-![Slot Game](assets/screenshots/slot-game.png)
-
-*Слот-машина с 5 барабанами, выбор ставки, кнопка SPIN, таблица выплат*
-
-</div>
-
-### Экран бонусов
-
-<div align="center">
-
-![Bonuses](assets/screenshots/bonuses.png)
-
-*Приветственный бонус, ежедневный бонус, кэшбэк, VIP-программа, реферальная система*
-
-</div>
-
-### Панель администратора
-
-<div align="center">
-
-![Admin Panel](assets/screenshots/admin-panel.png)
-
-*Дашборд: GGR, NGR, активные игроки, депозиты, транзакции, активные игры, графики*
-
-</div>
-
----
-
-## 🏗 Архитектура
-
-<div align="center">
-
-![Architecture](assets/screenshots/architecture.png)
-
-*Клиенты → API Gateway → Микросервисы → Слой данных. DevOps: Docker, Nginx, CI/CD*
-
-</div>
-
-### Структура монорепозитория
-
-```
-brom-casino/
-├── apps/
-│   ├── web/                   # Next.js 14 — основной фронтенд для игроков
-│   ├── admin/                 # Next.js 14 — панель администратора
-│   └── telegram-mini-app/     # React + Vite — Telegram Mini App
-├── packages/
-│   ├── shared/                # Общие типы, утилиты, константы, енумы
-│   ├── ui/                    # Общие UI-компоненты (shadcn/ui)
-│   ├── game-engine/           # Игровая логика: RNG, слоты, crash, dice, plinko
-│   └── config/                # Общие конфигурации (ESLint, TypeScript, Tailwind)
-├── services/
-│   ├── api/                   # NestJS — основной backend (REST + WebSocket)
-│   ├── game-server/           # Node.js — игровая логика в реальном времени
-│   └── payment-worker/        # Node.js — обработка платежей (Bull queue)
-├── infrastructure/
-│   ├── docker/                # Docker Compose, Dockerfile'ы
-│   └── nginx/                 # Конфигурации nginx (reverse proxy)
-├── docs/                      # Документация
-├── assets/screenshots/        # Скриншоты интерфейса
-├── .github/workflows/         # CI/CD (GitHub Actions)
-├── package.json               # Root package.json (Turborepo)
-├── turbo.json                 # Turborepo pipeline config
-└── pnpm-workspace.yaml        # pnpm workspace definition
-```
-
-### Технологический стек
-
-| Слой | Технология |
-|------|-----------|
-| **Frontend** | Next.js 14, React 18, TypeScript, Tailwind CSS, shadcn/ui, Zustand |
-| **Telegram** | React 18, Vite, Telegram Web App SDK, TON Connect |
-| **Backend** | NestJS 10, TypeScript, Prisma ORM, Passport.js |
-| **Database** | PostgreSQL 16, Redis 7, ClickHouse |
-| **Queue** | Bull (Redis) |
-| **Real-time** | Socket.io |
-| **DevOps** | Docker, Docker Compose, Nginx, GitHub Actions |
-| **Monitoring** | Sentry, Grafana (заглушки) |
 
 ---
 
 ## 📋 О проекте
 
-**Brom Casino** — это полноценная платформа для запуска онлайн-казино, созданная с нуля.
-Проект включает все ключевые компоненты: фронтенд для игроков, Telegram-приложение,
-серверную часть, платёжную систему, бонусную механику, KYC/AML и панель администратора.
+**BROM BET** — это production-ready платформа онлайн-казино, развёрнутая на VPS и доступная по адресу [brombet.ru](https://brombet.ru/). 
 
-Проект разработан как **MVP-прототип** — все модули имеют полную структуру,
-контроллеры, сервисы, DTO и схемы базы данных. Это фундамент,
-на котором можно строить полноценный продукт.
+Проект включает:
+- 🎮 **Собственные игры** — 6 in-house игр: Slots, Crash, Dice, Plinko, Roulette, Blackjack + Temple of Akhet
+- 🎰 **Pragmatic Play** — 45+ игр от провайдера через API
+- 💰 **Крипто-кошелёк** — депозит, вывод, история транзакций
+- ❤️ **Избранное и недавние игры** — персонализация
+- 📱 **PWA** — установка на домашний экран
+- 🔐 **JWT-авторизация** — регистрация и вход
+- 📊 **Yandex Metrika** — аналитика
+- 🐳 **Docker Compose** — PostgreSQL, Redis, ClickHouse, API, Web, Nginx
 
-### Ключевые возможности
+---
 
-- 🎮 **Игры** — слоты, crash, dice, plinko с криптографически верифицируемым RNG (Provably Fair)
-- 🔐 **Авторизация** — JWT + Telegram OAuth + 2FA (TOTP)
-- 💰 **Платежи** — криптовалюты (USDT, BTC, TON, ETH) через Cryptomus/NOWPayments
-- 🎁 **Бонусная система** — welcome bonus, free spins, кэшбэк, вейджер
-- 🛡️ **KYC/AML** — верификация личности, проверка документов
-- 📱 **Telegram Mini App** — полноценное казино внутри Telegram с TON-платежами
-- 👑 **Админ-панель** — управление пользователями, играми, платежами, бонусами
-- 📊 **Аналитика** — ClickHouse для хранения событий и построения отчётов
-- 🐳 **DevOps** — Docker Compose, Nginx, GitHub Actions CI/CD
-- 🎰 **Pragmatic Play API** — реальные игры от провайдера (20+ слотов, live, настольные)
-- 💳 **Cryptomus PSP** — крипто-платежи (USDT, BTC, TON, ETH), webhooks, выплаты
-- 🛡️ **Sumsub KYC** — верификация личности, документы, AML compliance
+## 🚀 Функционал (Live)
 
-### Интеграции провайдеров
+### ✅ Задеплоено и работает
 
-Все интеграции поддерживают **три режима работы**:
+| Функция | Статус | Описание |
+|---------|--------|----------|
+| **Собственные игры** | ✅ | Slots, Crash, Dice, Plinko, Roulette, Blackjack |
+| **Pragmatic Play** | ✅ | 45+ игр через API-провайдера |
+| **Temple of Akhet** | ✅ | Custom игра (без page-in-page) |
+| **Категории игр** | ✅ | CRASH, LIVE, SLOTS, TABLE + поиск |
+| **Кошелёк** | ✅ | Баланс, депозит, вывод, история транзакций |
+| **Избранное** | ✅ | ❤️ на карточках игр, страница /favorites |
+| **Недавние игры** | ✅ | Авто-трекинг, страница /favorites |
+| **PWA** | ✅ | Установка на домашний экран |
+| **Favicon** | ✅ | Иконки для всех платформ |
+| **JWT-авторизация** | ✅ | Регистрация / вход / logout |
+| **Header с балансом** | ✅ | Кликабельный баланс, ссылка Wallet |
+| **Yandex Metrika** | ✅ | ID 110928475 |
+| **Chat Widget** | ✅ | Чат поддержки |
+| **Provably Fair** | ✅ | Криптографическая честность |
+| **Neon Miami тема** | ✅ | Тёмная тема с неоновыми акцентами |
+| **i18n** | ✅ | Русский язык работает |
+| **SSL** | ✅ | Let's Encrypt, все домены |
+| **Docker** | ✅ | 5 контейнеров (postgres, redis, clickhouse, api, web) |
 
-| Режим | Описание | Как включить |
-|-------|----------|-------------|
-| **REAL** | Реальные API-вызовы к провайдеру | Заполните ключи в .env + `*_MODE=real` |
-| **DEMO** | Моковые данные для разработки | Не заполняйте ключи или `*_MODE=demo` |
-| **HYBRID** | Попытка реального API, fallback на мок | `*_MODE=hybrid` (по умолчанию) |
+### 📱 PWA
 
-#### Pragmatic Play
+Сайт можно установить на домашний экран:
+- **Android:** Chrome → ⋮ → Add to Home Screen
+- **iOS:** Safari → Share → Add to Home Screen
+- **Desktop:** Chrome → ⋮ → Cast, save, and share → Install page as app
 
-```bash
-# .env
-PRAGMATIC_PLAY_API_URL="https://api.pragmaticplay.net"
-PRAGMATIC_PLAY_API_KEY="your-api-key"
-PRAGMATIC_PLAY_CASINO_NAME="your-casino"
-PRAGMATIC_PLAY_SECRET_KEY="your-secret"
-PRAGMATIC_PLAY_MODE="hybrid"
+---
+
+## 🏗 Архитектура
+
+### Стек технологий
+
+| Слой | Технология |
+|------|-----------|
+| **Frontend** | Next.js 14, React 18, TypeScript, Tailwind CSS, Zustand |
+| **Backend** | NestJS, TypeScript, Prisma ORM |
+| **Database** | PostgreSQL 16, Redis 7 |
+| **Analytics** | ClickHouse |
+| **Auth** | JWT (access + refresh tokens) |
+| **Real-time** | Socket.io |
+| **DevOps** | Docker Compose, Nginx, Let's Encrypt SSL |
+
+### Инфраструктура
+
+```
+Client (browser/PWA)
+    │
+    ▼
+Nginx Reverse Proxy (SSL termination)
+    │
+    ├── https://brombet.ru/      → casino-web (Next.js, port 3003)
+    ├── https://brombet.ru/api   → casino-api (NestJS, port 4000)
+    └── https://brombet.ru/admin → casino-admin (Next.js, port 3001)
+            │
+            ├── PostgreSQL (casino-postgres, port 5433)
+            ├── Redis (casino-redis, port 6380)
+            └── ClickHouse (casino-clickhouse, port 8124)
 ```
 
-Получить ключи: https://pragmaticplay.net/en/integrations/api/
+### Структура проекта
 
-#### Cryptomus
-
-```bash
-# .env
-CRYPTOMUS_API_KEY="your-api-key"
-CRYPTOMUS_MERCHANT_ID="your-merchant-uuid"
-CRYPTOMUS_MODE="hybrid"
+```
+brom-casino/
+├── apps/
+│   ├── web/                   # Next.js 14 — основной фронтенд
+│   └── admin/                 # Next.js 14 — панель администратора
+├── services/
+│   └── api/                   # NestJS — основной backend (REST + WebSocket)
+├── infrastructure/
+│   ├── docker/                # Docker Compose, Dockerfile'ы
+│   │   ├── docker-compose.yml
+│   │   ├── Dockerfile.web
+│   │   ├── Dockerfile.api
+│   │   └── Dockerfile.admin
+│   └── nginx/                 # Конфигурации nginx
+├── public/                    # Статика (favicon, manifest, SW, logo)
+├── stores/                    # Zustand stores (auth, favorites, recent)
+├── components/                # React компоненты
+└── lib/                       # Утилиты, API клиент
 ```
 
-Получить ключи: https://cryptomus.com/
+---
 
-#### Sumsub KYC
+## 🎮 Игры
 
-```bash
-# .env
-SUMSUB_API_TOKEN="your-api-token"
-SUMSUB_APP_TOKEN="your-app-token"
-SUMSUB_WEBHOOK_SECRET="your-webhook-secret"
-```
+### Собственные игры (In-house)
 
-Получить ключи: https://sumsub.com/
+| Игра | Компонент | Описание | RTP |
+|------|-----------|----------|-----|
+| 🎰 **Slots** | SlotGame | Классический слот с 3 барабанами | 96% |
+| 🚀 **Crash** | CrashGame | Множитель растёт до краха | 97% |
+| 🎲 **Dice** | DiceGame | Угадай бросок кубика | 98% |
+| 🎯 **Plinko** | PlinkoGame | Шарик падает по колышкам | 96% |
+| 🎡 **Roulette** | RouletteGame | Европейская рулетка | 97.3% |
+| 🃏 **Blackjack** | BlackjackGame | Обыграй дилера | 99% |
+
+### Игры провайдеров
+
+| Провайдер | Кол-во игр | Типы |
+|-----------|-----------|------|
+| **Pragmatic Play** | 45+ | Слоты, Live, Crash, Table Games |
+
+### Custom игры
+
+- **Temple of Akhet** — уникальная игра с собственной механикой
+
+### Фильтры и поиск
+
+- Категории: CRASH, LIVE, SLOTS, TABLE
+- Поиск по названию игры
+- ❤️ Избранное (персональный список)
+- 🕐 Недавние (авто-трекинг)
+
+---
+
+## 💰 Крипто-кошелёк
+
+**Страница:** `/wallet`
+
+### Возможности
+
+| Функция | Описание |
+|---------|----------|
+| **Баланс** | Real Balance + Bonus Balance |
+| **Депозит** | Создание платежа, ссылка на оплату |
+| **Вывод** | Вывод на внешний кошелёк (TRC-20, ERC-20, BEP-20) |
+| **История** | Пагинированная история транзакций со статусами |
+
+### Валюты
+
+| Валюта | Сеть | 
+|--------|------|
+| USDT | TRC-20 / ERC-20 / BEP-20 |
 
 ---
 
@@ -190,7 +175,7 @@ SUMSUB_WEBHOOK_SECRET="your-webhook-secret"
 
 - **Node.js** 20+
 - **pnpm** 9+
-- **Docker** 24+ и **Docker Compose** (для контейнерного запуска)
+- **Docker** 24+ и **Docker Compose**
 - **Git**
 
 ### Установка и запуск
@@ -205,228 +190,138 @@ pnpm install
 
 # 3. Настроить переменные окружения
 cp .env.example .env
-# Отредактируйте .env — заполните секреты и ключи API
+# Отредактируйте .env — заполните секреты
 
-# 4. Запуск в режиме разработки (все сервисы)
-pnpm dev
-
-# Или через Docker Compose:
+# 4. Запуск через Docker Compose
 docker compose -f infrastructure/docker/docker-compose.yml up -d
 
-# 5. Применить миграции базы данных
+# 5. Применить миграции БД
 pnpm db:migrate
 
-# 6. Заполнить начальными данными (игры, бонусы)
+# 6. Заполнить начальными данными
 pnpm db:seed
 ```
-
-### Деплой на VPS (одна команда)
-
-```bash
-# На чистом Ubuntu 22.04 VPS (4GB RAM, 2 vCPU):
-curl -fsSL https://raw.githubusercontent.com/RuslanStrogov/brom-casino/main/infrastructure/deploy.sh | sudo bash
-
-# С доменом и SSL:
-sudo DOMAIN=yourdomain.com EMAIL=you@email.com bash infrastructure/deploy.sh
-```
-
-Скрипт автоматически установит Docker, Node.js, Nginx, настроит SSL, firewall, создаст админа.
 
 ### Доступ к сервисам
 
 | Сервис | Порт | URL |
 |--------|------|-----|
-| 🎰 Web (фронтенд) | 3000 | http://localhost:3000 |
-| 👑 Админ-панель | 3001 | http://localhost:3001 |
-| 📱 Telegram Mini App | 3002 | http://localhost:3002 |
-| 🔌 API (backend) | 4000 | http://localhost:4000 |
-| 📖 Swagger документация | 4000 | http://localhost:4000/api/docs |
-| 🗄 PostgreSQL | 5432 | — |
-| ⚡ Redis | 6379 | — |
-| 📊 ClickHouse | 8123 | — |
+| 🎰 Web (фронтенд) | 3003 | https://brombet.ru/ |
+| 👑 Админ-панель | 3001 | https://brombet.ru/admin |
+| 🔌 API (backend) | 4000 | https://brombet.ru/api |
+| 🗄 PostgreSQL | 5433 | localhost:5433 |
+| ⚡ Redis | 6380 | localhost:6380 |
+| 📊 ClickHouse | 8124 | localhost:8124 |
 
 ---
 
-## 🎮 Игровая механика
-
-### Provably Fair (Криптографическая честность)
-
-Каждый результат игры можно верифицировать:
-
-1. **До игры** — сервер публикует `server_hash = SHA256(server_seed)`
-2. **Во время игры** — клиент задаёт `client_seed`, сервер использует `nonce`
-3. **Результат** — `HMAC-SHA256(server_seed, client_seed + nonce)`
-4. **После игры** — сервер раскрывает `server_seed` для проверки
-
-### Поддерживаемые игры
-
-| Игра | Описание | Особенности |
-|------|----------|-------------|
-| 🎰 Слоты | 3-6 барабанов, paylines, wild/scatter | Настраиваемый RTP, волатильность |
-| 📈 Crash | Множитель растёт до случайного crash | House edge 1%, auto-cashout |
-| 🎲 Dice | Предсказание результата броска | Over/Under, chance 1-99% |
-| 🔵 Plinko | Шарик падает через ряды колышков | 3 уровня риска, множители до 50x |
-
----
-
-## 💰 Платёжная система
-
-### Поддерживаемые валюты
-
-| Валюта | Сеть | Мин. депозит | Мин. вывод |
-|--------|------|-------------|-----------|
-| USDT | TRC-20 / ERC-20 | 10 USDT | 20 USDT |
-| BTC | Bitcoin | 0.0001 BTC | 0.0005 BTC |
-| TON | TON | 1 TON | 5 TON |
-| ETH | ERC-20 | 0.001 ETH | 0.005 ETH |
-
-### Платёжные провайдеры
-
-- **Cryptomus** — крипто-платежи, webhooks, выплаты
-- **NOWPayments** — 100+ криптовалют, автоконвертация
-- **Corefy** — банковские карты, электронные кошельки
-
----
-
-## 📚 Документация
-
-| Документ | Описание |
-|----------|----------|
-| [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | Детальная архитектура всех компонентов, схема БД, микросервисы |
-| [GAME_ENGINE.md](./docs/GAME_ENGINE.md) | Игровая логика, алгоритмы RNG, механика каждой игры |
-| [PAYMENTS.md](./docs/PAYMENTS.md) | Платёжная система, PSP, потоки депозита/вывода |
-| [DEPLOY.md](./docs/DEPLOY.md) | Деплой, конфигурация, мониторинг, масштабирование |
-
----
-
-## 🛠 Команды разработки
+## 🔧 Команды разработки
 
 ```bash
 # Установка зависимостей
 pnpm install
 
-# Запуск всех сервисов в режиме разработки
+# Разработка
 pnpm dev
 
-# Сборка всех пакетов
+# Сборка
 pnpm build
 
-# Линтинг
-pnpm lint
-
-# Тестирование
-pnpm test
-
-# Типизация (TypeScript)
-pnpm turbo run typecheck
+# Docker
+docker compose -f infrastructure/docker/docker-compose.yml up -d   # Старт
+docker compose -f infrastructure/docker/docker-compose.yml down    # Стоп
+docker compose -f infrastructure/docker/docker-compose.yml build web  # Сборка фронта
+docker compose -f infrastructure/docker/docker-compose.yml logs -f  # Логи
 
 # База данных
 pnpm db:migrate       # Применить миграции
-pnpm db:seed         # Заполнить начальными данными
-pnpm db:studio       # Открыть Prisma Studio
-
-# Docker
-docker compose -f infrastructure/docker/docker-compose.yml up -d
-docker compose -f infrastructure/docker/docker-compose.yml down
-
-# Очистка
-pnpm clean           # Удалить dist/, .next/, node_modules/
+pnpm db:seed          # Заполнить данными
+pnpm db:studio        # Prisma Studio
 ```
 
 ---
 
-## 🔧 Переменные окружения
+## 📊 Мониторинг
 
-Скопируйте `.env.example` в `.env` и заполните:
+### Yandex Metrika
 
-```env
-# База данных
-DATABASE_URL="postgresql://brom:***@localhost:5432/brom_casino?schema=public"
-
-# Redis
-REDIS_URL="redis://localhost:6379"
-
-# JWT
-JWT_SECRET="your-s...hars"
-JWT_REFRESH_SECRET="your-r...-key"
-
-# Приложение
-NODE_ENV="development"
-API_PORT=4000
-API_URL="http://localhost:4000"
-WEB_URL="http://localhost:3000"
-
-# Telegram
-TELEGRAM_BOT_TOKEN="***"
-
-# Платежи
-CRYPTOMUS_API_KEY="your-c...-key"
-NOWPAYMENTS_API_KEY="your-n...-key"
-
-# KYC
-SUMUB_API_TOKEN="***"
-
-# Мониторинг
-SENTRY_DSN="your-sentry-dsn"
-```
+На сайте установлен Yandex Metrika (ID: `110928475`):
+- Вебвизор
+- Карта кликов
+- E-commerce аналитика
+- Отслеживание ссылок
+- SSR-поддержка
 
 ---
 
-## 📊 Статус CI/CD
+## 🐳 Деплой
 
-Автоматические проверки при каждом push и PR:
+### Инфраструктура
 
-- ✅ **Lint** — ESLint для всех пакетов
-- ✅ **Typecheck** — TypeScript компиляция
-- ✅ **Build** — Сборка всех приложений
-- 🐳 **Docker** — Сборка Docker-образов (только на main)
+- **VPS**: Ubuntu 22.04, 4 vCPU, 16GB RAM, 120GB NVMe + 1TB HDD
+- **Docker**: все сервисы в контейнерах
+- **Nginx**: reverse proxy с SSL termination
+- **SSL**: Let's Encrypt (Certbot), автоматическое обновление
+
+### Docker Compose
+
+```yaml
+# Основные сервисы
+- postgres:16-alpine       # База данных
+- redis:7-alpine           # Кэш и очередь
+- clickhouse:24-alpine     # Аналитика
+- api:                     # Backend (NestJS)
+- web:                     # Frontend (Next.js)
+- admin:                   # Админ-панель
+```
 
 ---
 
 ## 🗺 Roadmap
 
+### ✅ Реализовано
 - [x] Архитектура монорепозитория
-- [x] Backend API (NestJS, 9 модулей)
-- [x] Фронтенд (Next.js 14, 4 игры)
-- [x] Telegram Mini App
-- [x] Админ-панель
-- [x] Game Engine (Provably Fair RNG)
-- [x] Docker + CI/CD
-- [ ] Интеграция реальных провайдеров игр (Pragmatic Play API)
-- [ ] Интеграция реальных PSP (Cryptomus webhooks)
-- [ ] KYC провайдер (Sumsub/Veriff)
-- [ ] Мобильное приложение (React Native)
-- [ ] Лицензирование (Кюрасао)
-- [ ] Нагрузочное тестирование
-- [ ] Деплой на продакшн-сервер
+- [x] Backend API (NestJS)
+- [x] Фронтенд (Next.js 14, 6 собственных игр)
+- [x] Pragmatic Play API (45+ игр)
+- [x] Крипто-кошелёк (депозит/вывод/история)
+- [x] PWA (установка на домашний экран)
+- [x] JWT-авторизация
+- [x] Избранное и недавние игры
+- [x] Yandex Metrika
+- [x] Docker Compose деплой
+- [x] SSL (Let's Encrypt)
+- [x] Neon Miami тема
+- [x] i18n (русский язык)
+- [x] Чат поддержки
+- [x] Фильтры и поиск игр
 
----
-
-## 📄 Лицензия
-
-Этот проект лицензирован под **MIT License** — см. файл [LICENSE](./LICENSE).
-
----
-
-## ⚠️ Дисклеймер
-
-Этот проект создан **исключительно в образовательных и демонстрационных целях**.
-Он показывает архитектуру и технические решения для создания платформы онлайн-казино.
-
-Перед использованием в продакшне необходимо:
-- Получить игровую лицензию (Кюрасао, Мальта, и т.д.)
-- Пройти сертификацию RNG (iTech Labs, GLI, eCOGRA)
-- Настроить KYC/AML в соответствии с законодательством
-- Получить одобрение от платёжных провайдеров
-- Обеспечить соблюдение законов юрисдикции
+### 🔜 В планах
+- [ ] VIP-система (10+ уровней с прогресс-баром)
+- [ ] Турниры с лидербордами
+- [ ] Реферальная система
+- [ ] Поддержка нескольких языков (i18n)
+- [ ] Push-уведомления
+- [ ] Дополнительные провайдеры (Evolution, Spribe, NetEnt)
 
 ---
 
 ## 🔗 Ссылки
 
-- **Репозиторий:** https://github.com/RuslanStrogov/brom-casino
-- **Issues:** https://github.com/RuslanStrogov/brom-casino/issues
+- **Сайт:** [https://brombet.ru/](https://brombet.ru/)
+- **Репозиторий:** [https://github.com/RuslanStrogov/brom-casino](https://github.com/RuslanStrogov/brom-casino)
 - **Документация:** [docs/](./docs/)
+- **Связанные домены:** cas.br-design.ru, casino.strogov.com
+
+---
+
+## ⚠️ Дисклеймер
+
+Этот проект создан в образовательных и демонстрационных целях. Перед использованием в продакшне необходимо:
+- Получить игровую лицензию
+- Пройти сертификацию RNG
+- Настроить KYC/AML
+- Обеспечить соблюдение законов юрисдикции
 
 ---
 
