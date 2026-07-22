@@ -68,7 +68,7 @@ server {
 
     # Admin panel
     location /admin {
-        proxy_pass http://brom-casino-admin;
+        proxy_pass http://brom-casino-web;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -81,7 +81,7 @@ server {
     }
 
     location /admin/ {
-        proxy_pass http://brom-casino-admin;
+        proxy_pass http://brom-casino-web;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
