@@ -16,10 +16,20 @@ export const metadata: Metadata = {
   description: 'The premier crypto casino experience. Provably fair games, instant payouts, and the best odds in the house.',
   keywords: ['casino', 'crypto', 'gambling', 'provably fair', 'bitcoin'],
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Brom Casino',
+    title: 'BROM BET',
   },
 };
 
@@ -48,6 +58,11 @@ export default function RootLayout({
             <Footer />
           </GameProvider>
         </AuthProvider>
+
+        {/* PWA Service Worker */}
+        <Script id="register-sw" strategy="afterInteractive">
+          {`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{})})}`}
+        </Script>
 
         {/* Yandex.Metrika */}
         <Script id="yandex-metrika" strategy="afterInteractive">

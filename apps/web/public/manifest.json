@@ -1,0 +1,29 @@
+{
+  "name": "BROM BET — Premium Crypto Casino",
+  "short_name": "BROM BET",
+  "description": "The premier crypto casino experience. Provably fair games, instant payouts.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#0a0a1a",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["entertainment", "games", "casino"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "splash_pages": null
+}
