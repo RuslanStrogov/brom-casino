@@ -59,7 +59,7 @@ export class GenericProvider implements GameProvider {
   /**
    * Provide a launch/demo URL for any supported provider's game.
    */
-  async getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string> {
+  async getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string | null> {
     if (this.useAggregator) {
       try {
         const data = await this.post<{ url?: string; gameURL?: string }>(
@@ -100,9 +100,18 @@ export class GenericProvider implements GameProvider {
     };
   }
 
-  private buildDemoUrl(externalGameId: string, _params: GameLaunchParams): string {
-    // Provide a generic demo URL. In production this would come from the aggregator.
-    return `https://demoplay.games/game/${externalGameId}`;
+  private buildDemoUrl(externalGameId: string, params: GameLaunchParams): string {
+    // Provider-specific demo URLs
+    const providerId = params.providerId || '';
+
+    // NetEnt → use their official demo server
+    if (providerId === 'netent') {
+      return `https://games.netent.com/play/${externalGameId}`;
+    }
+
+    // All other providers → fallback to our local HTML5 demo page
+    const slug = params.slug || externalGameId;
+    return `/games/demo/${slug}`;
   }
 
   private async post<T>(path: string, body: unknown): Promise<T> {

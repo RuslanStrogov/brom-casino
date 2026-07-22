@@ -6,6 +6,7 @@ export interface GameLaunchParams {
   language?: string;
   returnUrl?: string;
   providerId?: string;
+  slug?: string;
 }
 
 export interface GameLaunchResult {
@@ -42,7 +43,7 @@ export interface GameProvider {
 
   getGames(): Promise<GameInfo[]>;
 
-  getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string>;
+  getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string | null>;
 
   validateWebhook(payload: any, signature: string): boolean;
 

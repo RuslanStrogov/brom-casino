@@ -179,7 +179,7 @@ export class PragmaticPlayProvider implements GameProvider {
    * DEMO   → returns a synthetic demo URL
    * HYBRID → tries REAL first, falls back to DEMO on any error
    */
-  async getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string> {
+  async getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string | null> {
     if (this.mode === 'demo') {
       this.logger.debug(`DEMO mode — returning demo launch URL for game ${externalGameId}`);
       return this.buildDemoLaunchUrl(externalGameId, params);

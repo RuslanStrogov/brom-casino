@@ -39,7 +39,7 @@ export class SpribeProvider implements GameProvider {
     return MOCK_GAMES;
   }
 
-  async getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string> {
+  async getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string | null> {
     if (this.mode === 'real') {
       try {
         const data = await this.post<{ url?: string }>('/api/v1/games/launch', {

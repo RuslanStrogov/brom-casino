@@ -77,9 +77,10 @@ export class EvolutionProvider implements GameProvider {
     }
   }
 
-  async getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string> {
+  async getLaunchUrl(externalGameId: string, params: GameLaunchParams): Promise<string | null> {
     if (this.mode === 'demo') {
-      return this.buildDemoLaunchUrl(externalGameId, params);
+      this.logger.debug(`DEMO mode — Evolution games are live-only, returning null for ${externalGameId}`);
+      return null;
     }
 
     try {
@@ -100,8 +101,8 @@ export class EvolutionProvider implements GameProvider {
       return data.gameURL ?? data.launchUrl ?? data.url ?? '';
     } catch (error) {
       if (this.mode === 'hybrid') {
-        this.logger.warn(`HYBRID mode — launching demo URL for ${externalGameId}`);
-        return this.buildDemoLaunchUrl(externalGameId, params);
+        this.logger.warn(`HYBRID mode — Evolution games are live-only, returning null for ${externalGameId}`);
+        return null;
       }
       throw error;
     }

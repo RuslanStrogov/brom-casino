@@ -166,6 +166,7 @@ export class GamesService {
         currency: 'USDT',
         language: 'en',
         providerId: game.providerId,
+        slug: game.slug,
       });
     }
 
@@ -188,7 +189,7 @@ export class GamesService {
     };
   }
 
-  async getDemoLaunchUrl(slug: string): Promise<string> {
+  async getDemoLaunchUrl(slug: string): Promise<string | null> {
     const game = await this.prisma.game.findUnique({ where: { slug } });
     if (!game) throw new NotFoundException('Game not found');
     if (!game.isActive) throw new BadRequestException('Game is not available');
@@ -202,6 +203,7 @@ export class GamesService {
         currency: 'USDT',
         language: 'en',
         providerId: game.providerId,
+        slug: game.slug,
       });
     }
 
