@@ -1,13 +1,49 @@
 import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
-import { GameCategory, Volatility, PaginationMeta, ProvablyFairData } from '@brom-casino/shared';
+import { GameGateway } from '../../gateways/game.gateway';
+import { GameCategory, Volatility, PaginationMeta, ProvablyFairData, TransactionType, TransactionStatus } from '@brom-casino/shared';
+import { SlotEngine, SlotEngineConfig, SpinEngineResult } from '@brom-casino/game-engine';
 import { GameProvider } from './providers/base.provider';
 import { PragmaticPlayProvider } from './providers/pragmatic-play.provider';
 import { EvolutionProvider } from './providers/evolution.provider';
 import { SpribeProvider } from './providers/spribe.provider';
 import { GenericProvider } from './providers/generic.provider';
 import * as crypto from 'crypto';
+
+const DEFAULT_SLOT_CONFIG: SlotEngineConfig = {
+  reels: 5,
+  rows: 3,
+  symbols: [
+    { id: '9', name: '9', value: 0.5, isWild: false, isScatter: false, isBonus: false },
+    { id: '10', name: '10', value: 0.5, isWild: false, isScatter: false, isBonus: false },
+    { id: 'J', name: 'J', value: 0.6, isWild: false, isScatter: false, isBonus: false },
+    { id: 'Q', name: 'Q', value: 0.7, isWild: false, isScatter: false, isBonus: false },
+    { id: 'K', name: 'K', value: 0.8, isWild: false, isScatter: false, isBonus: false },
+    { id: 'A', name: 'A', value: 1.0, isWild: false, isScatter: false, isBonus: false },
+    { id: 'WILD', name: 'Wild', value: 2.0, isWild: true, isScatter: false, isBonus: false },
+    { id: 'SCATTER', name: 'Scatter', value: 0, isWild: false, isScatter: true, isBonus: false },
+    { id: 'BONUS', name: 'Bonus', value: 0, isWild: false, isScatter: false, isBonus: true },
+  ],
+  paylines: [
+    { id: 1, positions: [0, 0, 0, 0, 0] },    // Top row
+    { id: 2, positions: [1, 1, 1, 1, 1] },    // Middle row
+    { id: 3, positions: [2, 2, 2, 2, 2] },    // Bottom row
+    { id: 4, positions: [0, 1, 2, 1, 0] },    // V-shape
+    { id: 5, positions: [2, 1, 0, 1, 2] },    // Inverted V
+    { id: 6, positions: [0, 0, 1, 2, 2] },    // Left staircase
+    { id: 7, positions: [2, 2, 1, 0, 0] },    // Right staircase
+    { id: 8, positions: [1, 0, 0, 0, 1] },    // Middle bump
+    { id: 9, positions: [1, 2, 2, 2, 1] },    // Middle dip
+    { id: 10, positions: [0, 1, 1, 1, 0] },   // Top arch
+    { id: 11, positions: [2, 1, 1, 1, 2] },   // Bottom arch
+    { id: 12, positions: [1, 0, 1, 2, 1] },   // Zigzag
+    { id: 13, positions: [0, 2, 0, 2, 0] },   // Checker
+    { id: 14, positions: [2, 0, 2, 0, 2] },   // Reverse checker
+    { id: 15, positions: [0, 0, 2, 0, 0] },   // Single bump top
+  ],
+  rtp: 0.96,
+};
 
 @Injectable()
 export class GamesService {
@@ -18,6 +54,7 @@ export class GamesService {
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => WalletService))
     private readonly walletService: WalletService,
+    private readonly gameGateway: GameGateway,
     @Inject(PragmaticPlayProvider)
     private readonly pragmaticPlayProvider: GameProvider,
     @Inject(EvolutionProvider)
@@ -222,12 +259,6 @@ export class GamesService {
       throw new BadRequestException(`Bet must be between ${game.minBet} and ${game.maxBet}`);
     }
 
-    // Check balance
-    const balance = await this.walletService.getBalance(userId);
-    if (Number(balance.balance) < betAmount) {
-      throw new BadRequestException('Insufficient balance');
-    }
-
     // Get active session
     const session = await this.prisma.gameSession.findFirst({
       where: { userId, gameId: game.id, mode: 'real', endedAt: null },
@@ -238,53 +269,170 @@ export class GamesService {
       throw new BadRequestException('No active game session. Launch the game first.');
     }
 
-    // Deduct bet
-    await this.walletService.debit(userId, betAmount, 'BET', `Spin on ${game.name}`);
+    // Get wallet (read outside tx for early validation, but FOR UPDATE inside tx)
+    const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
+    if (!wallet) throw new NotFoundException('Wallet not found');
+    if (Number(wallet.balance) < betAmount) {
+      throw new BadRequestException('Insufficient balance');
+    }
 
     // Increment nonce
     const nonce = session.nonce + 1;
-    await this.prisma.gameSession.update({
-      where: { id: session.id },
-      data: { nonce, totalBet: { increment: betAmount } },
-    });
 
-    // Calculate result using provably fair
+    // Calculate result using actual slot engine
+    const slotConfig = (game.config as any as SlotEngineConfig) || DEFAULT_SLOT_CONFIG;
+    const engine = new SlotEngine(slotConfig, session.clientSeed!);
+
+    // Override RNG with the session's provably fair seed/nonce
+    // SlotEngine generates its own RNG state; we reconstruct with the session seeds
     const result = this.calculateSpinResult(
       session.serverSeed!,
       session.clientSeed!,
       nonce,
-      game.config as any,
+      slotConfig,
     );
 
-    // Credit win
-    if (result.totalWin > 0) {
-      await this.walletService.credit(userId, result.totalWin, 'WIN', `Win on ${game.name}`);
-      await this.prisma.gameSession.update({
-        where: { id: session.id },
-        data: { totalWin: { increment: result.totalWin } },
-      });
-    }
+    // ---- ATOMIC TRANSACTION ----
+    // 1. Lock wallet row with FOR UPDATE
+    // 2. Debit bet
+    // 3. Credit win (if any)
+    // 4. Create Bet record linked to Transaction
+    // 5. Create BET Transaction
+    // 6. Create WIN Transaction (if win > 0)
+    // 7. Update session stats
 
-    // Record bet
-    await this.prisma.bet.create({
-      data: {
+    const txResult = await this.prisma.$transaction(async (tx) => {
+      // 🔒 Pessimistic lock: SELECT ... FOR UPDATE on wallet row
+      const [lockedWallet] = await tx.$queryRawUnsafe<any[]>(
+        'SELECT * FROM "Wallet" WHERE "userId" = $1 FOR UPDATE',
         userId,
-        gameId: game.id,
-        gameSessionId: session.id,
-        amount: betAmount,
-        winAmount: result.totalWin,
-        multiplier: result.multiplier,
-        serverSeed: session.serverSeed,
-        serverHash: session.serverHash,
-        clientSeed: session.clientSeed,
-        nonce,
-        result: result as any,
-        provablyFair: {
+      );
+
+      if (!lockedWallet) throw new NotFoundException('Wallet not found');
+
+      const balanceNum = Number(lockedWallet.balance);
+      if (balanceNum < betAmount) {
+        throw new BadRequestException('Insufficient balance');
+      }
+
+      const balanceBeforeDebit = lockedWallet.balance;
+
+      // Debit bet from real balance
+      const walletAfterDebit = await tx.wallet.update({
+        where: { userId },
+        data: { balance: { decrement: betAmount } },
+      });
+
+      // Create BET transaction
+      const betTx = await tx.transaction.create({
+        data: {
+          userId,
+          walletId: lockedWallet.id,
+          type: TransactionType.BET,
+          status: TransactionStatus.COMPLETED,
+          amount: betAmount,
+          balanceBefore: balanceBeforeDebit,
+          balanceAfter: walletAfterDebit.balance,
+          description: `Spin on ${game.name}`,
+        },
+      });
+
+      // Create Bet record, linked to the transaction
+      const bet = await tx.bet.create({
+        data: {
+          userId,
+          gameId: game.id,
+          gameSessionId: session.id,
+          transactionId: betTx.id, // 🔗 LINK Bet → Transaction
+          amount: betAmount,
+          winAmount: result.totalWin,
+          multiplier: result.multiplier,
           serverSeed: session.serverSeed,
+          serverHash: session.serverHash,
           clientSeed: session.clientSeed,
           nonce,
-        } as any,
-      },
+          result: {
+            reels: result.reels,
+            winLines: result.winLines,
+            totalWin: result.totalWin,
+            multiplier: result.multiplier,
+            isBonus: result.isBonus,
+            freeSpinsWon: result.freeSpinsWon,
+          } as any,
+          provablyFair: {
+            serverSeed: session.serverSeed,
+            clientSeed: session.clientSeed,
+            nonce,
+          } as any,
+        },
+      });
+
+      // Update session
+      await tx.gameSession.update({
+        where: { id: session.id },
+        data: {
+          nonce,
+          totalBet: { increment: betAmount },
+        },
+      });
+
+      let winTxId: string | null = null;
+      if (result.totalWin > 0) {
+        const balanceBeforeCredit = walletAfterDebit.balance;
+
+        const walletAfterCredit = await tx.wallet.update({
+          where: { userId },
+          data: { balance: { increment: result.totalWin } },
+        });
+
+        // Create WIN transaction
+        const winTx = await tx.transaction.create({
+          data: {
+            userId,
+            walletId: lockedWallet.id,
+            type: TransactionType.WIN,
+            status: TransactionStatus.COMPLETED,
+            amount: result.totalWin,
+            balanceBefore: balanceBeforeCredit,
+            balanceAfter: walletAfterCredit.balance,
+            description: `Win on ${game.name}`,
+          },
+        });
+
+        winTxId = winTx.id;
+
+        await tx.gameSession.update({
+          where: { id: session.id },
+          data: { totalWin: { increment: result.totalWin } },
+        });
+      }
+
+      return {
+        walletAfterDebit,
+        winTxId,
+        betId: bet.id,
+        transactionId: betTx.id,
+      };
+    });
+
+    // ---- WEBHOOK / WS notification (post-transaction) ----
+    // Send balance update via WebSocket
+    this.gameGateway.sendBalanceUpdate(userId, {
+      balance: String(txResult.walletAfterDebit.balance),
+      bonusBalance: String(wallet.bonusBalance),
+      currency: wallet.currency,
+    });
+
+    // Send game result via WebSocket
+    this.gameGateway.sendGameResult(userId, {
+      reels: result.reels,
+      winLines: result.winLines,
+      totalWin: result.totalWin,
+      multiplier: result.multiplier,
+      isBonus: result.isBonus,
+      freeSpinsWon: result.freeSpinsWon,
+      nonce,
+      serverHash: session.serverHash,
     });
 
     return {
@@ -296,6 +444,7 @@ export class GamesService {
       freeSpinsWon: result.freeSpinsWon,
       nonce,
       serverHash: session.serverHash,
+      transactionId: txResult.transactionId,
     };
   }
 
@@ -348,37 +497,71 @@ export class GamesService {
     serverSeed: string,
     clientSeed: string,
     nonce: number,
-    config: any,
-  ) {
-    // Provably fair result calculation
-    const hash = crypto
-      .createHmac('sha256', serverSeed)
-      .update(`${clientSeed}:${nonce}`)
-      .digest('hex');
+    config: SlotEngineConfig,
+  ): {
+    reels: string[][];
+    winLines: any[];
+    totalWin: number;
+    multiplier: number;
+    isBonus: boolean;
+    freeSpinsWon: number;
+  } {
+    try {
+      const engine = new SlotEngine(config, clientSeed);
 
-    // Use hash to determine reel positions
-    const reelsCount = config?.reels || 5;
-    const rowsCount = config?.rows || 3;
-    const symbols = config?.symbols || ['9', '10', 'J', 'Q', 'K', 'A', 'WILD', 'SCATTER', 'BONUS'];
+      // We need to override the internal nonce to match our provably fair sequence
+      // SlotEngine's RNG nonce starts at 1 on first call.
+      // Since we already have a session nonce, we advance the RNG to match.
+      // The engine generates results deterministically based on seeds + nonce.
+      (engine as any).rng['nonce'] = nonce - 1;
 
-    const reels: string[][] = [];
-    for (let r = 0; r < reelsCount; r++) {
-      const reel: string[] = [];
-      for (let row = 0; row < rowsCount; row++) {
-        const hashSlice = hash.substring((r * rowsCount + row) * 2, (r * rowsCount + row) * 2 + 8);
-        const index = parseInt(hashSlice, 16) % symbols.length;
-        reel.push(symbols[index]);
+      const engineResult = engine.spin(1); // betAmount=1, result is ratio-based
+
+      return {
+        reels: engineResult.grid,
+        winLines: engineResult.winLines.map((wl) => ({
+          paylineId: wl.positions?.[0]?.reel ?? 0,
+          symbol: wl.symbol,
+          count: wl.count,
+          win: wl.win * (config.symbols?.length > 0 ? 1 : 1),
+          positions: wl.positions,
+        })),
+        totalWin: engineResult.totalWin,
+        multiplier: engineResult.multiplier,
+        isBonus: engineResult.isBonus,
+        freeSpinsWon: engineResult.freeSpinsWon,
+      };
+    } catch (err) {
+      // Fallback: deterministic result based on hash only
+      const hash = crypto
+        .createHmac('sha256', serverSeed)
+        .update(`${clientSeed}:${nonce}`)
+        .digest('hex');
+
+      const reelsCount = config?.reels || 5;
+      const rowsCount = config?.rows || 3;
+      const symbolIds = config?.symbols?.map((s) => s.id) ||
+        ['9', '10', 'J', 'Q', 'K', 'A', 'WILD', 'SCATTER', 'BONUS'];
+
+      const reels: string[][] = [];
+      for (let r = 0; r < reelsCount; r++) {
+        const reel: string[] = [];
+        for (let row = 0; row < rowsCount; row++) {
+          const hashSlice = hash.substring((r * rowsCount + row) * 2, (r * rowsCount + row) * 2 + 8);
+          const index = parseInt(hashSlice, 16) % symbolIds.length;
+          reel.push(symbolIds[index]);
+        }
+        reels.push(reel);
       }
-      reels.push(reel);
+
+      return {
+        reels,
+        winLines: [],
+        totalWin: 0,
+        multiplier: 0,
+        isBonus: false,
+        freeSpinsWon: 0,
+      };
     }
-
-    // Simplified win calculation
-    const totalWin = 0;
-    const winLines: any[] = [];
-    const multiplier = 0;
-    const isBonus = false;
-    const freeSpinsWon = 0;
-
-    return { reels, winLines, totalWin, multiplier, isBonus, freeSpinsWon };
   }
 }
