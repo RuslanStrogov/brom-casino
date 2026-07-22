@@ -35,8 +35,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # ===== Analytics =====
+  # ===== Analytics (disabled — not in use) =====
   clickhouse:
+    profiles: [disabled]
     image: clickhouse/clickhouse-server:24-alpine
     container_name: casino-clickhouse
     restart: unless-stopped

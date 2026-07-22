@@ -140,8 +140,13 @@
 - [x] Сайт 200 OK: https://brombet.ru/
 - [x] API 200 OK: https://brombet.ru/api/games (45 игр)
 - [x] Логотип заменён на PNG
+- [x] PWA + manifest.json + service worker + иконки
+- [x] Favicon (16x16, 32x32, apple-touch-icon)
+- [x] Категории игр (Slots/Table/Live/Crash) + поиск
+- [x] Страница кошелька `/wallet` (депозит, вывод, история) — задеплоено
+- [x] Header — ссылка на Wallet, BalanceWidget кликабельный — задеплоено
+- [x] Исправлен temple-of-akhet page-in-page (detect iframe) — задеплоено
 - [x] Yandex.Metrika установлена (ID: 110928475)
 - [x] `/slots` → редирект на `/#games`
-- [x] `/promotions` → удалена из Header
 - [x] Docker контейнеры работают (postgres, api, admin, web, nginx, redis, clickhouse)
 - [x] Анализ конкурента selector500.gg — завершён
