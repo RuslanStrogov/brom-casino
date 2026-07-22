@@ -96,6 +96,11 @@ function checkWin(reels: string[][]): { winAmount: number; winLines: { line: num
 export default function DemoGamePage() {
   const params = useParams();
   const slug = params.slug as string;
+  const [isIframe, setIsIframe] = useState(false);
+  
+  useEffect(() => {
+    setIsIframe(window !== window.top);
+  }, []);
   
   const config = GAME_CONFIGS[slug] || FALLBACK_CONFIG;
   const [reels, setReels] = useState<string[][]>(getReels());
@@ -143,6 +148,102 @@ export default function DemoGamePage() {
       }
     }, 100);
   }, [spinning, balance, bet]);
+
+  // Iframe mode: minimal layout without full-page backgrounds
+  if (isIframe) {
+    return (
+      <div className="w-full h-full min-h-[300px] bg-miami-sky flex items-center justify-center p-2">
+        <div className="w-full max-w-md">
+          {/* Slot Machine */}
+          <div
+            className="rounded-xl p-3 mb-2"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            {/* Reels */}
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {reels.map((col, colIdx) => (
+                <div key={colIdx} className="flex flex-col gap-1">
+                  {col.map((symbol, rowIdx) => (
+                    <div
+                      key={`${colIdx}-${rowIdx}`}
+                      className={`aspect-square rounded-lg flex items-center justify-center text-xl md:text-2xl transition-all duration-150 ${
+                        spinning ? 'scale-95' : 'scale-100'
+                      }`}
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                      }}
+                    >
+                      {symbol}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            {/* Win Animation */}
+            {showAnim && (
+              <div className="text-center mb-2 animate-bounce">
+                <span
+                  className="inline-block px-4 py-1 rounded-lg font-bold text-sm"
+                  style={{
+                    background: `linear-gradient(135deg, ${config.color}40, ${config.color}20)`,
+                    border: `1px solid ${config.color}60`,
+                    color: config.color,
+                  }}
+                >
+                  {message}
+                </span>
+              </div>
+            )}
+
+            {/* Controls */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setBet(prev => Math.max(1, prev - 5))}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#ff2d95' }}
+                >
+                  -
+                </button>
+                <span className="px-2 py-1 rounded-lg text-xs font-bold text-white">{bet}</span>
+                <button
+                  onClick={() => setBet(prev => Math.min(100, prev + 5))}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#39ff14' }}
+                >
+                  +
+                </button>
+              </div>
+              <button
+                onClick={spin}
+                disabled={spinning || balance < bet}
+                className="px-6 py-2 rounded-lg font-bold text-sm transition-all disabled:opacity-50"
+                style={{
+                  background: `linear-gradient(135deg, ${config.color}, ${config.color}cc)`,
+                  color: '#000',
+                  boxShadow: spinning ? 'none' : `0 0 15px ${config.color}40`,
+                }}
+              >
+                {spinning ? '🎰 SPINNING...' : '🎰 SPIN'}
+              </button>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="rounded-lg p-2 flex justify-around text-xs" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span className="text-gray-500">Balance: <span className="text-miami-cyan font-bold">{balance}</span></span>
+            <span className="text-gray-500">Last: <span className="font-bold" style={{ color: lastWin > 0 ? config.color : '#666' }}>{lastWin > 0 ? `+${lastWin}` : '0'}</span></span>
+            <span className="text-gray-500">Spins: <span className="text-gray-400">{spinCount}</span></span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-miami-sky flex items-center justify-center p-4">
