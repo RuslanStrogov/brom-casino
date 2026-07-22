@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ccff;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#00ff88;stop-opacity:0.15" />
+    </linearGradient>
+    <linearGradient id="bg2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00ccff;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#00ff88;stop-opacity:0.05" />
+    </linearGradient>
+    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ccff" />
+      <stop offset="100%" style="stop-color:#00ff88" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowStrong">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Dark background -->
+  <rect width="400" height="300" rx="16" fill="#0a0a1a"/>
+  <!-- Gradient overlay -->
+  <rect width="400" height="300" rx="16" fill="url(#bg)"/>
+  <rect width="400" height="300" rx="16" fill="url(#bg2)"/>
+  <!-- Border -->
+  <rect x="1" y="1" width="398" height="298" rx="15" fill="none" stroke="url(#border)" stroke-width="0.5" opacity="0.5"/>
+  <!-- Decorative circles -->
+  <circle cx="50" cy="250" r="120" fill="#00ccff" opacity="0.08"/>
+  <circle cx="350" cy="50" r="100" fill="#00ff88" opacity="0.08"/>
+  <!-- Game icon placeholder - big letter -->
+  <text x="200" y="140" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="#00ccff" opacity="0.6" filter="url(#glowStrong)">G</text>
+  <!-- Game name -->
+  <text x="200" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#ffffff" filter="url(#glow)">Gold Fever</text>
+  <!-- Provider badge -->
+  <rect x="130" y="215" width="140" height="24" rx="12" fill="#00ccff" opacity="0.2"/>
+  <text x="200" y="232" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#00ccff">Yggdrasil</text>
+  <!-- Play button hint -->
+  <circle cx="200" cy="265" r="16" fill="none" stroke="#00ccff" stroke-width="1.5" opacity="0.5"/>
+  <polygon points="193,257 193,273 208,265" fill="#00ccff" opacity="0.5"/>
+</svg>
