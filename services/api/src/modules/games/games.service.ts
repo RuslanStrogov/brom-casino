@@ -188,6 +188,26 @@ export class GamesService {
     };
   }
 
+  async getDemoLaunchUrl(slug: string): Promise<string> {
+    const game = await this.prisma.game.findUnique({ where: { slug } });
+    if (!game) throw new NotFoundException('Game not found');
+    if (!game.isActive) throw new BadRequestException('Game is not available');
+
+    const provider = this.providerMap[game.providerId];
+    if (provider) {
+      return provider.getLaunchUrl(game.externalId, {
+        userId: 'demo',
+        mode: 'demo',
+        sessionToken: 'demo',
+        currency: 'USDT',
+        language: 'en',
+        providerId: game.providerId,
+      });
+    }
+
+    throw new NotFoundException(`No provider found for ${game.providerId}`);
+  }
+
   async spin(userId: string, slug: string, dto: { betAmount: string; lines?: number }) {
     const game = await this.prisma.game.findUnique({ where: { slug } });
     if (!game) throw new NotFoundException('Game not found');

@@ -12,7 +12,7 @@ upstream brom-casino-api {
 
 server {
     listen 80;
-    server_name casino.strogov.com cas.br-design.ru brombet.ru;
+    server_name brombet.ru cas.br-design.ru casino.strogov.com;
 
     # Certbot ACME challenge
     location /.well-known/acme-challenge/ {
@@ -21,14 +21,14 @@ server {
 
     # Redirect all HTTP to HTTPS
     location / {
-        return 301 https://$host$request_uri;
+        return 301 https://brombet.ru$request_uri;
     }
 }
 
 server {
     listen 443 ssl;
     http2 on;
-    server_name casino.strogov.com cas.br-design.ru brombet.ru;
+    server_name brombet.ru cas.br-design.ru casino.strogov.com;
 
     ssl_certificate /etc/letsencrypt/live/casino.strogov.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/casino.strogov.com/privkey.pem;
@@ -48,8 +48,8 @@ server {
     add_header X-XSS-Protection "1; mode=block";
 
     # Logs
-    access_log /var/log/nginx/casino.strogov.com.access.log;
-    error_log /var/log/nginx/casino.strogov.com.error.log;
+    access_log /var/log/nginx/brombet.ru.access.log;
+    error_log /var/log/nginx/brombet.ru.error.log;
 
     # Root location — main web app
     location / {

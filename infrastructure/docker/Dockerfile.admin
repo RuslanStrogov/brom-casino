@@ -10,7 +10,7 @@ COPY . .
 
 RUN pnpm install --frozen-lockfile
 
-ARG NEXT_PUBLIC_API_URL=https://casino.strogov.com/api
+ARG NEXT_PUBLIC_API_URL=https://brombet.ru/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 RUN pnpm --filter brom-casino-admin build

@@ -66,9 +66,9 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       API_PORT: "4000"
-      WEB_URL: https://cas.br-design.ru
-      ADMIN_URL: https://casino.strogov.com
-      NEXT_PUBLIC_API_URL: https://casino.strogov.com/api
+      WEB_URL: https://brombet.ru
+      ADMIN_URL: https://brombet.ru
+      NEXT_PUBLIC_API_URL: https://brombet.ru/api
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,8 +86,8 @@ services:
       - "127.0.0.1:3003:3000"  # 3000 занят super-ai-ru
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: https://casino.strogov.com/api
-      NEXT_PUBLIC_WS_URL: wss://casino.strogov.com/api
+      NEXT_PUBLIC_API_URL: https://brombet.ru/api
+      NEXT_PUBLIC_WS_URL: wss://brombet.ru/api
     depends_on:
       - api
 
@@ -102,7 +102,7 @@ services:
       - "127.0.0.1:3001:3001"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: https://casino.strogov.com/api
+      NEXT_PUBLIC_API_URL: https://brombet.ru/api
     depends_on:
       - api
 

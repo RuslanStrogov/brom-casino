@@ -81,6 +81,17 @@ export class GamesController {
     return this.gamesService.launchGame(req.user.sub, slug, dto.mode || 'real');
   }
 
+  @Public()
+  @Get(':slug/demo')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get demo launch URL (no auth required)' })
+  @ApiResponse({ status: 200, description: 'Demo launch URL returned' })
+  @ApiResponse({ status: 404, description: 'Game not found' })
+  async getDemoLaunchUrl(@Param('slug') slug: string) {
+    const url = await this.gamesService.getDemoLaunchUrl(slug);
+    return { launchUrl: url };
+  }
+
   @Post(':slug/spin')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
