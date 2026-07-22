@@ -12,3 +12,6 @@ coverage/
 
 # Private network data - do not commit
 docs/network-map.md
+
+# Turbo cache
+.turbo/
