@@ -33,7 +33,6 @@ export function Header() {
     { href: '/', label: 'Home' },
     { href: '#games', label: 'Games' },
     { href: '#provably-fair', label: 'Fairness' },
-    { href: '/promotions', label: 'Promos' },
   ];
 
   return (
