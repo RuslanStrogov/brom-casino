@@ -46,9 +46,32 @@ export class PaymentsController {
   @ApiResponse({ status: 201, description: 'Deposit created' })
   async createDeposit(
     @Req() req: any,
-    @Body() dto: { amount: string; currency?: string; paymentMethod?: string },
+    @Body() dto: { amount: string; currency?: string; paymentMethod?: string; fiatCurrency?: string; bankName?: string; bankId?: string },
   ) {
     return this.paymentsService.createDeposit(req.user.sub, dto);
+  }
+
+  @Get('methods')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get available payment methods' })
+  @ApiResponse({ status: 200, description: 'Payment methods' })
+  async getPaymentMethods() {
+    return this.paymentsService.getPaymentMethods();
+  }
+
+  @Get('transactions')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiOperation({ summary: 'Get combined transaction history' })
+  async getTransactions(
+    @Req() req: any,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.paymentsService.getTransactions(req.user.sub, { page, limit });
   }
 
   @Get('withdrawals')

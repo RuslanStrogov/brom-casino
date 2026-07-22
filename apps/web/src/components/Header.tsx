@@ -31,7 +31,7 @@ export function Header() {
 
   const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '#games', label: 'Games' },
+    { href: '/games', label: 'Games' },
     { href: '/favorites', label: 'Favorites' },
     { href: '/wallet', label: 'Wallet' },
     { href: '#provably-fair', label: 'Fairness' },

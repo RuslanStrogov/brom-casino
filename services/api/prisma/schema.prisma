@@ -218,6 +218,8 @@ model Deposit {
   amount          Decimal
   fee             Decimal   @default(0)
   currency        String    @default("USDT")
+  fiatCurrency    String?   // RUB, USD, EUR etc. for fiat deposits
+  bankName        String?   // Сбербанк, Т-Банк etc. for SBP
   paymentMethod   String
   providerRef     String?   @unique
   providerData    Json?

@@ -2,9 +2,10 @@ import { Injectable, Logger, NotFoundException, BadRequestException, ConflictExc
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../common/services/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
-import { TransactionStatus, PaginationMeta, MIN_DEPOSIT, MAX_DEPOSIT, MIN_WITHDRAWAL, MAX_WITHDRAWAL } from '@brom-casino/shared';
+import { TransactionStatus, PaginationMeta, MIN_DEPOSIT, MAX_DEPOSIT, MIN_WITHDRAWAL, MAX_WITHDRAWAL, FIAT_PAYMENT_METHODS, SBP_BANKS, FIAT_CURRENCIES, MIN_FIAT_DEPOSIT, MAX_FIAT_DEPOSIT } from '@brom-casino/shared';
 import { PaymentProvider } from './providers/base.psp';
 import { CryptomusPsp } from './providers/cryptomus.psp';
+import { SbpPsp } from './providers/sbp.psp';
 
 @Injectable()
 export class PaymentsService {
@@ -17,22 +18,42 @@ export class PaymentsService {
     private readonly configService: ConfigService,
     @Inject(CryptomusPsp)
     private readonly cryptomusPsp: PaymentProvider,
+    @Inject(SbpPsp)
+    private readonly sbpPsp: PaymentProvider,
   ) {
     this.providers.set('cryptomus', cryptomusPsp);
+    this.providers.set('sbp', sbpPsp);
+    this.providers.set('card', sbpPsp);    // SBP handles all fiat methods
+    this.providers.set('ecorpay', sbpPsp);
+    this.providers.set('yoomoney', sbpPsp);
+    this.providers.set('fkwallet', sbpPsp);
+    this.providers.set('applepay', sbpPsp);
+    this.providers.set('googlepay', sbpPsp);
+    this.providers.set('openbanking', sbpPsp);
   }
 
   async createDeposit(
     userId: string,
-    dto: { amount: string; currency?: string; paymentMethod?: string },
+    dto: { amount: string; currency?: string; paymentMethod?: string; fiatCurrency?: string; bankName?: string; bankId?: string },
   ) {
     const amount = Number(dto.amount);
-    const currency = dto.currency || 'USDT';
+    const isFiat = dto.fiatCurrency && FIAT_CURRENCIES.includes(dto.fiatCurrency as any);
 
-    if (amount < MIN_DEPOSIT) {
-      throw new BadRequestException(`Minimum deposit is ${MIN_DEPOSIT} ${currency}`);
-    }
-    if (amount > MAX_DEPOSIT) {
-      throw new BadRequestException(`Maximum deposit is ${MAX_DEPOSIT} ${currency}`);
+    if (isFiat) {
+      if (amount < MIN_FIAT_DEPOSIT) {
+        throw new BadRequestException(`Minimum deposit is ${MIN_FIAT_DEPOSIT} ${dto.fiatCurrency}`);
+      }
+      if (amount > MAX_FIAT_DEPOSIT) {
+        throw new BadRequestException(`Maximum deposit is ${MAX_FIAT_DEPOSIT} ${dto.fiatCurrency}`);
+      }
+    } else {
+      const currency = dto.currency || 'USDT';
+      if (amount < MIN_DEPOSIT) {
+        throw new BadRequestException(`Minimum deposit is ${MIN_DEPOSIT} ${currency}`);
+      }
+      if (amount > MAX_DEPOSIT) {
+        throw new BadRequestException(`Maximum deposit is ${MAX_DEPOSIT} ${currency}`);
+      }
     }
 
     const provider = this.getProvider(dto.paymentMethod || 'cryptomus');
@@ -43,21 +64,23 @@ export class PaymentsService {
         userId,
         walletId: (await this.walletService.getWallet(userId)).id,
         amount,
-        currency,
+        currency: isFiat ? dto.fiatCurrency! : (dto.currency || 'USDT'),
+        fiatCurrency: isFiat ? dto.fiatCurrency : null,
+        bankName: dto.bankName || null,
         paymentMethod: dto.paymentMethod || 'cryptomus',
         status: TransactionStatus.PENDING,
-      },
+      } as any,
     });
 
     // Get payment URL from provider
     const paymentResult = await provider.createPayment({
       amount: dto.amount,
-      currency,
+      currency: isFiat ? dto.fiatCurrency! : (dto.currency || 'USDT'),
       orderId: deposit.id,
       userId,
-      description: `Deposit ${amount} ${currency}`,
+      description: isFiat ? JSON.stringify({ bankName: dto.bankName, bankId: dto.bankId, currency: dto.fiatCurrency }) : undefined,
       returnUrl: `${this.configService.get('FRONTEND_URL')}/wallet`,
-      callbackUrl: `${this.configService.get('API_URL')}/api/payments/webhook/cryptomus`,
+      callbackUrl: `${this.configService.get('API_URL')}/api/payments/webhook/${dto.paymentMethod || 'cryptomus'}`,
     });
 
     // Update deposit with provider reference
@@ -72,9 +95,10 @@ export class PaymentsService {
     return {
       depositId: deposit.id,
       amount,
-      currency,
+      currency: isFiat ? dto.fiatCurrency : (dto.currency || 'USDT'),
       paymentUrl: paymentResult.paymentUrl,
       expiresAt: paymentResult.expiresAt,
+      providerData: paymentResult.providerData,
       status: deposit.status,
     };
   }
@@ -295,6 +319,80 @@ export class PaymentsService {
     };
 
     return { withdrawals, meta };
+  }
+
+  async getPaymentMethods() {
+    return {
+      crypto: [
+        { id: 'cryptomus', name: 'Cryptomus', icon: '🪙', currencies: ['USDT', 'BTC', 'TON', 'ETH'], min: MIN_DEPOSIT, max: MAX_DEPOSIT, fee: 0 },
+      ],
+      fiat: FIAT_PAYMENT_METHODS.map(m => ({
+        ...m,
+        currencies: ['RUB', 'USD', 'EUR', 'KZT', 'UAH', 'INR', 'TJS', 'KGS', 'UZS', 'AZN', 'AMD', 'BRL', 'TRY', 'MXN', 'CNY', 'CAD', 'AUD', 'DKK', 'NOK', 'SEK', 'JPY', 'KRW'],
+      })),
+      banks: SBP_BANKS,
+      presets: [500, 1000, 2500, 5000, 10000],
+      limits: { min: MIN_FIAT_DEPOSIT, max: MAX_FIAT_DEPOSIT },
+      commission: 0,
+    };
+  }
+
+  async getTransactions(userId: string, opts: { page: number; limit: number }) {
+    const [deposits, withdrawals, totalDeposits, totalWithdrawals] = await Promise.all([
+      this.prisma.deposit.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip: (opts.page - 1) * opts.limit,
+        take: opts.limit,
+      }),
+      this.prisma.withdrawal.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip: (opts.page - 1) * opts.limit,
+        take: opts.limit,
+      }),
+      this.prisma.deposit.count({ where: { userId } }),
+      this.prisma.withdrawal.count({ where: { userId } }),
+    ]);
+
+    const transactions = [
+      ...deposits.map(d => ({
+        id: d.id,
+        type: 'DEPOSIT' as const,
+        amount: Number(d.amount),
+        fee: Number(d.fee),
+        currency: d.fiatCurrency || d.currency,
+        status: d.status,
+        paymentMethod: d.paymentMethod,
+        bankName: d.bankName,
+        providerRef: d.providerRef,
+        createdAt: d.createdAt,
+        confirmedAt: d.confirmedAt,
+      })),
+      ...withdrawals.map(w => ({
+        id: w.id,
+        type: 'WITHDRAWAL' as const,
+        amount: Number(w.amount),
+        fee: Number(w.fee),
+        currency: w.currency,
+        status: w.status,
+        paymentMethod: w.paymentMethod,
+        destination: w.destination,
+        providerRef: w.providerRef,
+        createdAt: w.createdAt,
+        confirmedAt: w.confirmedAt,
+      })),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const total = totalDeposits + totalWithdrawals;
+    const meta: PaginationMeta = {
+      page: opts.page,
+      limit: opts.limit,
+      total,
+      totalPages: Math.ceil(total / opts.limit),
+    };
+
+    return { transactions, meta };
   }
 
   private getProvider(name: string): PaymentProvider {

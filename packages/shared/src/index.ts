@@ -194,6 +194,56 @@ export const MAX_DEPOSIT = 100000; // USDT
 export const MIN_WITHDRAWAL = 10; // USDT
 export const MAX_WITHDRAWAL = 50000; // USDT
 export const DEFAULT_WAGERING_REQUIREMENT = 35;
+
+// ===== Fiat Payment Constants =====
+
+export const FIAT_CURRENCIES = ['RUB', 'USD', 'EUR', 'KZT', 'UAH', 'INR', 'TJS', 'KGS', 'UZS', 'AZN', 'AMD', 'BRL', 'TRY', 'MXN', 'CNY', 'CAD', 'AUD', 'DKK', 'NOK', 'SEK', 'JPY', 'KRW'] as const;
+export const FIAT_CURRENCY_SYMBOLS: Record<string, string> = {
+  RUB: '₽', USD: '$', EUR: '€', KZT: '₸', UAH: '₴', INR: '₹', TJS: '₸', KGS: 'с', UZS: 'с', AZN: '₼', AMD: '֏', BRL: 'R$', TRY: '₺', MXN: '$', CNY: '¥', CAD: '$', AUD: '$', DKK: 'kr', NOK: 'kr', SEK: 'kr', JPY: '¥', KRW: '₩',
+};
+
+export const FiatPaymentMethodType = {
+  CARD: 'card',
+  SB_PAYMENT: 'sbp', // SBP — Система Быстрых Платежей
+  ECORPAY: 'ecorpay',
+  YOUMONEY: 'yoomoney',
+  FK_WALLET: 'fkwallet',
+  APPLE_PAY: 'applepay',
+  GOOGLE_PAY: 'googlepay',
+  OPEN_BANKING: 'openbanking',
+} as const;
+
+export type FiatPaymentMethod = typeof FiatPaymentMethodType[keyof typeof FiatPaymentMethodType];
+
+export const FIAT_PAYMENT_METHODS = [
+  { id: 'card', name: 'Карта', icon: '💳', min: 100, max: 150000, fee: 0 },
+  { id: 'sbp', name: 'СБП', icon: '🏦', min: 100, max: 300000, fee: 0 },
+  { id: 'ecorpay', name: 'Ecorpay', icon: '💼', min: 100, max: 150000, fee: 0 },
+  { id: 'yoomoney', name: 'ЮMoney', icon: '💰', min: 500, max: 75000, fee: 0 },
+  { id: 'fkwallet', name: 'FK Wallet', icon: '👛', min: 1000, max: 50000, fee: 0 },
+  { id: 'applepay', name: 'Apple Pay', icon: '📱', min: 100, max: 150000, fee: 0 },
+  { id: 'googlepay', name: 'Google Pay', icon: '📱', min: 100, max: 150000, fee: 0 },
+  { id: 'openbanking', name: 'Open Banking', icon: '🏛️', min: 5000, max: 300000, fee: 0 },
+] as const;
+
+export const SBP_BANKS = [
+  { id: 'tbank', name: 'Т-Банк', icon: '🅱️' },
+  { id: 'sberbank', name: 'Сбербанк', icon: '💚' },
+  { id: 'vtb', name: 'ВТБ', icon: '💙' },
+  { id: 'psb', name: 'ПСБ', icon: '🔵' },
+  { id: 'alfa', name: 'Альфа-Банк', icon: '❤️' },
+  { id: 'gazprom', name: 'Газпромбанк', icon: '💙' },
+  { id: 'ozon', name: 'Ozon Банк', icon: '📦' },
+  { id: 'otp', name: 'ОТП Банк', icon: '🔴' },
+  { id: 'yandex', name: 'Yandex Bank', icon: '🟡' },
+  { id: 'sovcombank', name: 'Sovcombank', icon: '🔴' },
+  { id: 'other_sbp', name: 'Другой банк СБП', icon: '🏦' },
+  { id: 'other_p2p', name: 'Другой банк P2P', icon: '🏧' },
+] as const;
+
+export const FIAT_DEPOSIT_PRESETS = [500, 1000, 2500, 5000, 10000] as const;
+export const MIN_FIAT_DEPOSIT = 100;
+export const MAX_FIAT_DEPOSIT = 300000;
 export const JWT_ACCESS_EXPIRY = '15m';
 export const JWT_REFRESH_EXPIRY = '7d';
 export const SESSION_EXPIRY_DAYS = 7;

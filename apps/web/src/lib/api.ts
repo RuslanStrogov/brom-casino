@@ -145,13 +145,12 @@ export const api = {
       bonusBalance: Number(w.bonusBalance) || 0,
     })),
 
-  getTransactions: (token: string, params?: { type?: string; page?: number; limit?: number }) => {
+  getTransactions: (token: string, params?: { page?: number; limit?: number }) => {
     const search = new URLSearchParams();
-    if (params?.type) search.set('type', params.type);
     if (params?.page) search.set('page', String(params.page));
     if (params?.limit) search.set('limit', String(params.limit));
     const qs = search.toString() ? `?${search.toString()}` : '';
-    return request<{ transactions: Transaction[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/wallet/transactions${qs}`, { token });
+    return request<{ transactions: any[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/payments/transactions${qs}`, { token });
   },
 
   transferBalance: (token: string, from: 'real' | 'bonus', to: 'real' | 'bonus', amount: string) =>
@@ -160,10 +159,10 @@ export const api = {
     }),
 
   // ===== Payments =====
-  createDeposit: (token: string, amount: string, currency?: string, paymentMethod?: string) =>
-    request<{ depositId: string; amount: number; currency: string; paymentUrl: string; expiresAt: string; status: string }>(
+  createDeposit: (token: string, amount: string, currency?: string, paymentMethod?: string, extra?: Record<string, any>) =>
+    request<{ depositId: string; amount: number; currency: string; paymentUrl: string; expiresAt: string; status: string; bankName?: string; fiatCurrency?: string }>(
       '/payments/deposits',
-      { method: 'POST', token, body: { amount, currency, paymentMethod } }
+      { method: 'POST', token, body: { amount, currency, paymentMethod, ...extra } }
     ),
 
   getDeposits: (token: string, params?: { page?: number; limit?: number }) => {
@@ -187,6 +186,16 @@ export const api = {
     const qs = search.toString() ? `?${search.toString()}` : '';
     return request<{ withdrawals: any[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(`/payments/withdrawals${qs}`, { token });
   },
+
+  getPaymentMethods: (token: string) =>
+    request<{
+      crypto: Array<{ id: string; name: string; icon: string; currencies: string[]; min: number; max: number; fee: number }>;
+      fiat: Array<{ id: string; name: string; icon: string; min: number; max: number; fee: number; currencies: string[] }>;
+      banks: Array<{ id: string; name: string; icon: string }>;
+      presets: number[];
+      limits: { min: number; max: number };
+      commission: number;
+    }>('/payments/methods', { token }),
 
   // ===== Bonuses =====
   getBonuses: (token: string) =>
