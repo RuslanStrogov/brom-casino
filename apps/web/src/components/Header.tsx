@@ -45,17 +45,11 @@ export function Header() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-lg bg-gradient-miami flex items-center justify-center text-lg font-bold text-white shadow-neon-purple">
-              🎰
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-xl font-heading font-bold bg-gradient-miami bg-clip-text text-transparent bg-[length:200%_200%] animate-gradient-shift">
-                BROM
-              </span>
-              <span className="text-xl font-heading font-bold text-white/80 ml-1">
-                CASINO
-              </span>
-            </div>
+            <img
+              src="/logo-brom-bet.png"
+              alt="BROM BET"
+              className="h-9 md:h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(0,208,240,0.3)] group-hover:drop-shadow-[0_0_20px_rgba(0,208,240,0.5)] transition-all duration-300"
+            />
           </Link>
 
           {/* Desktop Navigation */}
