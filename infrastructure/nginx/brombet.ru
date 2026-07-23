@@ -10,6 +10,10 @@ upstream brom-casino-api {
     server 127.0.0.1:4000;
 }
 
+upstream brom-casino-ws-proxy {
+    server 127.0.0.1:3004;
+}
+
 server {
     listen 80;
     server_name brombet.ru cas.br-design.ru casino.strogov.com;
@@ -66,9 +70,9 @@ server {
         proxy_buffering off;
     }
 
-    # Admin panel
+    # Admin panel — отдельный контейнер на порту 3001
     location /admin {
-        proxy_pass http://brom-casino-web;
+        proxy_pass http://brom-casino-admin;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -81,7 +85,7 @@ server {
     }
 
     location /admin/ {
-        proxy_pass http://brom-casino-web;
+        proxy_pass http://brom-casino-admin;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -119,5 +123,30 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
         proxy_read_timeout 86400;
+    }
+
+    # AI Assistant WebSocket proxy
+    location /ws {
+        proxy_pass http://brom-casino-ws-proxy;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 86400;
+    }
+
+    # AI Assistant REST API (for fallback)
+    location /api/chat {
+        proxy_pass http://brom-casino-ws-proxy/api/chat;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
 }

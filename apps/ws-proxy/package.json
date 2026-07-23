@@ -1,0 +1,15 @@
+{
+  "name": "brombet-ws-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "fastify": "^4.28.0",
+    "@fastify/websocket": "^10.0.0",
+    "@fastify/cors": "^9.0.0",
+    "uuid": "^9.0.0"
+  }
+}

@@ -4,8 +4,10 @@ import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { GameProvider } from '@/providers/GameProvider';
+import { I18nProvider } from '@/i18n/I18nProvider';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { ChatWidget } from '@/components/ChatWidget';
 
 const inter = localFont({
   src: [
@@ -73,11 +75,13 @@ export default function RootLayout({
       <body className="bg-casino-dark text-white font-sans min-h-screen flex flex-col no-tap-highlight overflow-x-hidden">
         <AuthProvider>
           <GameProvider>
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
+            <I18nProvider>
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </I18nProvider>
           </GameProvider>
         </AuthProvider>
 
@@ -93,6 +97,9 @@ export default function RootLayout({
         <noscript>
           <img src="https://mc.yandex.ru/watch/110928475" style={{position:'absolute',left:-9999}} alt="" />
         </noscript>
+
+        {/* AI Assistant */}
+        <ChatWidget />
       </body>
     </html>
   );
