@@ -65,6 +65,130 @@ const OWN_GAME_COMPONENTS: Record<string, React.FC<{ balance: number; onBalanceC
   slots: SlotGame,
 };
 
+/** Providers whose demos can be embedded in iframe */
+const IFRAME_PROVIDERS = ['pragmatic', 'spribe', 'bgaming', 'habanero'];
+
+/** Providers whose demos work but block iframe — open in new tab */
+const REDIRECT_PROVIDERS = ['netent', 'wazdan', 'evoplay'];
+
+/** Provider accent colors for Miami-neon theme */
+const PROVIDER_COLORS: Record<string, string> = {
+  pragmatic: '#ff2d95',
+  evolution: '#39ff14',
+  spribe: '#ff6b35',
+  netent: '#00d4ff',
+  microgaming: '#b44aff',
+  playngo: '#ffd60a',
+  yggdrasil: '#ff2d95',
+  hacksaw: '#ff6b35',
+  pushgaming: '#00d4ff',
+  redtiger: '#b44aff',
+  playtech: '#39ff14',
+  relaxgaming: '#a8e6cf',
+  truelab: '#ff8b94',
+  elkstudios: '#d4a5a5',
+  thunderkick: '#ffd93d',
+  nolimitcity: '#6c5ce7',
+  slotmill: '#a29bfe',
+  bgaming: '#fd79a8',
+  habanero: '#e17055',
+  wazdan: '#00cec9',
+  evoplay: '#6c5ce7',
+};
+
+// ── Redirect Game View (for providers that block iframe) ──
+
+function RedirectGameView({
+  gameSlug,
+  providerName,
+  gameName,
+  neonColor,
+}: {
+  gameSlug: string;
+  providerName: string;
+  gameName: string;
+  neonColor: string;
+}) {
+  const [launchUrl, setLaunchUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUrl = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/games/${gameSlug}/demo`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.launchUrl) {
+            setLaunchUrl(data.launchUrl);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to get launch URL:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUrl();
+  }, [gameSlug]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div
+          className="w-12 h-12 border-4 rounded-full animate-spin"
+          style={{ borderColor: neonColor, borderTopColor: 'transparent' }}
+        />
+        <p className="text-gray-400">Loading game...</p>
+      </div>
+    );
+  }
+
+  if (!launchUrl) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+        <p className="text-gray-400">Unable to load game URL</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8">
+      <div className="text-center max-w-lg">
+        <div className="text-7xl mb-4">🎮</div>
+        <h2 className="text-3xl font-bold text-white mb-2">{gameName}</h2>
+        <p className="text-gray-400 mb-2">
+          Эта игра не поддерживает встраивание в iframe
+        </p>
+        <p className="text-sm text-gray-500 mb-6">
+          Нажмите кнопку ниже, чтобы открыть в новой вкладке
+        </p>
+      </div>
+
+      <a
+        href={launchUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all hover:scale-105"
+        style={{
+          background: `linear-gradient(135deg, ${neonColor}, ${neonColor}cc)`,
+          color: '#000',
+          boxShadow: `0 0 30px ${neonColor}40`,
+        }}
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+        Play {gameName}
+      </a>
+
+      <p className="text-xs text-gray-600">
+        Powered by {providerName}
+      </p>
+    </div>
+  );
+}
+
 export default function GamePage() {
   const params = useParams();
   const router = useRouter();
@@ -140,7 +264,9 @@ export default function GamePage() {
   const providerName = PROVIDER_META[game.providerId]?.name || game.providerId;
   const NativeComponent = OWN_GAME_COMPONENTS[game.slug];
   const isOwnGame = game.providerId === 'own' && !!NativeComponent;
-  const hasWorkingDemo = game.demoAvailable && !isOwnGame;
+  const canIframe = game.demoAvailable && IFRAME_PROVIDERS.includes(game.providerId);
+  const canRedirect = game.demoAvailable && REDIRECT_PROVIDERS.includes(game.providerId);
+  const hasAnyDemo = isOwnGame || canIframe || canRedirect;
 
   return (
     <div className="min-h-screen bg-miami-sky">
@@ -181,8 +307,8 @@ export default function GamePage() {
             {isOwnGame && NativeComponent ? (
               /* Native in-house game component */
               <NativeComponent balance={balance} onBalanceChange={setBalance} />
-            ) : hasWorkingDemo ? (
-              /* Working iframe provider game (Pragmatic / Spribe) */
+            ) : canIframe ? (
+              /* Working iframe provider game (Pragmatic / Spribe / BGaming / Habanero) */
               <ProviderGameView
                 gameSlug={game.slug}
                 providerId={game.providerId}
@@ -190,6 +316,14 @@ export default function GamePage() {
                 gameName={game.name}
                 rtp={game.rtp}
                 onClose={() => router.push('/games')}
+              />
+            ) : canRedirect ? (
+              /* Working demo URL — but blocks iframe, open in new tab (NetEnt / Wazdan / Evoplay) */
+              <RedirectGameView
+                gameSlug={game.slug}
+                providerName={providerName}
+                gameName={game.name}
+                neonColor={PROVIDER_COLORS[game.providerId] || '#ff2d95'}
               />
             ) : (
               /* Broken / restricted provider — Coming Soon */

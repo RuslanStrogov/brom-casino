@@ -131,6 +131,20 @@ export class GenericProvider implements GameProvider {
         // Uses game name in query param
         return `https://demo.habanero.com/gs/?game=${encodeURIComponent(params.gameName || slug)}&language=en&mode=demo`;
 
+      case 'netent':
+        // NetEnt demo — https://games.netent.com/play/starburst
+        // URL works but blocks iframe (X-Frame-Options: SAMEORIGIN)
+        // Frontend will open in new tab instead
+        return `https://games.netent.com/play/${encodeURIComponent(slug)}`;
+
+      case 'wazdan':
+        // Wazdan demo — works but blocks iframe
+        return `https://wazdan.com/gs2/play/${encodeURIComponent(slug)}/`;
+
+      case 'evoplay':
+        // Evoplay demo — uses JS token, works in new tab
+        return `https://evoplay.com/game/${encodeURIComponent(slug)}/`;
+
       default:
         // All other providers restrict embedding — no public demo URL available
         // When an aggregator is configured, the aggregator code path above handles this

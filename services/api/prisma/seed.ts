@@ -159,7 +159,7 @@ async function main() {
 
   for (const game of slotsData) {
     // Providers with working public embeddable iframe demos
-    const demoOk = ['pragmatic', 'spribe', 'bgaming', 'habanero'].includes(game.providerId);
+    const demoOk = ['pragmatic', 'spribe', 'bgaming', 'habanero', 'netent', 'wazdan', 'evoplay'].includes(game.providerId);
     const created = await prisma.game.create({
       data: {
         providerId: game.providerId,
