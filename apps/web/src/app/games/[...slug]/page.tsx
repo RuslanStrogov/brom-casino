@@ -230,14 +230,29 @@ export default function GamePage() {
     const fetchGame = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/games?limit=50`);
-        const data = await res.json();
-        const games: ApiGame[] = data?.games || data || [];
-        const found = games.find((g: ApiGame) => g.slug === slug);
-        if (found) {
-          setGame(found);
+        const res = await fetch(`/api/games/${encodeURIComponent(slug)}`);
+        if (res.ok) {
+          const game = await res.json();
+          setGame(game);
         } else {
-          setNotFound(true);
+          // fallback: search all pages
+          const allGames: ApiGame[] = [];
+          let page = 1;
+          let totalPages = 1;
+          while (page <= totalPages) {
+            const pageRes = await fetch(`/api/games?page=${page}&limit=50`);
+            if (!pageRes.ok) break;
+            const pageData = await pageRes.json();
+            allGames.push(...(pageData?.games || []));
+            totalPages = pageData?.meta?.totalPages || 1;
+            page++;
+          }
+          const found = allGames.find((g: ApiGame) => g.slug === slug);
+          if (found) {
+            setGame(found);
+          } else {
+            setNotFound(true);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch game:', err);
