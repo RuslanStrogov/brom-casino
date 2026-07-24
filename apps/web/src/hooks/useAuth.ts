@@ -26,11 +26,43 @@ export function useAuth() {
     }
   }, [setTokens, setUser]);
 
+  const loginByPhone = useCallback(async (phone: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.loginByPhone(phone, password);
+      setTokens(data.accessToken, data.refreshToken);
+      setUser(data.user);
+      connectSocket(data.accessToken);
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [setTokens, setUser]);
+
   const register = useCallback(async (email: string, password: string, username?: string) => {
     setLoading(true);
     setError(null);
     try {
       const data = await api.register(email, password, username);
+      setTokens(data.accessToken, data.refreshToken);
+      setUser(data.user);
+      connectSocket(data.accessToken);
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [setTokens, setUser]);
+
+  const telegramAuth = useCallback(async (telegramData: { telegramId: string; username?: string; firstName?: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.telegramAuth(telegramData);
       setTokens(data.accessToken, data.refreshToken);
       setUser(data.user);
       connectSocket(data.accessToken);
@@ -66,7 +98,9 @@ export function useAuth() {
     loading,
     error,
     login,
+    loginByPhone,
     register,
+    telegramAuth,
     logout,
     loadProfile,
   };

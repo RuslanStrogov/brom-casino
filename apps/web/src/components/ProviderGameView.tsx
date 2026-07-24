@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import ErrorModal from './ErrorModal';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface ProviderGameViewProps {
   gameSlug: string;
@@ -69,6 +70,7 @@ export default function ProviderGameView({
   const [mode, setMode] = useState<'real' | 'demo'>('demo');
 
   const neonColor = PROVIDER_COLORS[providerId] || '#ff2d95';
+  const { t } = useI18n();
 
   const loadGame = useCallback(async () => {
     setLoading(true);
@@ -85,13 +87,13 @@ export default function ProviderGameView({
             if (data?.launchUrl) {
               setLaunchUrl(data.launchUrl);
             } else {
-              setError('Failed to load game. Please sign in.');
+              setError(t('game.loadingFailed'));
             }
           } else {
-            setError('Failed to load game. Please sign in.');
+            setError(t('game.loadingFailed'));
           }
         } catch {
-          setError('Failed to load game. Please sign in.');
+          setError(t('game.loadingFailed'));
         }
         setLoading(false);
         return;
@@ -108,7 +110,7 @@ export default function ProviderGameView({
       }
     } catch (err) {
       console.error('Failed to load game:', err);
-      setError('Failed to load game. Please try again.');
+      setError(t('game.loadingError'));
     } finally {
       setLoading(false);
     }
@@ -157,7 +159,7 @@ export default function ProviderGameView({
               border: `1px solid ${mode === 'demo' ? 'rgba(255,200,0,0.3)' : 'rgba(0,255,100,0.3)'}`,
             }}
           >
-            {mode === 'demo' ? 'DEMO' : 'REAL'}
+            {t(mode === 'demo' ? 'game.demo' : 'game.real')}
           </button>
           <button
             onClick={loadGame}
@@ -194,7 +196,7 @@ export default function ProviderGameView({
                 className="w-12 h-12 border-4 rounded-full animate-spin"
                 style={{ borderColor: neonColor, borderTopColor: 'transparent' }}
               />
-              <p className="text-gray-400">Loading game...</p>
+              <p className="text-gray-400">{t('common.loading')}</p>
             </div>
           </div>
         ) : error ? (

@@ -3,6 +3,7 @@
 import React from 'react';
 import { MoreHorizontal, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminApi } from '../lib/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 interface User {
   id: string;
@@ -20,6 +21,7 @@ interface User {
 }
 
 export default function UserTable({ limit }: { limit?: number }) {
+  const { t } = useI18n();
   const [users, setUsers] = React.useState<User[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState('');
@@ -105,8 +107,8 @@ export default function UserTable({ limit }: { limit?: number }) {
       {/* Header */}
       <div className="px-5 py-4 border-b border-gray-800">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Users</h2>
-          <span className="text-sm text-gray-500">{users.length} total</span>
+          <h2 className="text-lg font-semibold">{t('users.title', 'Users')}</h2>
+          <span className="text-sm text-gray-500">{users.length} {t('common.total', 'total')}</span>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
@@ -115,7 +117,7 @@ export default function UserTable({ limit }: { limit?: number }) {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search by name or email..."
+              placeholder={t('users.searchPlaceholder', 'Search by name or email...')}
               className="input pl-10"
             />
           </div>
@@ -124,10 +126,10 @@ export default function UserTable({ limit }: { limit?: number }) {
             onChange={e => setStatusFilter(e.target.value)}
             className="input w-36"
           >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-            <option value="banned">Banned</option>
+            <option value="all">{t('common.allStatus', 'All Status')}</option>
+            <option value="active">{t('common.active', 'Active')}</option>
+            <option value="suspended">{t('common.suspended', 'Suspended')}</option>
+            <option value="banned">{t('common.banned', 'Banned')}</option>
           </select>
         </div>
       </div>
@@ -137,11 +139,11 @@ export default function UserTable({ limit }: { limit?: number }) {
         <table>
           <thead>
             <tr>
-              <th>User</th>
-              <th>Role</th>
-              <th>Balance</th>
-              <th>Wagered</th>
-              <th>Status</th>
+              <th>{t('users.user', 'User')}</th>
+              <th>{t('users.role', 'Role')}</th>
+              <th>{t('users.balance', 'Balance')}</th>
+              <th>{t('users.wagered', 'Wagered')}</th>
+              <th>{t('users.status', 'Status')}</th>
               <th>KYC</th>
               <th></th>
             </tr>
@@ -150,7 +152,7 @@ export default function UserTable({ limit }: { limit?: number }) {
             {displayUsers.length === 0 ? (
               <tr>
                 <td colSpan={7} className="text-center text-gray-500 py-8">
-                  No users found
+                  {t('users.noUsers', 'No users found')}
                 </td>
               </tr>
             ) : (
@@ -188,7 +190,7 @@ export default function UserTable({ limit }: { limit?: number }) {
       {!limit && users.length > 0 && (
         <div className="px-5 py-3 border-t border-gray-800 flex items-center justify-between">
           <span className="text-sm text-gray-500">
-            Showing page {currentPage}
+            {t('users.showingPage', 'Showing page')} {currentPage}
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -213,7 +215,7 @@ export default function UserTable({ limit }: { limit?: number }) {
       {limit && users.length > 0 && (
         <div className="px-5 py-3 border-t border-gray-800">
           <button className="text-sm text-amber-400 hover:text-amber-300 w-full text-center">
-            View all users →
+            {t('users.viewAll', 'View all users')} →
           </button>
         </div>
       )}

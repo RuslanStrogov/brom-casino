@@ -5,39 +5,46 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useBalance } from '@/hooks/useBalance';
 import { useAuth } from '@/hooks/useAuth';
-import { GameCard } from '@/components/GameCard';
+import { useFavoritesStore } from '@/stores/favoritesStore';
+import { useRecentStore } from '@/stores/favoritesStore';
+import { NarrowGameCard } from '@/components/NarrowGameCard';
 import { AuthModal } from '@/components/AuthModal';
 import { api } from '@/lib/api';
+import { useI18n } from '@/i18n/I18nProvider';
 
 // ─── In-house game definitions ───────────────────────────────────
 const IN_HOUSE_GAMES = [
-  { id: 'slots',   name: 'Slots',     emoji: '🎰', description: 'Classic slot machine with big wins', slug: 'slots',   color: '#ff2d95',   provider: 'In-House', rtp: 97.5 },
-  { id: 'crash',   name: 'Crash',     emoji: '🚀', description: 'Ride the multiplier before it crashes', slug: 'crash',   color: '#b44aff',   provider: 'In-House', rtp: 96.0 },
-  { id: 'dice',    name: 'Dice',      emoji: '🎲', description: 'Predict the roll, win big', slug: 'dice',    color: '#00d4ff',   provider: 'In-House', rtp: 99.0 },
-  { id: 'plinko',  name: 'Plinko',    emoji: '🎯', description: 'Drop the ball and watch it bounce', slug: 'plinko',  color: '#ff6b35',   provider: 'In-House', rtp: 97.0 },
-  { id: 'roulette',name: 'Roulette',  emoji: '🎡', description: 'European roulette with 37 numbers', slug: 'roulette',color: '#39ff14',   provider: 'In-House', rtp: 97.3 },
-  { id: 'blackjack',name: 'Blackjack',emoji: '🃏', description: 'Beat the dealer to 21', slug: 'blackjack',color: '#ffd60a',   provider: 'In-House', rtp: 99.5 },
+  { id: 'slots',    nameKey: 'game.slots',      slug: 'slots',    color: '#ff2d95',  provider: 'In-House' },
+  { id: 'crash',    nameKey: 'game.crash',      slug: 'crash',    color: '#b44aff',  provider: 'In-House' },
+  { id: 'dice',     nameKey: 'game.dice',       slug: 'dice',     color: '#00d4ff',  provider: 'In-House' },
+  { id: 'plinko',   nameKey: 'game.plinko',     slug: 'plinko',   color: '#ff6b35',  provider: 'In-House' },
+  { id: 'roulette', nameKey: 'game.roulette',   slug: 'roulette', color: '#39ff14',  provider: 'In-House' },
+  { id: 'blackjack',nameKey: 'game.blackjack',  slug: 'blackjack',color: '#ffd60a',  provider: 'In-House' },
 ] as const;
 
-const PROVIDER_META: Record<string, { name: string; emoji: string }> = {
-  pragmatic:  { name: 'Pragmatic Play', emoji: '🎰' },
-  evolution:  { name: 'Evolution',      emoji: '🎡' },
-  spribe:     { name: 'Spribe',          emoji: '✈️' },
-  netent:     { name: 'NetEnt',          emoji: '⭐' },
-  microgaming:{ name: 'Microgaming',     emoji: '🎮' },
-  playngo:    { name: "Play'n GO",       emoji: '🎲' },
-  yggdrasil:  { name: 'Yggdrasil',       emoji: '🌳' },
-  hacksaw:    { name: 'Hacksaw Gaming',  emoji: '🪚' },
-  pushgaming: { name: 'Push Gaming',     emoji: '🔥' },
-  redtiger:   { name: 'Red Tiger',       emoji: '🐯' },
-  playtech:   { name: 'Playtech',        emoji: '🎯' },
-  relaxgaming:{ name: 'Relax Gaming',    emoji: '🧘' },
-  truelab:    { name: 'TrueLab',         emoji: '🔬' },
-  elkstudios: { name: 'ELK Studios',     emoji: '🦌' },
-  thunderkick:{ name: 'Thunderkick',     emoji: '⚡' },
-  nolimitcity:{ name: 'Nolimit City',    emoji: '🏙️' },
-  slotmill:   { name: 'Slotmill',        emoji: '⚙️' },
-  bgaming:    { name: 'BGaming',         emoji: '🎪' },
+const PROVIDER_META: Record<string, { name: string }> = {
+  pragmatic:   { name: 'Pragmatic Play' },
+  evolution:   { name: 'Evolution' },
+  spribe:      { name: 'Spribe' },
+  netent:      { name: 'NetEnt' },
+  microgaming: { name: 'Microgaming' },
+  playngo:     { name: "Play'n GO" },
+  yggdrasil:   { name: 'Yggdrasil' },
+  hacksaw:     { name: 'Hacksaw Gaming' },
+  pushgaming:  { name: 'Push Gaming' },
+  redtiger:    { name: 'Red Tiger' },
+  playtech:    { name: 'Playtech' },
+  relaxgaming: { name: 'Relax Gaming' },
+  truelab:     { name: 'TrueLab' },
+  elkstudios:  { name: 'ELK Studios' },
+  thunderkick: { name: 'Thunderkick' },
+  nolimitcity: { name: 'Nolimit City' },
+  slotmill:    { name: 'Slotmill' },
+  bgaming:     { name: 'BGaming' },
+  betsoft:     { name: 'Betsoft' },
+  quickspin:   { name: 'Quickspin' },
+  bigtimegaming: { name: 'Big Time Gaming' },
+  ironDog:     { name: 'Iron Dog Studio' },
 };
 
 interface ApiGame {
@@ -60,15 +67,19 @@ interface ApiGame {
   tags: string[];
 }
 
+// Mock playing counts: 99, 77, 55, then 5 random, rest 0
+const MOCK_PLAYING = [99, 77, 55, 42, 31, 28, 18, 12];
+const getMockPlayingCount = (i: number): number => MOCK_PLAYING[i] ?? 0;
+
 const CATEGORIES = [
-  { key: 'All',      label: '🎮 All Games' },
-  { key: 'Slots',    label: '🎰 Slots' },
-  { key: 'Table',    label: '🃏 Table' },
-  { key: 'Live',     label: '🎥 Live' },
-  { key: 'Jackpot',  label: '💰 Jackpot' },
-  { key: 'New',      label: '✨ New' },
-  { key: 'Favorites',label: '❤️ Favorites' },
-  { key: 'Recent',   label: '🕐 Recent' },
+  { key: 'All',      labelKey: 'game.allGames' },
+  { key: 'Slots',    labelKey: 'game.slotsCategory' },
+  { key: 'Table',    labelKey: 'game.table' },
+  { key: 'Live',     labelKey: 'game.liveCategory' },
+  { key: 'Jackpot',  labelKey: 'game.jackpotCategory' },
+  { key: 'New',      labelKey: 'game.newCategory' },
+  { key: 'Favorites',labelKey: 'game.favoritesCategory' },
+  { key: 'Recent',   labelKey: 'game.recentCategory' },
 ];
 
 export default function GamesLobbyPage() {
@@ -81,9 +92,10 @@ export default function GamesLobbyPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [apiGames, setApiGames] = useState<ApiGame[]>([]);
   const [loadingApi, setLoadingApi] = useState(false);
+  const { t } = useI18n();
 
-  // Derived data from auth stores (for favorites / recent)
-  // We assume useFavoritesStore / useRecentStore exist. If not, inline logic.
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const { recent } = useRecentStore();
 
   // ─── Fetch 3rd-party games from API ──────────────────────────
   useEffect(() => {
@@ -102,24 +114,26 @@ export default function GamesLobbyPage() {
 
   // ─── Combined game list ──────────────────────────────────────
   const allGames = useMemo(() => {
-    const inHouse = IN_HOUSE_GAMES.map((g) => ({
+    const inHouse = IN_HOUSE_GAMES.map((g, i) => ({
       ...g,
       type: 'in-house' as const,
+      gameId: `in-house-${g.slug}`,
+      playingCount: getMockPlayingCount(i + 100),
     }));
 
-    const thirdParty = apiGames.map((g) => ({
+    const thirdParty = apiGames.map((g, i) => ({
       id: g.id,
       name: g.name,
       slug: g.slug,
-      emoji: PROVIDER_META[g.providerId]?.emoji ?? '🎮',
-      description: `${PROVIDER_META[g.providerId]?.name ?? g.providerId} — ${g.category}`,
       color: '#ff2d95',
       provider: PROVIDER_META[g.providerId]?.name ?? g.providerId,
-      rtp: g.rtp ?? undefined,
+      providerId: g.providerId,
       type: 'api' as const,
+      gameId: `api-${g.slug}`,
       isNew: g.isNew,
       isJackpot: g.isJackpot,
       category: g.category,
+      playingCount: getMockPlayingCount(i),
     }));
 
     return [...inHouse, ...thirdParty];
@@ -132,24 +146,23 @@ export default function GamesLobbyPage() {
     // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (g) =>
-          g.name.toLowerCase().includes(q) ||
-          g.description.toLowerCase().includes(q) ||
-          g.provider?.toLowerCase().includes(q),
-      );
+      list = list.filter((g) => {
+        const name = g.type === 'in-house' ? t(g.nameKey as any) : g.name;
+        return name.toLowerCase().includes(q) || g.provider?.toLowerCase().includes(q);
+      });
     }
 
     // Category filter
     if (activeCategory !== 'All') {
       const cat = activeCategory.toLowerCase();
       if (cat === 'favorites') {
-        // Show all in-house + api games (favorites are UI-only via store)
-        // Real favorites are handled by useFavoritesStore client-side
-        return list;
+        const favIds = new Set<string>();
+        // We need to filter client-side via favorites store
+        return list.filter((g) => isFavorite(g.gameId));
       }
       if (cat === 'recent') {
-        return list; // Show all when "Recent" is selected (sorted by recent play)
+        const recentSlugs = new Set(recent.map((r) => r.slug));
+        return list.filter((g) => recentSlugs.has(g.slug));
       }
       if (cat === 'slots') {
         list = list.filter((g) => g.type === 'in-house' ? g.slug === 'slots' : true);
@@ -163,7 +176,7 @@ export default function GamesLobbyPage() {
     }
 
     return list;
-  }, [allGames, searchQuery, activeCategory]);
+  }, [allGames, searchQuery, activeCategory, isFavorite, recent]);
 
   // ─── Open game ───────────────────────────────────────────────
   const openGame = (slug: string, type: 'in-house' | 'api', providerId?: string) => {
@@ -184,18 +197,17 @@ export default function GamesLobbyPage() {
   return (
     <div className="min-h-screen">
       {/* ─── Hero Banner ────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-16 pb-8 md:pt-20 md:pb-12">
-        {/* Neon gradient background */}
+      <section className="relative overflow-hidden pt-16 pb-8 md:pt-20 md:pb-10">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,45,149,0.15),transparent_70%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(68,0,255,0.1),transparent_70%)]" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <h1 className="text-4xl md:text-6xl font-heading font-bold bg-gradient-to-r from-miami-pink via-miami-cyan to-miami-purple bg-clip-text text-transparent mb-3">
-              Game Lobby
+              {t('game.gameLobby')}
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Choose from hundreds of games — in-house provably fair classics and premium provider titles
+              {t('game.gameLobbySub')}
             </p>
           </div>
 
@@ -216,7 +228,7 @@ export default function GamesLobbyPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search games..."
+                placeholder={t('game.searchPlaceholder')}
                 className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl
                   text-white placeholder-gray-500 focus:outline-none focus:border-miami-pink/50
                   focus:ring-1 focus:ring-miami-pink/30 transition-all duration-300"
@@ -249,13 +261,13 @@ export default function GamesLobbyPage() {
                   : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/5'
               }`}
             >
-              {cat.label}
+              {t(cat.labelKey)}
             </button>
           ))}
         </div>
       </section>
 
-      {/* ─── Games Grid ──────────────────────────────────────── */}
+      {/* ─── Games Grid - 7 columns ──────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         {loadingApi && (
           <div className="flex items-center justify-center py-12">
@@ -266,50 +278,49 @@ export default function GamesLobbyPage() {
         {!loadingApi && filteredGames.length === 0 && (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🎮</div>
-            <h3 className="text-xl font-heading font-bold text-white mb-2">No games found</h3>
+            <h3 className="text-xl font-heading font-bold text-white mb-2">{t('game.noResults')}</h3>
             <p className="text-gray-500">
               {searchQuery
-                ? `No matching "${searchQuery}" — try a different search term`
-                : 'No games in this category yet'}
+                ? t('game.noSearchResults').replace('{query}', searchQuery)
+                : t('game.noResults')}
             </p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          {filteredGames.map((game, idx) => (
-            <div
-              key={`${game.type}-${game.slug}-${idx}`}
-              style={{ animationDelay: `${(idx % 12) * 50}ms` }}
-            >
-              <GameCard
-                name={game.name}
-                emoji={game.emoji}
-                description={game.description}
-                color={game.color}
-                provider={game.provider}
-                rtp={game.rtp}
-                isLive={game.type === 'api'}
-                gameId={`${game.type}-${game.slug}`}
-                slug={game.slug}
-                onClick={() => openGame(game.slug, game.type, game.type === 'api' ? game.provider?.toLowerCase() : undefined)}
-              />
-            </div>
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 md:gap-3">
+          {filteredGames.map((game, idx) => {
+            const displayName = game.type === 'in-house' ? t(game.nameKey as any) : game.name;
+            const slug = game.slug.toLowerCase().replace(/\s+/g, '-');
+            return (
+              <div
+                key={`${game.type}-${game.slug}-${idx}`}
+                style={{ animationDelay: `${(idx % 12) * 50}ms` }}
+              >
+                <NarrowGameCard
+                  name={displayName}
+                  slug={game.slug}
+                  gameId={game.gameId}
+                  provider={game.provider}
+                  imageUrl={`/games/${slug}.svg`}
+                  color={game.color}
+                  onClick={() => openGame(game.slug, game.type, game.type === 'api' ? game.providerId : undefined)}
+                />
+              </div>
+            );
+          })}
         </div>
 
-        {/* ─── Live Stats Bar ────────────────────────────────── */}
+        {/* ─── Stats Bar ─────────────────────────────────────── */}
         {!loadingApi && filteredGames.length > 0 && (
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-miami-green animate-pulse" />
-              {allGames.length} games available
+              {allGames.length} {t('game.gamesAvailable')}
             </span>
             <span className="w-1 h-1 rounded-full bg-gray-600" />
             <span>{IN_HOUSE_GAMES.length} in-house</span>
             <span className="w-1 h-1 rounded-full bg-gray-600" />
-            <span>{apiGames.length} providers</span>
-            <span className="w-1 h-1 rounded-full bg-gray-600" />
-            <span>RTP up to 99.5%</span>
+            <span>{apiGames.length} {t('game.providers')}</span>
           </div>
         )}
       </section>

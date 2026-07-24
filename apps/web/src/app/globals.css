@@ -22,7 +22,7 @@ html {
 body {
   background-color: #0a0a0f;
   color: #ffffff;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-onest), system-ui, sans-serif;
 }
 
 /* ===== Custom Scrollbar ===== */
@@ -325,6 +325,87 @@ body {
   100% { background-position: 0% 50%; }
 }
 
+/* ===== Animated Wavy Lines ===== */
+@keyframes wave-move {
+  0% { d: path("M0,50 Q25,20 50,50 T100,50 T150,50 T200,50 T250,50 T300,50 T350,50 T400,50 T450,50 T500,50 T550,50 T600,50 T650,50 T700,50 T750,50"); }
+  25% { d: path("M0,50 Q25,80 50,50 T100,50 T150,50 T200,50 T250,50 T300,50 T350,50 T400,50 T450,50 T500,50 T550,50 T600,50 T650,50 T700,50 T750,50"); }
+  50% { d: path("M0,50 Q25,20 50,50 T100,50 T150,50 T200,50 T250,50 T300,50 T350,50 T400,50 T450,50 T500,50 T550,50 T600,50 T650,50 T700,50 T750,50"); }
+  75% { d: path("M0,50 Q25,80 50,50 T100,50 T150,50 T200,50 T250,50 T300,50 T350,50 T400,50 T450,50 T500,50 T550,50 T600,50 T650,50 T700,50 T750,50"); }
+  100% { d: path("M0,50 Q25,20 50,50 T100,50 T150,50 T200,50 T250,50 T300,50 T350,50 T400,50 T450,50 T500,50 T550,50 T600,50 T650,50 T700,50 T750,50"); }
+}
+
+@keyframes wave-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes wave-vertical {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes line-morph {
+  0%, 100% {
+    d: path("M0,50 C150,0 300,100 450,50 C600,0 750,100 900,50 C1050,0 1200,100 1350,50 C1500,0 1650,100 1800,50");
+  }
+  25% {
+    d: path("M0,80 C150,30 300,130 450,80 C600,30 750,130 900,80 C1050,30 1200,130 1350,80 C1500,30 1650,130 1800,80");
+  }
+  50% {
+    d: path("M0,20 C150,70 300,-30 450,20 C600,70 750,-30 900,20 C1050,70 1200,-30 1350,20 C1500,70 1650,-30 1800,20");
+  }
+  75% {
+    d: path("M0,80 C150,130 300,30 450,80 C600,130 750,30 900,80 C1050,130 1200,30 1350,80 C1500,130 1650,30 1800,80");
+  }
+}
+
+@keyframes line-morph-2 {
+  0%, 100% {
+    d: path("M0,30 C120,80 240,-20 360,30 C480,80 600,-20 720,30 C840,80 960,-20 1080,30 C1200,80 1320,-20 1440,30");
+  }
+  33% {
+    d: path("M0,70 C120,20 240,120 360,70 C480,20 600,120 720,70 C840,20 960,120 1080,70 C1200,20 1320,120 1440,70");
+  }
+  66% {
+    d: path("M0,10 C120,60 240,-40 360,10 C480,60 600,-40 720,10 C840,60 960,-40 1080,10 C1200,60 1320,-40 1440,10");
+  }
+}
+
+@keyframes line-morph-3 {
+  0%, 100% {
+    d: path("M0,65 C100,15 200,115 300,65 C400,15 500,115 600,65 C700,15 800,115 900,65 C1000,15 1100,115 1200,65");
+  }
+  20% {
+    d: path("M0,45 C100,95 200,-5 300,45 C400,95 500,-5 600,45 C700,95 800,-5 900,45 C1000,95 1100,-5 1200,45");
+  }
+  40% {
+    d: path("M0,85 C100,35 200,135 300,85 C400,35 500,135 600,85 C700,35 800,135 900,85 C1000,35 1100,135 1200,85");
+  }
+  60% {
+    d: path("M0,35 C100,85 200,-15 300,35 C400,85 500,-15 600,35 C700,85 800,-15 900,35 C1000,85 1100,-15 1200,35");
+  }
+  80% {
+    d: path("M0,95 C100,45 200,145 300,95 C400,45 500,145 600,95 C700,45 800,145 900,95 C1000,45 1100,145 1200,95");
+  }
+}
+
+/* Floating dots along waves */
+@keyframes dot-float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { transform: translateY(-20px) scale(1.5); opacity: 1; }
+}
+
+@keyframes dot-float-2 {
+  0%, 100% { transform: translateY(0) scale(0.8); opacity: 0.4; }
+  50% { transform: translateY(15px) scale(1.2); opacity: 0.8; }
+}
+
+@keyframes line-glow-pulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.3; }
+}
+
 /* ===== Miami Neon Grid Background ===== */
 .bg-miami-grid {
   background-image: 
@@ -426,6 +507,27 @@ body {
 .gpu-accelerated {
   transform: translateZ(0);
   will-change: transform;
+}
+
+/* ===== Wave Animation Classes ===== */
+.animate-line-morph-1 {
+  animation: line-morph 8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-line-morph-2 {
+  animation: line-morph-2 10s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-line-morph-3 {
+  animation: line-morph-3 7s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ===== Wave Glow Pulse ===== */
+.animate-wave-glow {
+  animation: line-glow-pulse 3s ease-in-out infinite;
 }
 
 /* Smooth font rendering */

@@ -50,6 +50,28 @@ export class GamesService {
   /** Map of DB providerId → provider instance */
   private readonly providerMap: Record<string, GameProvider>;
 
+  /** Provider demo status: true = demo URL verified working, false = broken, undefined = unknown */
+  private readonly providerDemoStatus: Record<string, boolean> = {
+    'pragmatic': true,    // ✅ demogamesfree.pragmaticplay.net — verified working
+    'spribe': true,       // ✅ spribe.co — verified working
+    'thunderkick': true,  // ✅ thunderkick.com — verified working (game page)
+    'netent': false,      // ❌ games.netent.com → restricted
+    'evolution': false,   // ❌ live-only, no demo
+    'nolimitcity': false, // ❌ nolimitcity.com → restricted
+    'redtiger': false,    // ❌ redtiger.com → restricted
+    'hacksaw': false,     // ❌ 404
+    'playtech': false,    // ❌ 404
+    'relaxgaming': false, // ❌ 404
+    'slotmill': false,    // ❌ 404
+    'playngo': false,     // ❌ DNS failure
+    'microgaming': false, // ❌ DNS failure
+    'yggdrasil': false,   // ❌ DNS failure
+    'bgaming': false,     // ❌ DNS failure
+    'pushgaming': false,  // ❌ DNS failure
+    'elkstudios': false,  // ❌ DNS failure
+    'truelab': false,     // ❌ DNS failure
+  };
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => WalletService))
@@ -135,6 +157,18 @@ export class GamesService {
       this.prisma.game.count({ where }),
     ]);
 
+    // Add working status based on provider
+    const gamesWithStatus = games.map((game) => ({
+      ...game,
+      working: this.providerDemoStatus[game.providerId] ?? false,
+    }));
+
+    // Sort: working games first, then non-working
+    gamesWithStatus.sort((a, b) => {
+      if (a.working !== b.working) return a.working ? -1 : 1;
+      return 0;
+    });
+
     const meta: PaginationMeta = {
       page: opts.page,
       limit: opts.limit,
@@ -142,7 +176,7 @@ export class GamesService {
       totalPages: Math.ceil(total / opts.limit),
     };
 
-    return { games, meta, total };
+    return { games: gamesWithStatus, meta, total };
   }
 
   async getCategories() {

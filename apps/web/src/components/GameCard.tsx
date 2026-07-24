@@ -2,6 +2,7 @@
 
 import { useFavoritesStore, FavoriteGame } from '@/stores/favoritesStore';
 import { useRecentStore } from '@/stores/favoritesStore';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface GameCardProps {
   name: string;
@@ -31,6 +32,7 @@ export function GameCard({
   const neonColor = color || '#ff2d95';
   const { favorites, toggleFavorite, isFavorite } = useFavoritesStore();
   const { addRecent } = useRecentStore();
+  const { t } = useI18n();
   const liked = gameId ? isFavorite(gameId) : false;
 
   const handleFavorite = (e: React.MouseEvent) => {
@@ -78,7 +80,7 @@ export function GameCard({
           <button
             onClick={handleFavorite}
             className="absolute -top-1 -right-1 p-2 rounded-full z-20 transition-all hover:scale-110"
-            aria-label={liked ? 'Remove from favorites' : 'Add to favorites'}
+            aria-label={liked ? t('game.favoriteRemove', 'Remove from favorites') : t('game.favoriteAdd', 'Add to favorites')}
           >
             <svg
               className={`w-5 h-5 transition-all ${
@@ -135,7 +137,7 @@ export function GameCard({
           className="flex items-center gap-2 text-sm font-medium transition-colors"
           style={{ color: neonColor }}
         >
-          <span>Play Now</span>
+          <span>{t('game.playNow', 'Play Now')}</span>
           <svg
             className="w-4 h-4 group-hover:translate-x-1 transition-transform"
             fill="none"

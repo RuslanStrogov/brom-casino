@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface PlinkoGameProps {
   balance: number;
@@ -27,6 +28,7 @@ const PAYOUT_MULTIPLIERS: Record<number, number[]> = {
 };
 
 export default function PlinkoGame({ balance, onBalanceChange }: PlinkoGameProps) {
+  const { t } = useI18n();
   const [rows, setRows] = useState(12);
   const [bet, setBet] = useState(1);
   const [balls, setBalls] = useState<Ball[]>([]);
@@ -178,9 +180,9 @@ export default function PlinkoGame({ balance, onBalanceChange }: PlinkoGameProps
         if (winAmount > 0) {
           setLastWin(winAmount);
           onBalanceChange(balance - bet + winAmount);
-          setMessage(`🎉 Landed on ${mult}x! Won ${winAmount.toFixed(2)}!`);
+          setMessage(t('game.plinkoWin', `🎉 Landed on ${mult}x! Won ${winAmount.toFixed(2)}!`).replace('{mult}', String(mult)).replace('{amount}', winAmount.toFixed(2)));
         } else {
-          setMessage('Try again!');
+          setMessage(t('game.plinkoLose', 'Try again!'));
         }
 
         setDropping(false);

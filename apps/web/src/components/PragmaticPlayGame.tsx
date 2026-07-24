@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface PragmaticPlayGameProps {
   gameId: string;
@@ -13,6 +14,7 @@ export default function PragmaticPlayGame({ gameId, onClose }: PragmaticPlayGame
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<'real' | 'demo'>('demo');
+  const { t } = useI18n();
 
   const loadGame = useCallback(async () => {
     setLoading(true);
@@ -21,7 +23,7 @@ export default function PragmaticPlayGame({ gameId, onClose }: PragmaticPlayGame
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        setError('Not authenticated. Please log in.');
+        setError(t('game.notAuthenticated'));
         setLoading(false);
         return;
       }
@@ -70,7 +72,7 @@ export default function PragmaticPlayGame({ gameId, onClose }: PragmaticPlayGame
             <h3 className="font-bold text-white">
               {gameId.replace('pp-', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </h3>
-            <span className="text-xs text-casino-muted">Pragmatic Play</span>
+            <span className="text-xs text-casino-muted">{t('game.providerTitle', 'Pragmatic Play')}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -82,7 +84,7 @@ export default function PragmaticPlayGame({ gameId, onClose }: PragmaticPlayGame
                 : 'bg-green-500/20 text-green-400 border border-green-500/30'
             }`}
           >
-            {mode === 'demo' ? 'DEMO' : 'REAL'}
+            {t(mode === 'demo' ? 'game.demo' : 'game.real')}
           </button>
           <button
             onClick={loadGame}
@@ -105,7 +107,7 @@ export default function PragmaticPlayGame({ gameId, onClose }: PragmaticPlayGame
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-4 border-casino-gold border-t-transparent rounded-full animate-spin" />
-              <p className="text-casino-muted">Loading game...</p>
+              <p className="text-casino-muted">{t('common.loading')}</p>
             </div>
           </div>
         ) : error ? (
@@ -127,7 +129,7 @@ export default function PragmaticPlayGame({ gameId, onClose }: PragmaticPlayGame
             allow="autoplay; fullscreen"
             allowFullScreen
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-            title="Pragmatic Play Game"
+            title={t('game.providerTitle', 'Pragmatic Play')}
           />
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -149,11 +151,11 @@ export default function PragmaticPlayGame({ gameId, onClose }: PragmaticPlayGame
           </div>
           <div className="flex items-center gap-2">
             <span className="text-casino-muted text-xs">
-              Powered by Pragmatic Play
+              Powered by {t('game.providerTitle', 'Pragmatic Play')}
             </span>
             <img
               src="https://pragmaticplay.net/wp-content/uploads/2020/11/logo.png"
-              alt="Pragmatic Play"
+              alt={t('game.providerTitle', 'Pragmatic Play')}
               className="h-5 opacity-50"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />

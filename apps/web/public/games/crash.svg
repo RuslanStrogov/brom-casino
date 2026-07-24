@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#b44aff;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#ff2d95;stop-opacity:0.15" />
+    </linearGradient>
+    <linearGradient id="bg2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#b44aff;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#ff2d95;stop-opacity:0.05" />
+    </linearGradient>
+    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#b44aff" />
+      <stop offset="100%" style="stop-color:#ff2d95" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowStrong">
+      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="#0a0a1a"/>
+  <rect width="400" height="300" rx="16" fill="url(#bg)"/>
+  <rect width="400" height="300" rx="16" fill="url(#bg2)"/>
+  <rect x="1" y="1" width="398" height="298" rx="15" fill="none" stroke="url(#border)" stroke-width="0.5" opacity="0.5"/>
+  <circle cx="50" cy="250" r="120" fill="#b44aff" opacity="0.08"/>
+  <circle cx="350" cy="50" r="100" fill="#ff2d95" opacity="0.08"/>
+  <!-- Rocket ship -->
+  <g transform="translate(200,115)" filter="url(#glowStrong)">
+    <!-- Rocket body -->
+    <polygon points="0,-55 -15,15 15,15" fill="#b44aff" opacity="0.9"/>
+    <!-- Rocket fins -->
+    <polygon points="-15,15 -22,35 -8,20" fill="#ff2d95" opacity="0.7"/>
+    <polygon points="15,15 22,35 8,20" fill="#ff2d95" opacity="0.7"/>
+    <!-- Rocket window -->
+    <circle cx="0" cy="-15" r="8" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.8"/>
+    <!-- Exhaust flame -->
+    <ellipse cx="0" cy="45" rx="8" ry="15" fill="#ff6b35" opacity="0.6">
+      <animate attributeName="ry" values="15;20;15" dur="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="0" cy="55" rx="5" ry="10" fill="#ff2d95" opacity="0.4">
+      <animate attributeName="ry" values="10;14;10" dur="0.3s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  <!-- Graph line going up then crashing -->
+  <polyline points="60,240 100,230 140,210 180,180 220,140 260,90 300,30 340,70" fill="none" stroke="#39ff14" stroke-width="2" opacity="0.5" filter="url(#glow)"/>
+  <text x="200" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#ffffff" filter="url(#glow)">Крэш</text>
+  <rect x="155" y="220" width="90" height="24" rx="12" fill="#b44aff" opacity="0.2"/>
+  <text x="200" y="237" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#b44aff">In-House</text>
+  <circle cx="200" cy="270" r="16" fill="none" stroke="#b44aff" stroke-width="1.5" opacity="0.5"/>
+  <polygon points="193,262 193,278 208,270" fill="#b44aff" opacity="0.5"/>
+</svg>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface CrashGameProps {
   balance: number;
@@ -8,6 +9,7 @@ interface CrashGameProps {
 }
 
 export default function CrashGame({ balance, onBalanceChange }: CrashGameProps) {
+  const { t } = useI18n();
   const [multiplier, setMultiplier] = useState(1.0);
   const [crashedAt, setCrashedAt] = useState<number | null>(null);
   const [bet, setBet] = useState(1);
@@ -52,7 +54,7 @@ export default function CrashGame({ balance, onBalanceChange }: CrashGameProps) 
         setIsRunning(false);
         setHistory(prev => [crashPoint, ...prev.slice(0, 9)]);
         if (!hasCashedOut) {
-          setMessage('💥 Crashed! You lost.');
+          setMessage(t('game.crashCrash', '💥 Crashed! You lost.'));
         }
         return;
       }
@@ -77,7 +79,7 @@ export default function CrashGame({ balance, onBalanceChange }: CrashGameProps) 
     setHasCashedOut(true);
     setWinAmount(win);
     onBalanceChange(balance - bet + win);
-    setMessage(`✅ Cashed out at ${mult.toFixed(2)}x! Won ${win.toFixed(2)}`);
+    setMessage(t('game.crashCashout', `✅ Cashed out at ${mult.toFixed(2)}x! Won ${win.toFixed(2)}`).replace('{mult}', mult.toFixed(2)).replace('{amount}', win.toFixed(2)));
 
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);

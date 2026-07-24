@@ -1,8 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useI18n } from '@/i18n/I18nProvider';
 
 export function Footer() {
+  const { t } = useI18n();
+
   return (
     <footer className="relative z-10 mt-auto border-t border-white/5 bg-[rgba(10,10,15,0.9)] backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
@@ -19,7 +22,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
-              The premier crypto casino experience with provably fair games, instant payouts, and the best odds.
+              {t('footer.brand', 'The premier crypto casino experience with provably fair games, instant payouts, and the best odds.')}
             </p>
             {/* Provider badges */}
             <div className="flex items-center gap-2 mt-4 flex-wrap">
@@ -37,15 +40,15 @@ export function Footer() {
 
           {/* Games */}
           <div>
-            <h3 className="text-miami-pink font-heading font-semibold mb-4 text-sm md:text-base">Games</h3>
+            <h3 className="text-miami-pink font-heading font-semibold mb-4 text-sm md:text-base">{t('footer.games', 'Games')}</h3>
             <ul className="space-y-2.5">
-              {['Slots', 'Crash', 'Dice', 'Roulette', 'Blackjack', 'Plinko'].map((game) => (
-                <li key={game}>
+              {['game.slots', 'game.crash', 'game.dice', 'game.roulette', 'game.blackjack', 'game.plinko'].map((gameKey) => (
+                <li key={gameKey}>
                   <Link
                     href="/#games"
                     className="text-sm text-gray-500 hover:text-miami-cyan transition-colors duration-200"
                   >
-                    {game}
+                    {t(gameKey)}
                   </Link>
                 </li>
               ))}
@@ -54,13 +57,13 @@ export function Footer() {
 
           {/* Info */}
           <div>
-            <h3 className="text-miami-cyan font-heading font-semibold mb-4 text-sm md:text-base">Info</h3>
+            <h3 className="text-miami-cyan font-heading font-semibold mb-4 text-sm md:text-base">{t('footer.info', 'Info')}</h3>
             <ul className="space-y-2.5">
               {[
-                { href: '#provably-fair', label: 'Provably Fair' },
-                { href: '#', label: 'Terms of Service' },
-                { href: '#', label: 'Privacy Policy' },
-                { href: '#', label: 'Responsible Gaming' },
+                { href: '#provably-fair', label: t('footer.provablyFair', 'Provably Fair') },
+                { href: '#', label: t('footer.terms', 'Terms of Service') },
+                { href: '#', label: t('footer.privacy', 'Privacy Policy') },
+                { href: '#', label: t('footer.responsibleGaming', 'Responsible Gaming') },
               ].map((link) => (
                 <li key={link.label}>
                   <Link
@@ -76,13 +79,13 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="text-miami-purple font-heading font-semibold mb-4 text-sm md:text-base">Support</h3>
+            <h3 className="text-miami-purple font-heading font-semibold mb-4 text-sm md:text-base">{t('footer.support', 'Support')}</h3>
             <ul className="space-y-2.5">
               {[
-                { href: '#', label: 'Help Center' },
-                { href: '#', label: 'Contact Us' },
-                { href: '#', label: 'FAQ' },
-                { href: 'https://t.me/bromcasino', label: 'Telegram', external: true },
+                { href: '#', label: t('footer.helpCenter', 'Help Center') },
+                { href: '#', label: t('footer.contactUs', 'Contact Us') },
+                { href: '#', label: t('footer.faq', 'FAQ') },
+                { href: 'https://t.me/bromcasino', label: t('footer.telegram', 'Telegram'), external: true },
               ].map((link) => (
                 <li key={link.label}>
                   {link.external ? (
@@ -111,14 +114,14 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-10 md:mt-14 pt-6 md:pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-600">
-            © {new Date().getFullYear()} Brom Casino. All rights reserved. 18+ Only.
+            © {new Date().getFullYear()} Brom Casino. {t('footer.rights', 'All rights reserved')}. 18+ Only.
           </p>
           <div className="flex items-center gap-5 flex-wrap justify-center">
             {[
-              { icon: '🔒', label: 'SSL Secured' },
-              { icon: '🛡️', label: 'Provably Fair' },
-              { icon: '⚡', label: 'Instant Payouts' },
-              { icon: '🎰', label: '6+ Games' },
+              { icon: '🔒', label: t('footer.ssl', 'SSL Secured') },
+              { icon: '🛡️', label: t('footer.fair', 'Provably Fair') },
+              { icon: '⚡', label: t('footer.instantPayouts', 'Instant Payouts') },
+              { icon: '🎰', label: t('footer.gamesCount', '6+ Games') },
             ].map((item) => (
               <span key={item.label} className="text-xs text-gray-600 flex items-center gap-1.5">
                 <span>{item.icon}</span>

@@ -87,6 +87,7 @@ function useAdminAuthStandalone() {
 
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setAdmin(adminData);
+      router.push('/');
     } catch (error: any) {
       // Development fallback
       if (process.env.NODE_ENV === 'development') {
@@ -106,6 +107,7 @@ function useAdminAuthStandalone() {
 
         api.defaults.headers.common['Authorization'] = `Bearer ${mockToken}`;
         setAdmin(mockAdmin);
+        router.push('/');
         return;
       }
 

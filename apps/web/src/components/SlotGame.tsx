@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useI18n } from '@/i18n/I18nProvider';
 import { playSoundIfEnabled } from '@/lib/sounds';
 
 const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '💎', '7️⃣', '⭐', '🔔'];
@@ -14,6 +15,7 @@ interface SlotGameProps {
 }
 
 export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
+  const { t } = useI18n();
   const [reels, setReels] = useState<string[]>(['🍒', '🍒', '🍒']);
   const [spinning, setSpinning] = useState(false);
   const [bet, setBet] = useState(1);
@@ -91,11 +93,11 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
               setLastWin(winAmount);
               setGlowWin(true);
               onBalanceChange(balance - bet + winAmount);
-              setMessage(`🎉 You won ${winAmount.toFixed(2)}!`);
+              setMessage(t('game.slotWin', `🎉 You won ${winAmount.toFixed(2)}!`).replace('{amount}', winAmount.toFixed(2)));
               playSoundIfEnabled(winAmount >= bet * 10 ? 'bigWin' : 'win');
               setTimeout(() => setGlowWin(false), 2000);
             } else {
-              setMessage('Try again!');
+              setMessage(t('game.slotLose', 'Try again!'));
               playSoundIfEnabled('lose');
             }
           }, 200);
@@ -203,10 +205,10 @@ export default function SlotGame({ balance, onBalanceChange }: SlotGameProps) {
         >
           {spinning ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">🎰</span> SPINNING...
+              <span className="animate-spin">🎰</span> {t('game.slotSpinning', 'SPINNING...')}
             </span>
           ) : (
-            `🎲 SPIN (${bet.toFixed(2)})`
+            t('game.slotSpinButton', `🎲 SPIN (${bet.toFixed(2)})`).replace('{amount}', bet.toFixed(2))
           )}
         </button>
       </div>

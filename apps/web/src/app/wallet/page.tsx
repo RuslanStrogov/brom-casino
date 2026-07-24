@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
 
@@ -104,6 +105,7 @@ const SBP_BANKS = [
 const FIAT_PRESETS = [500, 1000, 2500, 5000, 10000];
 
 export default function WalletPage() {
+  const { t } = useI18n();
   const { isAuthenticated, token } = useAuthStore();
   const router = useRouter();
 
@@ -191,7 +193,7 @@ export default function WalletPage() {
       // Attach fiat provider data for display
       setDepositResult({ ...result, ...extra, bankName: extra.bankName });
     } catch (e: any) {
-      setDepositError(e.message || 'Failed to create deposit');
+      setDepositError(e.message || t('wallet.error'));
     } finally {
       setActionLoading(false);
     }
@@ -204,9 +206,9 @@ export default function WalletPage() {
     setWithdrawResult(null);
     try {
       const result = await api.requestWithdrawal(token, withdrawAmount, withdrawDestination);
-      setWithdrawResult(`Withdrawal requested! Status: ${result.status}`);
+      setWithdrawResult(`${t('wallet.success')} Статус: ${result.status}`);
     } catch (e: any) {
-      setWithdrawError(e.message || 'Failed to request withdrawal');
+      setWithdrawError(e.message || t('wallet.error'));
     } finally {
       setActionLoading(false);
     }
@@ -222,11 +224,12 @@ export default function WalletPage() {
     return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatAmount = (amount: number, currency: string) => {
+  const formatAmount = (amount: number | string | null | undefined, currency: string) => {
+    const num = Number(amount) || 0;
     if (['RUB', 'USD', 'EUR', 'KZT', 'UAH', 'INR', 'TJS', 'KGS', 'UZS', 'AZN', 'AMD', 'BRL', 'TRY', 'MXN', 'CNY', 'CAD', 'AUD', 'DKK', 'NOK', 'SEK', 'JPY', 'KRW'].includes(currency)) {
-      return amount.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+      return num.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     }
-    return amount.toFixed(2);
+    return num.toFixed(2);
   };
 
   const statusBadge = (status: string) => {
@@ -271,7 +274,7 @@ export default function WalletPage() {
       <div className="min-h-screen bg-[#0a0a0f] pt-20 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-miami-pink/30 border-t-miami-pink rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Загрузка кошелька...</p>
+          <p className="text-gray-400">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -292,7 +295,7 @@ export default function WalletPage() {
         <div className="absolute inset-0 bg-gradient-radial from-miami-purple/10 via-transparent to-transparent" />
         <div className="max-w-4xl mx-auto px-4 relative">
           <h1 className="text-3xl md:text-4xl font-heading font-bold text-white text-center mb-2">
-            Кошелёк
+            {t('wallet.title')}
           </h1>
           <p className="text-gray-400 text-center text-sm">Пополнение и вывод средств</p>
         </div>
@@ -322,9 +325,9 @@ export default function WalletPage() {
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-casino-card rounded-xl p-1 border border-casino-border">
           {([
-            { key: 'deposit' as WalletTab, label: 'Депозит' },
-            { key: 'withdraw' as WalletTab, label: 'Вывод' },
-            { key: 'history' as WalletTab, label: 'История' },
+            { key: 'deposit' as WalletTab, label: t('wallet.deposit') },
+            { key: 'withdraw' as WalletTab, label: t('wallet.withdraw') },
+            { key: 'history' as WalletTab, label: t('wallet.history') },
           ]).map((tab) => (
             <button
               key={tab.key}
@@ -433,8 +436,7 @@ export default function WalletPage() {
               </div>
             ) : (
               <div className="bg-casino-card border border-casino-border rounded-2xl p-6 md:p-8">
-                <h3 className="text-lg font-bold text-white mb-2">Пополнение счета</h3>
-                <p className="text-sm text-gray-400 mb-6">Выберите способ и сумму пополнения</p>
+                <h3 className="text-lg font-bold text-white mb-2">{t('wallet.depositTitle')}</h3>
 
                 {/* Money Type Selector — Деньги / Криптовалюта */}
                 <div className="flex gap-1 mb-6 bg-casino-dark rounded-xl p-1 border border-casino-border">
@@ -463,7 +465,7 @@ export default function WalletPage() {
                 {/* Currency Selector */}
                 {moneyType === 'fiat' ? (
                   <div className="mb-6">
-                    <label className="block text-sm text-gray-300 mb-2">Валюта</label>
+                    <label className="block text-sm text-gray-300 mb-2">{t('wallet.currency')}</label>
                     <div className="relative">
                       <button
                         onClick={() => setShowFiatCurrencyPicker(!showFiatCurrencyPicker)}
@@ -572,14 +574,14 @@ export default function WalletPage() {
                 {/* Amount input */}
                 <div className="mb-4">
                   <label className="block text-sm text-gray-300 mb-2">
-                    Сумма {moneyType === 'fiat' ? `(${getCurrencySymbol(selectedFiatCurrency)})` : `(${selectedCryptoCurrency})`}
+                    {t('wallet.amount')} {moneyType === 'fiat' ? `(${getCurrencySymbol(selectedFiatCurrency)})` : `(${selectedCryptoCurrency})`}
                   </label>
                   <div className="relative">
                     <input
                       type="number"
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
-                      placeholder="0.00"
+                      placeholder={t('wallet.amountPlaceholder')}
                       min={moneyType === 'fiat' ? 100 : 1}
                       step={moneyType === 'fiat' ? '1' : '0.01'}
                       className="w-full bg-casino-dark border border-casino-border rounded-xl px-4 py-3 text-white text-lg font-mono placeholder-gray-600 focus:outline-none focus:border-miami-pink/50 focus:ring-1 focus:ring-miami-pink/30 transition-all"
@@ -638,10 +640,10 @@ export default function WalletPage() {
                   {actionLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Обработка...
+                      {t('wallet.processing')}
                     </>
                   ) : (
-                    'Перейти к оплате'
+                    t('wallet.submitDeposit')
                   )}
                 </button>
               </div>
@@ -673,24 +675,24 @@ export default function WalletPage() {
                 </div>
               ) : (
                 <>
-                  <h3 className="text-lg font-bold text-white mb-2">Вывод средств</h3>
+                  <h3 className="text-lg font-bold text-white mb-2">{t('wallet.withdrawTitle')}</h3>
                   <p className="text-sm text-gray-400 mb-6">Выведите средства на внешний кошелек</p>
 
                   <div className="mb-6">
                     <p className="flex items-center gap-2 mb-4 p-3 bg-casino-dark border border-casino-border rounded-xl">
-                      <span className="text-sm text-gray-400">Доступно:</span>
+                      <span className="text-sm text-gray-400">{t('wallet.available')}</span>
                       <span className="text-white font-mono font-bold">{(Number(wallet?.balance) || 0).toFixed(2)} USDT</span>
                     </p>
                   </div>
 
                   <div className="mb-4">
-                    <label className="block text-sm text-gray-300 mb-2">Сумма (USDT)</label>
+                    <label className="block text-sm text-gray-300 mb-2">{t('wallet.amount')} (USDT)</label>
                     <div className="relative">
                       <input
                         type="number"
                         value={withdrawAmount}
                         onChange={(e) => setWithdrawAmount(e.target.value)}
-                        placeholder="0.00"
+                        placeholder={t('wallet.amountPlaceholder')}
                         min="1"
                         max={wallet?.balance || 0}
                         step="0.01"
@@ -702,12 +704,12 @@ export default function WalletPage() {
                       onClick={() => setWithdrawAmount(String(wallet?.balance || 0))}
                       className="text-xs text-miami-cyan hover:text-miami-cyan/80 mt-1 transition-colors"
                     >
-                      Макс: {(Number(wallet?.balance) || 0).toFixed(2)} USDT
+                      {t('wallet.maxWithdraw').replace('{max}', `${(Number(wallet?.balance) || 0).toFixed(2)} USDT`)}
                     </button>
                   </div>
 
                   <div className="mb-6">
-                    <label className="block text-sm text-gray-300 mb-2">Адрес кошелька</label>
+                    <label className="block text-sm text-gray-300 mb-2">{t('wallet.address')}</label>
                     <input
                       type="text"
                       value={withdrawDestination}
@@ -731,10 +733,10 @@ export default function WalletPage() {
                     {actionLoading ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Обработка...
+                        {t('wallet.processing')}
                       </>
                     ) : (
-                      'Вывести'
+                      t('wallet.submitWithdraw')
                     )}
                   </button>
                 </>
@@ -750,7 +752,7 @@ export default function WalletPage() {
           <div className="animate-fade-up">
             <div className="bg-casino-card border border-casino-border rounded-2xl overflow-hidden">
               <div className="p-6 pb-0">
-                <h3 className="text-lg font-bold text-white mb-1">История транзакций</h3>
+                <h3 className="text-lg font-bold text-white mb-1">{t('wallet.transactionHistory')}</h3>
                 <p className="text-sm text-gray-400 mb-4">
                   {historyMeta.total > 0
                     ? `Всего ${historyMeta.total} транзакций`
@@ -765,7 +767,7 @@ export default function WalletPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                   </div>
-                  <p className="text-gray-400">Нет транзакций</p>
+                  <p className="text-gray-400">{t('wallet.noTransactions')}</p>
                   <p className="text-sm text-gray-500 mt-1">История пополнений и выводов появится здесь</p>
                 </div>
               ) : (
@@ -773,11 +775,11 @@ export default function WalletPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-casino-border">
-                        <th className="text-left text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium">Тип</th>
-                        <th className="text-left text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium">Сумма</th>
+                        <th className="text-left text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium">{t('wallet.type')}</th>
+                        <th className="text-left text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium">{t('wallet.amount')}</th>
                         <th className="text-left text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium hidden md:table-cell">Метод</th>
-                        <th className="text-left text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium hidden md:table-cell">Дата</th>
-                        <th className="text-right text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium">Статус</th>
+                        <th className="text-left text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium hidden md:table-cell">{t('wallet.date')}</th>
+                        <th className="text-right text-xs text-gray-500 uppercase tracking-wider px-6 py-3 font-medium">{t('wallet.status')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -802,7 +804,7 @@ export default function WalletPage() {
                               </div>
                               <span className="text-sm">
                                 <span className="text-white">
-                                  {tx.type === 'DEPOSIT' ? 'Депозит' : 'Вывод'}
+                                  {tx.type === 'DEPOSIT' ? t('wallet.deposit') : t('wallet.withdraw')}
                                 </span>
                                 {tx.bankName && (
                                   <span className="text-gray-500 text-xs block">
@@ -847,7 +849,7 @@ export default function WalletPage() {
                     disabled={historyPage <= 1}
                     className="px-3 py-1.5 rounded-lg text-sm bg-casino-dark border border-casino-border text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
-                    ← Назад
+                    {t('common.back')}
                   </button>
                   {Array.from({ length: Math.min(historyTotalPages, 5) }, (_, i) => {
                     // Show pages around current
@@ -895,7 +897,7 @@ export default function WalletPage() {
                     disabled={historyPage >= historyTotalPages}
                     className="px-3 py-1.5 rounded-lg text-sm bg-casino-dark border border-casino-border text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
-                    Вперед →
+                    {t('common.next')}
                   </button>
                 </div>
               )}

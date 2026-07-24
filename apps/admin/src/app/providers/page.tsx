@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAdminAuth } from '../../hooks/useAdminAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useI18n } from '@/i18n/I18nProvider';
+import AdminShell from '@/components/AdminShell';
 import {
   Server,
-  Settings,
   ExternalLink,
   Power,
   PowerOff,
@@ -93,23 +94,31 @@ const MOCK_PROVIDERS: Provider[] = [
 
 export default function ProvidersPage() {
   const { isAuthenticated, isLoading } = useAdminAuth();
+  const { t } = useI18n();
   const [providers, setProviders] = useState<Provider[]>(MOCK_PROVIDERS);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-      </div>
+      <AdminShell>
+        <div className="flex items-center justify-center h-full">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-400">{t('app.loading', 'Loading...')}</p>
+          </div>
+        </div>
+      </AdminShell>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-gray-400">Please log in to access this page</p>
-      </div>
+      <AdminShell>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-400">{t('login.pleaseLogin', 'Please log in to access this page')}</p>
+        </div>
+      </AdminShell>
     );
   }
 
@@ -147,11 +156,11 @@ export default function ProvidersPage() {
   const getApiStatusBadge = (status: Provider['apiStatus']) => {
     switch (status) {
       case 'connected':
-        return <span className="badge badge-success text-[10px]">Connected</span>;
+        return <span className="badge badge-success text-[10px]">{t('providers.connected', 'Connected')}</span>;
       case 'disconnected':
-        return <span className="badge badge-danger text-[10px]">Disconnected</span>;
+        return <span className="badge badge-danger text-[10px]">{t('providers.disconnected', 'Disconnected')}</span>;
       case 'pending':
-        return <span className="badge badge-warning text-[10px]">Pending</span>;
+        return <span className="badge badge-warning text-[10px]">{t('app.loading', 'Pending')}</span>;
     }
   };
 
@@ -182,268 +191,270 @@ export default function ProvidersPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Providers</h1>
-          <p className="text-gray-400 text-sm mt-1">Manage game, payment, and KYC integrations</p>
+    <AdminShell>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{t('providers.title', 'Providers')}</h1>
+            <p className="text-gray-400 text-sm mt-1">{t('providers.subtitle', 'Manage game, payment, and KYC integrations')}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 hover:border-amber-500/50 transition-colors text-sm">
+              <RefreshCw className="w-4 h-4" />
+              {t('providers.testAll', 'Test All')}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 hover:border-amber-500/50 transition-colors text-sm">
-            <RefreshCw className="w-4 h-4" />
-            Test All
-          </button>
-        </div>
-      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Total Providers</span>
-            <Server className="w-4 h-4 text-gray-500" />
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">{t('providers.stats.total', 'Total Providers')}</span>
+              <Server className="w-4 h-4 text-gray-500" />
+            </div>
+            <p className="text-2xl font-bold mt-2">{providers.length}</p>
           </div>
-          <p className="text-2xl font-bold mt-2">{providers.length}</p>
-        </div>
-        <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Active</span>
-            <CheckCircle className="w-4 h-4 text-green-400" />
+          <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">{t('providers.stats.active', 'Active')}</span>
+              <CheckCircle className="w-4 h-4 text-green-400" />
+            </div>
+            <p className="text-2xl font-bold text-green-400 mt-2">
+              {providers.filter(p => p.status === 'active').length}
+            </p>
           </div>
-          <p className="text-2xl font-bold text-green-400 mt-2">
-            {providers.filter(p => p.status === 'active').length}
-          </p>
-        </div>
-        <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Connected</span>
-            <CheckCircle className="w-4 h-4 text-blue-400" />
+          <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">{t('providers.stats.connected', 'Connected')}</span>
+              <CheckCircle className="w-4 h-4 text-blue-400" />
+            </div>
+            <p className="text-2xl font-bold text-blue-400 mt-2">
+              {providers.filter(p => p.apiStatus === 'connected').length}
+            </p>
           </div>
-          <p className="text-2xl font-bold text-blue-400 mt-2">
-            {providers.filter(p => p.apiStatus === 'connected').length}
-          </p>
-        </div>
-        <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Total Games</span>
-            <Gamepad2 className="w-4 h-4 text-purple-400" />
+          <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">{t('providers.stats.totalGames', 'Total Games')}</span>
+              <Server className="w-4 h-4 text-purple-400" />
+            </div>
+            <p className="text-2xl font-bold text-purple-400 mt-2">
+              {providers.reduce((sum, p) => sum + (p.gameCount || 0), 0)}
+            </p>
           </div>
-          <p className="text-2xl font-bold text-purple-400 mt-2">
-            {providers.reduce((sum, p) => sum + (p.gameCount || 0), 0)}
-          </p>
         </div>
-      </div>
 
-      {/* Provider Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {providers.map(provider => (
-          <div
-            key={provider.id}
-            className={`bg-gray-900 rounded-xl border transition-all cursor-pointer ${
-              selectedProvider?.id === provider.id
-                ? 'border-amber-500/50 shadow-lg shadow-amber-500/5'
-                : 'border-gray-800 hover:border-gray-700'
-            }`}
-            onClick={() => setSelectedProvider(provider)}
-          >
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    provider.type === 'game' ? 'bg-purple-500/10' :
-                    provider.type === 'payment' ? 'bg-green-500/10' : 'bg-blue-500/10'
-                  }`}>
-                    {provider.type === 'game' ? <Gamepad2 className="w-5 h-5 text-purple-400" /> :
-                     provider.type === 'payment' ? <Wallet className="w-5 h-5 text-green-400" /> :
-                     <Shield className="w-5 h-5 text-blue-400" />}
+        {/* Provider Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {providers.map(provider => (
+            <div
+              key={provider.id}
+              className={`bg-gray-900 rounded-xl border transition-all cursor-pointer ${
+                selectedProvider?.id === provider.id
+                  ? 'border-amber-500/50 shadow-lg shadow-amber-500/5'
+                  : 'border-gray-800 hover:border-gray-700'
+              }`}
+              onClick={() => setSelectedProvider(provider)}
+            >
+              <div className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      provider.type === 'game' ? 'bg-purple-500/10' :
+                      provider.type === 'payment' ? 'bg-green-500/10' : 'bg-blue-500/10'
+                    }`}>
+                      {provider.type === 'game' ? <Gamepad2 className="w-5 h-5 text-purple-400" /> :
+                       provider.type === 'payment' ? <Wallet className="w-5 h-5 text-green-400" /> :
+                       <Shield className="w-5 h-5 text-blue-400" />}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{provider.name}</h3>
+                      <p className="text-xs text-gray-500">{provider.description}</p>
+                    </div>
+                  </div>
+                  {getStatusIcon(provider.status)}
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  {getTypeBadge(provider.type)}
+                  {getModeBadge(provider.mode)}
+                  {getApiStatusBadge(provider.apiStatus)}
+                  {provider.gameCount !== undefined && (
+                    <span className="badge text-[10px] bg-gray-800 text-gray-400">
+                      {provider.gameCount} {t('providers.gamesLabel', 'games')}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    {t('providers.lastPing', 'Last ping')}: {provider.lastPing || t('providers.na', 'N/A')}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleProviderMode(provider.id);
+                      }}
+                      className="px-2 py-1 rounded text-xs bg-gray-800 text-gray-400 hover:text-white transition-colors"
+                    >
+                      {provider.mode.toUpperCase()}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleProviderStatus(provider.id);
+                      }}
+                      className={`p-1 rounded transition-colors ${
+                        provider.status === 'active'
+                          ? 'text-green-400 hover:text-red-400'
+                          : 'text-gray-500 hover:text-green-400'
+                      }`}
+                    >
+                      {provider.status === 'active' ? (
+                        <Power className="w-4 h-4" />
+                      ) : (
+                        <PowerOff className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Provider Detail Panel */}
+        {selectedProvider && (
+          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold">{selectedProvider.name} {t('providers.detail.settings', 'Settings')}</h2>
+              <button
+                onClick={() => setSelectedProvider(null)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* API Configuration */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-300 mb-3">{t('providers.detail.apiConfig', 'API Configuration')}</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{t('providers.detail.endpoint', 'Endpoint')}</label>
+                    <input
+                      type="text"
+                      defaultValue={selectedProvider.endpoint || ''}
+                      className="w-full bg-gray-800 rounded-lg px-3 py-2 text-sm border border-gray-700 focus:border-amber-500 focus:outline-none text-white"
+                      placeholder="https://api.example.com"
+                    />
                   </div>
                   <div>
-                    <h3 className="font-semibold">{provider.name}</h3>
-                    <p className="text-xs text-gray-500">{provider.description}</p>
+                    <label className="block text-xs text-gray-500 mb-1">{t('providers.detail.apiKey', 'API Key')}</label>
+                    <div className="relative">
+                      <input
+                        type={showSecrets[selectedProvider.id] ? 'text' : 'password'}
+                        defaultValue="«redacted:sk_live_…»"
+                        className="w-full bg-gray-800 rounded-lg px-3 py-2 text-sm border border-gray-700 focus:border-amber-500 focus:outline-none text-white pr-10"
+                        placeholder={t('providers.detail.enterApiKey', 'Enter API key')}
+                      />
+                      <button
+                        onClick={() => setShowSecrets(prev => ({ ...prev, [selectedProvider.id]: !prev[selectedProvider.id] }))}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                      >
+                        {showSecrets[selectedProvider.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
-                </div>
-                {getStatusIcon(provider.status)}
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                {getTypeBadge(provider.type)}
-                {getModeBadge(provider.mode)}
-                {getApiStatusBadge(provider.apiStatus)}
-                {provider.gameCount !== undefined && (
-                  <span className="badge text-[10px] bg-gray-800 text-gray-400">
-                    {provider.gameCount} games
-                  </span>
-                )}
-              </div>
-
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-xs text-gray-500">
-                  Last ping: {provider.lastPing || 'N/A'}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleProviderMode(provider.id);
-                    }}
-                    className="px-2 py-1 rounded text-xs bg-gray-800 text-gray-400 hover:text-white transition-colors"
-                  >
-                    {provider.mode.toUpperCase()}
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleProviderStatus(provider.id);
-                    }}
-                    className={`p-1 rounded transition-colors ${
-                      provider.status === 'active'
-                        ? 'text-green-400 hover:text-red-400'
-                        : 'text-gray-500 hover:text-green-400'
-                    }`}
-                  >
-                    {provider.status === 'active' ? (
-                      <Power className="w-4 h-4" />
-                    ) : (
-                      <PowerOff className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Provider Detail Panel */}
-      {selectedProvider && (
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold">{selectedProvider.name} Settings</h2>
-            <button
-              onClick={() => setSelectedProvider(null)}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* API Configuration */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">API Configuration</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Endpoint</label>
-                  <input
-                    type="text"
-                    defaultValue={selectedProvider.endpoint || ''}
-                    className="w-full bg-gray-800 rounded-lg px-3 py-2 text-sm border border-gray-700 focus:border-amber-500 focus:outline-none text-white"
-                    placeholder="https://api.example.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">API Key</label>
-                  <div className="relative">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{t('providers.detail.webhookUrl', 'Webhook URL')}</label>
                     <input
-                      type={showSecrets[selectedProvider.id] ? 'text' : 'password'}
-                      defaultValue="sk_live_xxxxxxxxxxxxx"
-                      className="w-full bg-gray-800 rounded-lg px-3 py-2 text-sm border border-gray-700 focus:border-amber-500 focus:outline-none text-white pr-10"
-                      placeholder="Enter API key"
+                      type="text"
+                      defaultValue={selectedProvider.webhookUrl || ''}
+                      className="w-full bg-gray-800 rounded-lg px-3 py-2 text-sm border border-gray-700 focus:border-amber-500 focus:outline-none text-white"
+                      placeholder="/api/webhook/provider"
                     />
-                    <button
-                      onClick={() => setShowSecrets(prev => ({ ...prev, [selectedProvider.id]: !prev[selectedProvider.id] }))}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                    >
-                      {showSecrets[selectedProvider.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Webhook URL</label>
-                  <input
-                    type="text"
-                    defaultValue={selectedProvider.webhookUrl || ''}
-                    className="w-full bg-gray-800 rounded-lg px-3 py-2 text-sm border border-gray-700 focus:border-amber-500 focus:outline-none text-white"
-                    placeholder="/api/webhook/provider"
-                  />
+              </div>
+
+              {/* Mode & Status */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-300 mb-3">{t('providers.detail.modeStatus', 'Mode & Status')}</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{t('providers.detail.operationMode', 'Operation Mode')}</label>
+                    <select
+                      defaultValue={selectedProvider.mode}
+                      className="w-full bg-gray-800 rounded-lg px-3 py-2 text-sm border border-gray-700 focus:border-amber-500 focus:outline-none text-white"
+                    >
+                      <option value="real">{t('providers.detail.modeReal', 'Real (Live API)')}</option>
+                      <option value="demo">{t('providers.detail.modeDemo', 'Demo (Sandbox)')}</option>
+                      <option value="hybrid">{t('providers.detail.modeHybrid', 'Hybrid (Try real, fallback to demo)')}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{t('providers.detail.statusLabel', 'Status')}</label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                          selectedProvider.status === 'active'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : 'bg-gray-800 text-gray-400 border border-gray-700'
+                        }`}
+                      >
+                        {t('providers.detail.statusActive', 'Active')}
+                      </button>
+                      <button
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                          selectedProvider.status === 'inactive'
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : 'bg-gray-800 text-gray-400 border border-gray-700'
+                        }`}
+                      >
+                        {t('providers.detail.statusInactive', 'Inactive')}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{t('providers.detail.actions', 'Actions')}</label>
+                    <div className="flex items-center gap-2">
+                      <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-colors">
+                        <RefreshCw className="w-3 h-3" />
+                        {t('providers.detail.testConnection', 'Test Connection')}
+                      </button>
+                      <a
+                        href={selectedProvider.endpoint}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs bg-gray-800 text-gray-400 border border-gray-700 hover:text-white transition-colors"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        {t('providers.detail.docs', 'Docs')}
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Mode & Status */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Mode & Status</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Operation Mode</label>
-                  <select
-                    defaultValue={selectedProvider.mode}
-                    className="w-full bg-gray-800 rounded-lg px-3 py-2 text-sm border border-gray-700 focus:border-amber-500 focus:outline-none text-white"
-                  >
-                    <option value="real">Real (Live API)</option>
-                    <option value="demo">Demo (Sandbox)</option>
-                    <option value="hybrid">Hybrid (Try real, fallback to demo)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Status</label>
-                  <div className="flex items-center gap-3">
-                    <button
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        selectedProvider.status === 'active'
-                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                          : 'bg-gray-800 text-gray-400 border border-gray-700'
-                      }`}
-                    >
-                      Active
-                    </button>
-                    <button
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        selectedProvider.status === 'inactive'
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                          : 'bg-gray-800 text-gray-400 border border-gray-700'
-                      }`}
-                    >
-                      Inactive
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Actions</label>
-                  <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-colors">
-                      <RefreshCw className="w-3 h-3" />
-                      Test Connection
-                    </button>
-                    <a
-                      href={selectedProvider.endpoint}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs bg-gray-800 text-gray-400 border border-gray-700 hover:text-white transition-colors"
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                      Docs
-                    </a>
-                  </div>
-                </div>
-              </div>
+            {/* Save Button */}
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button className="px-4 py-2 rounded-lg text-sm bg-gray-800 text-gray-400 border border-gray-700 hover:text-white transition-colors">
+                {t('app.cancel', 'Cancel')}
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium hover:from-amber-400 hover:to-amber-500 transition-all">
+                <Save className="w-4 h-4" />
+                {t('app.save', 'Save Changes')}
+              </button>
             </div>
           </div>
-
-          {/* Save Button */}
-          <div className="mt-6 flex items-center justify-end gap-3">
-            <button className="px-4 py-2 rounded-lg text-sm bg-gray-800 text-gray-400 border border-gray-700 hover:text-white transition-colors">
-              Cancel
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium hover:from-amber-400 hover:to-amber-500 transition-all">
-              <Save className="w-4 h-4" />
-              Save Changes
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </AdminShell>
   );
 }
 

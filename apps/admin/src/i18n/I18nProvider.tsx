@@ -28,7 +28,7 @@ function resolveNested(obj: unknown, path: string): unknown {
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<SupportedLang>('en');
+  const [lang, setLangState] = useState<SupportedLang>('ru');
 
   useEffect(() => {
     try {

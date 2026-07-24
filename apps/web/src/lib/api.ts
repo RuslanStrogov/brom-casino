@@ -91,10 +91,28 @@ export const api = {
       body: { email, password },
     }),
 
-  register: (email: string, password: string, username?: string) =>
+  register: (email: string, password: string, username?: string, referralCode?: string) =>
     request<{ accessToken: string; refreshToken: string; user: User }>('/auth/register', {
       method: 'POST',
-      body: { email, password, username },
+      body: { email, password, username, referralCode },
+    }),
+
+  registerByPhone: (phone: string, password: string, username?: string) =>
+    request<{ accessToken: string; refreshToken: string; user: User }>('/auth/register', {
+      method: 'POST',
+      body: { phone, password, username },
+    }),
+
+  loginByPhone: (phone: string, password: string) =>
+    request<{ accessToken: string; refreshToken: string; user: User }>('/auth/login', {
+      method: 'POST',
+      body: { phone, password },
+    }),
+
+  telegramAuth: (data: { telegramId: string; username?: string; firstName?: string }) =>
+    request<{ accessToken: string; refreshToken: string; user: User }>('/auth/telegram', {
+      method: 'POST',
+      body: data,
     }),
 
   refreshToken: (refreshToken: string) =>

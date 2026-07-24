@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface ProvablyFairProps {
   onClose: () => void;
 }
 
 export function ProvablyFair({ onClose }: ProvablyFairProps) {
+  const { t } = useI18n();
   const [serverSeed, setServerSeed] = useState('');
   const [clientSeed, setClientSeed] = useState('');
   const [nonce, setNonce] = useState('0');
@@ -54,32 +56,32 @@ export function ProvablyFair({ onClose }: ProvablyFairProps) {
         <div className="text-center mb-8">
           <span className="text-4xl mb-4 block">🔒</span>
           <h2 className="text-2xl font-display font-bold bg-gradient-gold bg-clip-text text-transparent">
-            Provably Fair
+            {t('fairness.title')}
           </h2>
           <p className="text-sm text-casino-muted mt-2">
-            Verify that every game result is fair and cannot be manipulated
+            {t('fairness.subtitle')}
           </p>
         </div>
 
         {/* How it works */}
         <div className="bg-casino-darker rounded-xl p-4 mb-6">
-          <h3 className="text-casino-gold font-semibold mb-3">How It Works</h3>
+          <h3 className="text-casino-gold font-semibold mb-3">{t('fairness.howItWorks')}</h3>
           <ol className="space-y-2 text-sm text-casino-muted">
             <li className="flex gap-2">
               <span className="text-casino-gold font-bold">1.</span>
-              Server generates a seed hash before the game starts
+              {t('fairness.step1')}
             </li>
             <li className="flex gap-2">
               <span className="text-casino-gold font-bold">2.</span>
-              Client provides their own seed for additional randomness
+              {t('fairness.step2')}
             </li>
             <li className="flex gap-2">
               <span className="text-casino-gold font-bold">3.</span>
-              Both seeds are combined with a nonce to produce the result
+              {t('fairness.step3')}
             </li>
             <li className="flex gap-2">
               <span className="text-casino-gold font-bold">4.</span>
-              After the game, the server seed is revealed for verification
+              {t('fairness.step4')}
             </li>
           </ol>
         </div>
@@ -87,7 +89,7 @@ export function ProvablyFair({ onClose }: ProvablyFairProps) {
         {/* Verification Form */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-casino-muted mb-1.5">Server Seed (Hash)</label>
+            <label className="block text-sm text-casino-muted mb-1.5">{t('fairness.serverSeed')}</label>
             <input
               type="text"
               value={serverSeed}
@@ -95,12 +97,12 @@ export function ProvablyFair({ onClose }: ProvablyFairProps) {
               className="w-full px-4 py-3 bg-casino-darker border border-casino-border rounded-xl
                 text-white placeholder-casino-muted/50 focus:outline-none focus:border-casino-gold/50
                 transition-colors font-mono text-sm"
-              placeholder="Enter server seed hash..."
+              placeholder={t('fairness.serverSeedPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm text-casino-muted mb-1.5">Client Seed</label>
+            <label className="block text-sm text-casino-muted mb-1.5">{t('fairness.clientSeed')}</label>
             <input
               type="text"
               value={clientSeed}
@@ -108,12 +110,12 @@ export function ProvablyFair({ onClose }: ProvablyFairProps) {
               className="w-full px-4 py-3 bg-casino-darker border border-casino-border rounded-xl
                 text-white placeholder-casino-muted/50 focus:outline-none focus:border-casino-gold/50
                 transition-colors font-mono text-sm"
-              placeholder="Enter your client seed..."
+              placeholder={t('fairness.clientSeedPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm text-casino-muted mb-1.5">Nonce</label>
+            <label className="block text-sm text-casino-muted mb-1.5">{t('fairness.nonce')}</label>
             <input
               type="number"
               value={nonce}
@@ -132,19 +134,19 @@ export function ProvablyFair({ onClose }: ProvablyFairProps) {
               bg-gradient-gold text-casino-dark hover:opacity-90
               disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
           >
-            🔍 Verify Result
+            {t('fairness.verifyButton')}
           </button>
 
           {/* Result */}
           {result && (
             <div className={`p-4 rounded-xl border ${verified ? 'bg-casino-green/10 border-casino-green/30' : 'bg-casino-red/10 border-casino-red/30'}`}>
               <div className="text-center">
-                <span className="text-sm text-casino-muted">Verified Result</span>
+                <span className="text-sm text-casino-muted">{t('fairness.verifiedResult')}</span>
                 <div className="text-3xl font-bold text-casino-gold font-mono mt-1">
                   {result}
                 </div>
                 <span className="text-xs text-casino-green mt-2 block">
-                  ✓ Result verified - game was fair
+                  {t('fairness.verifiedLabel')}
                 </span>
               </div>
             </div>
@@ -153,7 +155,7 @@ export function ProvablyFair({ onClose }: ProvablyFairProps) {
 
         {/* Algorithm info */}
         <div className="mt-6 p-4 bg-casino-darker rounded-xl">
-          <h4 className="text-sm font-semibold text-casino-gold mb-2">Algorithm</h4>
+          <h4 className="text-sm font-semibold text-casino-gold mb-2">{t('fairness.algorithm')}</h4>
           <code className="text-xs text-casino-muted block whitespace-pre-wrap break-all">
             {`HMAC-SHA256(server_seed, client_seed + nonce)
 → Take first 8 hex chars

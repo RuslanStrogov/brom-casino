@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import localFont from 'next/font/local';
+import { Onest, Unbounded } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from '@/providers/AuthProvider';
@@ -8,31 +8,20 @@ import { I18nProvider } from '@/i18n/I18nProvider';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ChatWidget } from '@/components/ChatWidget';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
 
-const inter = localFont({
-  src: [
-    { path: './fonts/Inter.woff2', weight: '400', style: 'normal' },
-    { path: './fonts/Inter-Variable.woff2', weight: '100 900', style: 'normal' },
-  ],
-  variable: '--font-inter',
+const onest = Onest({
+  subsets: ['cyrillic', 'latin'],
+  variable: '--font-onest',
   display: 'swap',
+  weight: ['400', '500', '600', '700'],
 });
 
-const playfair = localFont({
-  src: [
-    { path: './fonts/PlayfairDisplay.woff2', weight: '400 900', style: 'normal' },
-  ],
-  variable: '--font-playfair',
+const unbounded = Unbounded({
+  subsets: ['cyrillic', 'latin'],
+  variable: '--font-unbounded',
   display: 'swap',
-});
-
-const outfit = localFont({
-  src: [
-    { path: './fonts/Outfit.woff2', weight: '400', style: 'normal' },
-    { path: './fonts/Outfit-Variable.woff2', weight: '100 900', style: 'normal' },
-  ],
-  variable: '--font-outfit',
-  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -71,16 +60,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${onest.variable} ${unbounded.variable}`}>
       <body className="bg-casino-dark text-white font-sans min-h-screen flex flex-col no-tap-highlight overflow-x-hidden">
         <AuthProvider>
           <GameProvider>
             <I18nProvider>
               <Header />
-              <main className="flex-1">
+              <main className="flex-1 pb-16 md:pb-0">
                 {children}
               </main>
               <Footer />
+              <MobileBottomNav />
             </I18nProvider>
           </GameProvider>
         </AuthProvider>

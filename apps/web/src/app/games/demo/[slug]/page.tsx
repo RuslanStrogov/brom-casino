@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface GameConfig {
   name: string;
@@ -12,36 +13,36 @@ interface GameConfig {
 }
 
 const GAME_CONFIGS: Record<string, GameConfig> = {
-  'starburst': { name: 'Starburst', emoji: '💎', color: '#00d4ff', description: '7-reel cosmic slot with expanding wilds', type: 'slot' },
-  'book-of-dead': { name: 'Book of Dead', emoji: '📖', color: '#ffd60a', description: 'Egyptian-themed slot with free spins', type: 'slot' },
-  'sweet-bonanza': { name: 'Sweet Bonanza', emoji: '🍬', color: '#ff2d95', description: 'Candy-themed tumbling slots', type: 'slot' },
-  'crazy-time': { name: 'Crazy Time', emoji: '🎡', color: '#39ff14', description: 'Live game show with multipliers', type: 'slot' },
-  'lightning-roulette': { name: 'Lightning Roulette', emoji: '⚡', color: '#b44aff', description: 'RNG roulette with lightning multipliers', type: 'slot' },
-  'monopoly-live': { name: 'Monopoly Live', emoji: '🎲', color: '#ff6b35', description: 'Board game meets live casino', type: 'slot' },
-  'mega-moolah': { name: 'Mega Moolah', emoji: '🦁', color: '#39ff14', description: 'Progressive jackpot African safari slot', type: 'slot' },
-  'gonzos-quest': { name: "Gonzo's Quest", emoji: '🗿', color: '#00d4ff', description: 'Avalanche slot with increasing multipliers', type: 'slot' },
-  'dead-or-alive': { name: 'Dead or Alive', emoji: '🤠', color: '#ff6b35', description: 'Western-themed high volatility slot', type: 'slot' },
-  'twin-spin': { name: 'Twin Spin', emoji: '🔄', color: '#b44aff', description: 'Twin reel slot with synced reels', type: 'slot' },
-  'jumanji': { name: 'Jumanji', emoji: '🌴', color: '#39ff14', description: 'Board game adventure slot', type: 'slot' },
-  'hall-of-gods': { name: 'Hall of Gods', emoji: '⚡', color: '#ffd60a', description: 'Norse mythology jackpot slot', type: 'slot' },
-  'reactoonz': { name: 'Reactoonz', emoji: '👾', color: '#00d4ff', description: 'Cluster pays alien slot', type: 'slot' },
-  'jammin-jars': { name: "Jammin' Jars", emoji: '🍓', color: '#ff2d95', description: 'Cluster pays fruit slot', type: 'slot' },
-  'razor-sharp': { name: 'Razor Sharp', emoji: '🪒', color: '#b44aff', description: 'High-volatility fishing slot', type: 'slot' },
-  'mystery-reels': { name: 'Mystery Reels', emoji: '🎭', color: '#ff6b35', description: 'Mystery symbol slot', type: 'slot' },
-  'age-of-the-gods': { name: 'Age of the Gods', emoji: '🏛️', color: '#ffd60a', description: 'Greek mythology progressive slot', type: 'slot' },
-  'pirates-plenty': { name: "Pirate's Plenty", emoji: '🏴‍☠️', color: '#00d4ff', description: 'Pirate-themed slot with treasure', type: 'slot' },
-  'vikings-go-berzerk': { name: "Vikings Go Berzerk", emoji: '🛡️', color: '#ff6b35', description: 'Viking raid slot with rage mode', type: 'slot' },
-  'hacksaw-gaming': { name: 'Hacksaw Gaming', emoji: '🪚', color: '#b44aff', description: 'Premium slot game', type: 'slot' },
-  'relax-gaming': { name: 'Relax Gaming', emoji: '🧘', color: '#a8e6cf', description: 'Premium slot game', type: 'slot' },
-  'truelab': { name: 'TrueLab', emoji: '🔬', color: '#ff8b94', description: 'Premium slot game', type: 'slot' },
-  'elk-studios': { name: 'ELK Studios', emoji: '🦌', color: '#d4a5a5', description: 'Premium slot game', type: 'slot' },
-  'thunderkick': { name: 'Thunderkick', emoji: '⚡', color: '#ffd93d', description: 'Premium slot game', type: 'slot' },
-  'nolimit-city': { name: 'Nolimit City', emoji: '🏙️', color: '#6c5ce7', description: 'Premium slot game', type: 'slot' },
-  'slotmill': { name: 'Slotmill', emoji: '⚙️', color: '#a29bfe', description: 'Premium slot game', type: 'slot' },
-  'bgaming': { name: 'BGaming', emoji: '🎪', color: '#fd79a8', description: 'Premium slot game', type: 'slot' },
-  'push-gaming': { name: 'Push Gaming', emoji: '🔥', color: '#00d4ff', description: 'Premium slot game', type: 'slot' },
-  'red-tiger': { name: 'Red Tiger', emoji: '🐯', color: '#b44aff', description: 'Premium slot game', type: 'slot' },
-  'playtech': { name: 'Playtech', emoji: '🎯', color: '#39ff14', description: 'Premium slot game', type: 'slot' },
+  'starburst': { name: 'Starburst', emoji: '💎', color: '#00d4ff', description: '7-барабанный космический слот с расширяющимися wild-символами', type: 'slot' },
+  'book-of-dead': { name: 'Book of Dead', emoji: '📖', color: '#ffd60a', description: 'Египетский слот с бесплатными спинами', type: 'slot' },
+  'sweet-bonanza': { name: 'Sweet Bonanza', emoji: '🍬', color: '#ff2d95', description: 'Конфетный слот с каскадными барабанами', type: 'slot' },
+  'crazy-time': { name: 'Crazy Time', emoji: '🎡', color: '#39ff14', description: 'Лайв-шоу с множителями', type: 'slot' },
+  'lightning-roulette': { name: 'Lightning Roulette', emoji: '⚡', color: '#b44aff', description: 'RNG рулетка с множителями-молниями', type: 'slot' },
+  'monopoly-live': { name: 'Monopoly Live', emoji: '🎲', color: '#ff6b35', description: 'Настольная игра встречает лайв-казино', type: 'slot' },
+  'mega-moolah': { name: 'Mega Moolah', emoji: '🦁', color: '#39ff14', description: 'Прогрессивный джекпот-слот в африканском сафари-стиле', type: 'slot' },
+  'gonzos-quest': { name: "Gonzo's Quest", emoji: '🗿', color: '#00d4ff', description: 'Лавинный слот с растущими множителями', type: 'slot' },
+  'dead-or-alive': { name: 'Dead or Alive', emoji: '🤠', color: '#ff6b35', description: 'Вестерн-слот с высокой волатильностью', type: 'slot' },
+  'twin-spin': { name: 'Twin Spin', emoji: '🔄', color: '#b44aff', description: 'Сдвоенный слот с синхронизированными барабанами', type: 'slot' },
+  'jumanji': { name: 'Jumanji', emoji: '🌴', color: '#39ff14', description: 'Приключенческий слот по мотивам настольной игры', type: 'slot' },
+  'hall-of-gods': { name: 'Hall of Gods', emoji: '⚡', color: '#ffd60a', description: 'Слот-джекпот по мотивам скандинавской мифологии', type: 'slot' },
+  'reactoonz': { name: 'Reactoonz', emoji: '👾', color: '#00d4ff', description: 'Кластерный слот про инопланетян', type: 'slot' },
+  'jammin-jars': { name: "Jammin' Jars", emoji: '🍓', color: '#ff2d95', description: 'Кластерный фруктовый слот', type: 'slot' },
+  'razor-sharp': { name: 'Razor Sharp', emoji: '🪒', color: '#b44aff', description: 'Рыболовный слот с высокой волатильностью', type: 'slot' },
+  'mystery-reels': { name: 'Mystery Reels', emoji: '🎭', color: '#ff6b35', description: 'Слот с загадочными символами', type: 'slot' },
+  'age-of-the-gods': { name: 'Age of the Gods', emoji: '🏛️', color: '#ffd60a', description: 'Прогрессивный слот по мотивам греческой мифологии', type: 'slot' },
+  'pirates-plenty': { name: "Pirate's Plenty", emoji: '🏴‍☠️', color: '#00d4ff', description: 'Пиратский слот с сокровищами', type: 'slot' },
+  'vikings-go-berzerk': { name: "Vikings Go Berzerk", emoji: '🛡️', color: '#ff6b35', description: 'Слот про набеги викингов с режимом ярости', type: 'slot' },
+  'hacksaw-gaming': { name: 'Hacksaw Gaming', emoji: '🪚', color: '#b44aff', description: 'Премиум слот', type: 'slot' },
+  'relax-gaming': { name: 'Relax Gaming', emoji: '🧘', color: '#a8e6cf', description: 'Премиум слот', type: 'slot' },
+  'truelab': { name: 'TrueLab', emoji: '🔬', color: '#ff8b94', description: 'Премиум слот', type: 'slot' },
+  'elk-studios': { name: 'ELK Studios', emoji: '🦌', color: '#d4a5a5', description: 'Премиум слот', type: 'slot' },
+  'thunderkick': { name: 'Thunderkick', emoji: '⚡', color: '#ffd93d', description: 'Премиум слот', type: 'slot' },
+  'nolimit-city': { name: 'Nolimit City', emoji: '🏙️', color: '#6c5ce7', description: 'Премиум слот', type: 'slot' },
+  'slotmill': { name: 'Slotmill', emoji: '⚙️', color: '#a29bfe', description: 'Премиум слот', type: 'slot' },
+  'bgaming': { name: 'BGaming', emoji: '🎪', color: '#fd79a8', description: 'Премиум слот', type: 'slot' },
+  'push-gaming': { name: 'Push Gaming', emoji: '🔥', color: '#00d4ff', description: 'Премиум слот', type: 'slot' },
+  'red-tiger': { name: 'Red Tiger', emoji: '🐯', color: '#b44aff', description: 'Премиум слот', type: 'slot' },
+  'playtech': { name: 'Playtech', emoji: '🎯', color: '#39ff14', description: 'Премиум слот', type: 'slot' },
 };
 
 // Fallback for unknown games
@@ -49,7 +50,7 @@ const FALLBACK_CONFIG: GameConfig = {
   name: 'Casino Game',
   emoji: '🎰',
   color: '#ff2d95',
-  description: 'Premium casino game experience',
+  description: 'Премиум игровой опыт в казино',
   type: 'slot',
 };
 
@@ -96,6 +97,7 @@ function checkWin(reels: string[][]): { winAmount: number; winLines: { line: num
 export default function DemoGamePage() {
   const params = useParams();
   const slug = params.slug as string;
+  const { t } = useI18n();
   const [isIframe, setIsIframe] = useState(false);
   
   useEffect(() => {
@@ -137,10 +139,10 @@ export default function DemoGamePage() {
           const winAmount = result.winAmount * bet;
           setBalance(prev => prev + winAmount);
           setLastWin(winAmount);
-          setMessage(`🎉 WIN! ${winAmount} coins!`);
+          setMessage(t('game.winMessage').replace('{amount}', winAmount.toString()));
           setShowAnim(true);
         } else {
-          setMessage('No win. Try again!');
+          setMessage(t('game.noWin'));
         }
         
         setSpinCount(prev => prev + 1);
@@ -229,16 +231,16 @@ export default function DemoGamePage() {
                   boxShadow: spinning ? 'none' : `0 0 15px ${config.color}40`,
                 }}
               >
-                {spinning ? '🎰 SPINNING...' : '🎰 SPIN'}
+                {spinning ? `🎰 ${t('game.spinning')}` : `🎰 ${t('game.spin')}`}
               </button>
             </div>
           </div>
 
           {/* Stats */}
           <div className="rounded-lg p-2 flex justify-around text-xs" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <span className="text-gray-500">Balance: <span className="text-miami-cyan font-bold">{balance}</span></span>
-            <span className="text-gray-500">Last: <span className="font-bold" style={{ color: lastWin > 0 ? config.color : '#666' }}>{lastWin > 0 ? `+${lastWin}` : '0'}</span></span>
-            <span className="text-gray-500">Spins: <span className="text-gray-400">{spinCount}</span></span>
+            <span className="text-gray-500">{t('game.balance')}: <span className="text-miami-cyan font-bold">{balance}</span></span>
+            <span className="text-gray-500">{t('game.lastWin')}: <span className="font-bold" style={{ color: lastWin > 0 ? config.color : '#666' }}>{lastWin > 0 ? `+${lastWin}` : '0'}</span></span>
+            <span className="text-gray-500">{t('game.spins')}: <span className="text-gray-400">{spinCount}</span></span>
           </div>
         </div>
       </div>
@@ -260,7 +262,7 @@ export default function DemoGamePage() {
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4">
             <span className="w-2 h-2 rounded-full bg-miami-cyan animate-neon-pulse" />
-            <span className="text-xs font-medium tracking-wider uppercase text-gray-400">DEMO MODE</span>
+            <span className="text-xs font-medium tracking-wider uppercase text-gray-400">{t('game.demoMode')}</span>
           </div>
           <h1 className="text-4xl font-heading font-bold">
             <span className="bg-gradient-miami bg-clip-text text-transparent">{config.emoji}</span>
@@ -373,7 +375,7 @@ export default function DemoGamePage() {
                 transform: spinning ? 'scale(0.95)' : 'scale(1)',
               }}
             >
-              {spinning ? '🎰 SPINNING...' : '🎰 SPIN'}
+              {spinning ? `🎰 ${t('game.spinning')}` : `🎰 ${t('game.spin')}`}
             </button>
           </div>
         </div>
@@ -388,17 +390,17 @@ export default function DemoGamePage() {
         >
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Balance</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{t('game.balance')}</p>
               <p className="text-lg font-bold text-miami-cyan">{balance}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Last Win</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{t('game.lastWin')}</p>
               <p className="text-lg font-bold" style={{ color: lastWin > 0 ? config.color : '#666' }}>
                 {lastWin > 0 ? `+${lastWin}` : '0'}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Spins</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{t('game.spins')}</p>
               <p className="text-lg font-bold text-gray-400">{spinCount}</p>
             </div>
           </div>
@@ -407,10 +409,10 @@ export default function DemoGamePage() {
         {/* Demo Notice */}
         <div className="text-center mt-6">
           <p className="text-xs text-gray-600">
-            🎮 Demo Mode — Play for fun. No real money involved.
+            {t('game.demoNotice')}
           </p>
           <p className="text-xs text-gray-600 mt-1">
-            This is a simulation of {config.name} for preview purposes.
+            {t('game.demoSubtitle').replace('{name}', config.name)}
           </p>
         </div>
       </div>

@@ -12,6 +12,11 @@ COPY server.js .
 EXPOSE 3004
 
 ENV DATA_DIR=/app/data
-ENV OPENROUTER_API_KEY=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
+ENV AI_PROVIDER=openrouter
+ENV OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free,google/gemma-4-31b-it:free,deepseek/deepseek-v4-flash
+
+# Ollama (опционально, для локальной отладки)
+ENV OLLAMA_BASE_URL=http://172.17.0.1:11434
+ENV OLLAMA_MODEL=phi4-mini
 
 CMD ["node", "server.js"]

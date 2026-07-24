@@ -3,6 +3,7 @@
 import React from 'react';
 import { ArrowDownCircle, ArrowUpCircle, RefreshCw, ExternalLink, MoreHorizontal } from 'lucide-react';
 import { adminApi } from '../lib/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 interface Transaction {
   id: string;
@@ -25,6 +26,7 @@ const TYPE_CONFIG: Record<Transaction['type'], { icon: typeof ArrowDownCircle; c
 };
 
 export default function TransactionTable({ limit }: { limit?: number }) {
+  const { t } = useI18n();
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [typeFilter, setTypeFilter] = React.useState<string>('all');
@@ -109,8 +111,8 @@ export default function TransactionTable({ limit }: { limit?: number }) {
       {/* Header */}
       <div className="px-5 py-4 border-b border-gray-800">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Transactions</h2>
-          <span className="text-sm text-gray-500">{filtered.length} total</span>
+          <h2 className="text-lg font-semibold">{t('transactions.title', 'Transactions')}</h2>
+          <span className="text-sm text-gray-500">{filtered.length} {t('common.total', 'total')}</span>
         </div>
         <div className="flex items-center gap-3">
           <select
@@ -118,19 +120,19 @@ export default function TransactionTable({ limit }: { limit?: number }) {
             onChange={e => setTypeFilter(e.target.value)}
             className="input w-36"
           >
-            <option value="all">All Types</option>
-            <option value="deposit">Deposits</option>
-            <option value="withdrawal">Withdrawals</option>
+            <option value="all">{t('common.allTypes', 'All Types')}</option>
+            <option value="deposit">{t('transactions.deposits', 'Deposits')}</option>
+            <option value="withdrawal">{t('transactions.withdrawals', 'Withdrawals')}</option>
           </select>
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
             className="input w-36"
           >
-            <option value="all">All Status</option>
-            <option value="completed">Completed</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
+            <option value="all">{t('common.allStatus', 'All Status')}</option>
+            <option value="completed">{t('common.completed', 'Completed')}</option>
+            <option value="pending">{t('common.pending', 'Pending')}</option>
+            <option value="failed">{t('common.failed', 'Failed')}</option>
           </select>
         </div>
       </div>
@@ -140,12 +142,12 @@ export default function TransactionTable({ limit }: { limit?: number }) {
         <table>
           <thead>
             <tr>
-              <th>Type</th>
-              <th>User</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Tx Hash</th>
-              <th>Time</th>
+              <th>{t('transactions.type', 'Type')}</th>
+              <th>{t('transactions.user', 'User')}</th>
+              <th>{t('transactions.amount', 'Amount')}</th>
+              <th>{t('transactions.status', 'Status')}</th>
+              <th>{t('transactions.txHash', 'Tx Hash')}</th>
+              <th>{t('transactions.time', 'Time')}</th>
               <th></th>
             </tr>
           </thead>
@@ -153,7 +155,7 @@ export default function TransactionTable({ limit }: { limit?: number }) {
             {display.length === 0 ? (
               <tr>
                 <td colSpan={7} className="text-center text-gray-500 py-8">
-                  No transactions found
+                  {t('transactions.noTransactions', 'No transactions found')}
                 </td>
               </tr>
             ) : (
@@ -165,7 +167,7 @@ export default function TransactionTable({ limit }: { limit?: number }) {
                     <td>
                       <div className="flex items-center gap-2">
                         <Icon className={`w-4 h-4 ${config.color}`} />
-                        <span className="text-sm">{config.label}</span>
+                        <span className="text-sm">{t(`transactions.${tx.type}`, config.label)}</span>
                       </div>
                     </td>
                     <td>
@@ -207,7 +209,7 @@ export default function TransactionTable({ limit }: { limit?: number }) {
       {limit && transactions.length > 0 && (
         <div className="px-5 py-3 border-t border-gray-800">
           <button className="text-sm text-amber-400 hover:text-amber-300 w-full text-center">
-            View all transactions →
+            {t('transactions.viewAll', 'View all transactions')} →
           </button>
         </div>
       )}

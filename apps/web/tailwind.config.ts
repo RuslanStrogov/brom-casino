@@ -34,9 +34,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Playfair Display', 'Georgia', 'serif'],
-        heading: ['Outfit', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-onest)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-unbounded)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-unbounded)', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-gold': 'linear-gradient(135deg, #d4a843 0%, #f0d060 50%, #d4a843 100%)',

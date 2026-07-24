@@ -8,7 +8,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 ARG NEXT_PUBLIC_API_URL=https://brombet.ru/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL

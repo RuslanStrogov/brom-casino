@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import ProviderGameView from '@/components/ProviderGameView';
+import { useI18n } from '@/i18n/I18nProvider';
 
 const PROVIDER_META: Record<string, { name: string; emoji: string }> = {
   pragmatic: { name: 'Pragmatic Play', emoji: '🎰' },
@@ -76,12 +77,14 @@ export default function GamePage() {
     fetchGame();
   }, [slug]);
 
+  const { t } = useI18n();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-miami-sky flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-miami-pink border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-400">Loading game...</p>
+          <p className="text-gray-400">{t('game.loadingGame')}</p>
         </div>
       </div>
     );
@@ -92,15 +95,15 @@ export default function GamePage() {
       <div className="min-h-screen bg-miami-sky flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🎰</div>
-          <h1 className="text-2xl font-bold text-white mb-2">Game Not Found</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">{t('game.notFound')}</h1>
           <p className="text-gray-400 mb-6">
-            The game &quot;{slug}&quot; doesn&apos;t exist.
+            {t('game.notFoundDesc').replace('{slug}', slug ?? '')}
           </p>
           <a
             href="/"
             className="px-6 py-3 rounded-lg font-bold bg-gradient-miami text-white inline-block"
           >
-            ← Back to Games
+            ← {t('game.backToGames')}
           </a>
         </div>
       </div>
@@ -127,7 +130,7 @@ export default function GamePage() {
             <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Games
+            {t('game.backToGames')}
           </a>
 
           <ProviderGameView

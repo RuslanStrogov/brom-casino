@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface DiceGameProps {
   balance: number;
@@ -8,6 +9,7 @@ interface DiceGameProps {
 }
 
 export default function DiceGame({ balance, onBalanceChange }: DiceGameProps) {
+  const { t } = useI18n();
   const [target, setTarget] = useState(50);
   const [isOver, setIsOver] = useState(true);
   const [rolling, setRolling] = useState(false);
@@ -46,9 +48,9 @@ export default function DiceGame({ balance, onBalanceChange }: DiceGameProps) {
           const win = payout;
           setWinAmount(win);
           onBalanceChange(balance - bet + win);
-          setMessage(`🎉 Rolled ${finalResult}! You won ${win.toFixed(2)}!`);
+          setMessage(t('game.diceWin', `🎉 Rolled ${finalResult}! You won ${win.toFixed(2)}!`).replace('{result}', String(finalResult)).replace('{amount}', win.toFixed(2)));
         } else {
-          setMessage(`Rolled ${finalResult}. Try again!`);
+          setMessage(t('game.diceLose', `Rolled ${finalResult}. Try again!`).replace('{result}', String(finalResult)));
         }
 
         setHistory(prev => [{ result: finalResult, won }, ...prev.slice(0, 9)]);

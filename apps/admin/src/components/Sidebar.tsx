@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useI18n } from '@/i18n/I18nProvider';
 import {
   LayoutDashboard,
   Users,
@@ -10,91 +11,86 @@ import {
   ArrowLeftRight,
   Gift,
   Shield,
-  Settings,
-  BarChart3,
   Wallet,
-  FileText,
+  BarChart3,
   Server,
   Webhook,
-  LogOut,
+  FileText,
+  Settings,
   ChevronLeft,
-  ChevronRight,
+  LogOut,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/users', icon: Users, label: 'Users' },
-  { href: '/games', icon: Gamepad2, label: 'Games' },
-  { href: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
-  { href: '/bonuses', icon: Gift, label: 'Bonuses' },
-  { href: '/kyc', icon: Shield, label: 'KYC Queue' },
-  { href: '/wallet', icon: Wallet, label: 'Wallets' },
-  { href: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/providers', icon: Server, label: 'Providers' },
-  { href: '/webhooks', icon: Webhook, label: 'Webhooks' },
-  { href: '/reports', icon: FileText, label: 'Reports' },
-  { href: '/settings', icon: Settings, label: 'Settings' },
+  { href: '/', label: 'nav.dashboard', icon: LayoutDashboard },
+  { href: '/users', label: 'nav.users', icon: Users },
+  { href: '/games', label: 'nav.games', icon: Gamepad2 },
+  { href: '/transactions', label: 'nav.transactions', icon: ArrowLeftRight },
+  { href: '/bonuses', label: 'nav.bonuses', icon: Gift },
+  { href: '/kyc', label: 'nav.kyc', icon: Shield },
+  { href: '/wallet', label: 'nav.wallet', icon: Wallet },
+  { href: '/analytics', label: 'nav.analytics', icon: BarChart3 },
+  { href: '/providers', label: 'nav.providers', icon: Server },
+  { href: '/webhooks', label: 'nav.webhooks', icon: Webhook },
+  { href: '/reports', label: 'nav.reports', icon: FileText },
+  { href: '/settings', label: 'nav.settings', icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { t, lang } = useI18n();
   const [collapsed, setCollapsed] = React.useState(false);
 
   return (
     <aside
-      className={`bg-gray-900 border-r border-gray-800 flex flex-col transition-all duration-300 relative ${
+      className={`bg-[rgba(10,10,15,0.9)] border-r border-[rgba(255,45,149,0.08)] flex flex-col transition-all duration-200 ${
         collapsed ? 'w-16' : 'w-60'
       }`}
     >
       {/* Logo */}
-      <div className="p-4 border-b border-gray-800 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-bold text-sm flex-shrink-0">
-          B
+      <div className="h-16 flex items-center gap-3 px-4 border-b border-[rgba(255,45,149,0.08)]">
+        <div className="w-8 h-8 rounded-lg bg-gradient-miami flex items-center justify-center text-base font-bold text-white shadow-neon-pink shrink-0">
+          <span>B</span>
         </div>
         {!collapsed && (
-          <div className="overflow-hidden">
-            <h1 className="font-bold text-sm whitespace-nowrap">BROM Casino</h1>
-            <p className="text-[10px] text-gray-500 whitespace-nowrap">Admin Panel</p>
-          </div>
+          <span className="font-heading font-bold text-lg">
+            <span className="bg-gradient-miami bg-clip-text text-transparent">BROM</span>
+            <span className="text-white/60"> ADMIN</span>
+          </span>
         )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map(item => {
-          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+        {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`nav-item ${isActive ? 'active' : ''}`}
-              title={collapsed ? item.label : undefined}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isActive
+                  ? 'bg-[rgba(255,45,149,0.1)] text-[#ff2d95] shadow-[0_0_10px_rgba(255,45,149,0.05)]'
+                  : 'text-gray-500 hover:text-gray-300 hover:bg-[rgba(255,255,255,0.03)]'
+              }`}
+              title={collapsed ? t(item.label) : undefined}
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
+              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#ff2d95]' : ''}`} />
+              {!collapsed && <span>{t(item.label)}</span>}
             </Link>
           );
         })}
       </nav>
 
-      {/* Collapse Toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-colors z-10"
-      >
-        {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-      </button>
-
-      {/* Bottom Section */}
-      <div className="p-2 border-t border-gray-800">
+      {/* Collapse Button */}
+      <div className="p-2 border-t border-[rgba(255,45,149,0.08)]">
         <button
-          className="nav-item w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
-          title={collapsed ? 'Logout' : undefined}
+          onClick={() => setCollapsed(!collapsed)}
+          className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-[rgba(255,255,255,0.03)] transition-all text-sm"
         >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span>Logout</span>}
+          <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
+          {!collapsed && <span>{t('nav.collapse', 'Collapse')}</span>}
         </button>
       </div>
     </aside>

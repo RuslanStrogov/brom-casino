@@ -2,13 +2,16 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@11 --activate
+RUN npm install -g pnpm@11 --registry=https://registry.npmjs.org
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile
+# Прокидываем переменные для клиентского бандла (Next.js inlines NEXT_PUBLIC_* на этапе build)
+ENV NEXT_PUBLIC_ENABLE_CHAT=true
+
+RUN pnpm install --no-frozen-lockfile
 
 RUN pnpm --filter brom-casino-web build
 

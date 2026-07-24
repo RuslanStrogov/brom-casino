@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { playSoundIfEnabled } from '@/lib/sounds';
+import { useI18n } from '@/i18n/I18nProvider';
 
 interface BlackjackGameProps {
   balance: number;
@@ -48,6 +49,7 @@ function drawCard(): Card {
 }
 
 export default function BlackjackGame({ balance, onBalanceChange }: BlackjackGameProps) {
+  const { t } = useI18n();
   const [playerCards, setPlayerCards] = useState<Card[]>([]);
   const [dealerCards, setDealerCards] = useState<Card[]>([]);
   const [bet, setBet] = useState(5);
@@ -80,13 +82,13 @@ export default function BlackjackGame({ balance, onBalanceChange }: BlackjackGam
       setDealerCards(dCards);
       if (calculateScore(dCards) === 21) {
         setGameState('finished');
-        setResult('Push — both blackjack!');
+        setResult(t('blackjack.pushBlackjack', 'Push — both blackjack!'));
         onBalanceChange(balance - bet + bet); // return bet
       } else {
         setGameState('finished');
         const win = bet * 2.5;
         setLastWin(win);
-        setResult('Blackjack! 3:2 payout!');
+        setResult(t('blackjack.blackjack', 'Blackjack! 3:2 payout!'));
         onBalanceChange(balance - bet + win);
       }
     }
@@ -100,7 +102,7 @@ export default function BlackjackGame({ balance, onBalanceChange }: BlackjackGam
     const score = calculateScore(newCards);
     if (score > 21) {
       setGameState('finished');
-      setResult('Bust! You lose.');
+      setResult(t('blackjack.bust', 'Bust! You lose.'));
     } else if (score === 21) {
       stand(newCards, dealerCards);
     }
@@ -133,17 +135,17 @@ export default function BlackjackGame({ balance, onBalanceChange }: BlackjackGam
       if (finalDealerScore > 21) {
         const win = bet * 2;
         setLastWin(win);
-        setResult('Dealer busts! You win!');
+        setResult(t('blackjack.dealerBust', 'Dealer busts! You win!'));
         onBalanceChange(balance - bet + win);
       } else if (finalPlayerScore > finalDealerScore) {
         const win = bet * 2;
         setLastWin(win);
-        setResult('You win!');
+        setResult(t('blackjack.win', 'You win!'));
         onBalanceChange(balance - bet + win);
       } else if (finalPlayerScore < finalDealerScore) {
-        setResult('Dealer wins.');
+        setResult(t('blackjack.dealerWin', 'Dealer wins.'));
       } else {
-        setResult('Push!');
+        setResult(t('blackjack.push', 'Push!'));
         onBalanceChange(balance - bet + bet);
       }
     }, 500);
@@ -159,7 +161,7 @@ export default function BlackjackGame({ balance, onBalanceChange }: BlackjackGam
     const score = calculateScore(newCards);
     if (score > 21) {
       setGameState('finished');
-      setResult('Bust! You lose.');
+      setResult(t('blackjack.bust', 'Bust! You lose.'));
     } else {
       setTimeout(() => stand(newCards, dealerCards), 300);
     }

@@ -7,6 +7,13 @@ export interface ChatMessage {
   text: string;
   sender: 'user' | 'bot';
   timestamp: number;
+  suggestions?: { label: string; action: string }[];
+  action?: Action | null;
+}
+
+export interface Action {
+  type: 'navigate' | 'suggest_bet' | 'simulate_spin' | 'open_game' | 'highlight';
+  payload: Record<string, any>;
 }
 
 interface ChatState {
@@ -17,19 +24,22 @@ interface ChatState {
   isLoading: boolean;
   userId: string;
   conversationId: string | null;
+  actionFeedback: string | null;
 
   // Действия
   setOpen: (open: boolean) => void;
   toggle: () => void;
   addMessage: (msg: ChatMessage) => void;
-  addChunk: (text: string) => void;
   setLoading: (loading: boolean) => void;
   setConnected: (connected: boolean) => void;
   setConversationId: (id: string) => void;
   sendMessage: (text: string) => void;
-  connect: () => void;
-  disconnect: () => void;
+  clearHistory: () => void;
+  setActionFeedback: (feedback: string | null) => void;
 }
+
+// Ключ для localStorage
+const STORAGE_KEY = 'brombet-chat-history';
 
 // Генерируем или получаем userId из localStorage
 function getUserId(): string {
@@ -42,112 +52,72 @@ function getUserId(): string {
   return id;
 }
 
-// Определяем URL WebSocket
-function getWsUrl(): string {
-  if (typeof window === 'undefined') return 'ws://localhost:3004';
-  // В продакшене используем wss, в dev — localhost
-  if (window.location.hostname === 'brombet.ru') {
-    return 'wss://brombet.ru/ws';
+// Загружаем историю из localStorage
+function loadHistory(): ChatMessage[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as ChatMessage[];
+    // Фильтруем сообщения старше 7 дней
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return parsed.filter(m => m.timestamp > weekAgo);
+  } catch {
+    return [];
   }
-  return 'ws://localhost:3004/ws';
 }
 
-let ws: WebSocket | null = null;
-let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+// Сохраняем историю в localStorage
+function saveHistory(messages: ChatMessage[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    // Храним последние 100 сообщений
+    const toSave = messages.slice(-100);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch (e) {
+    console.warn('[BROM] Failed to save chat history:', e);
+  }
+}
+
+// REST API URL
+function getApiUrl(): string {
+  if (typeof window === 'undefined') return 'http://localhost:3004/api/chat';
+  if (window.location.hostname === 'brombet.ru') {
+    return '/api/chat';
+  }
+  return 'http://localhost:3004/api/chat';
+}
 
 export const useChatStore = create<ChatState>((set, get) => ({
-  messages: [],
+  messages: loadHistory(),
   isOpen: false,
-  isConnected: false,
+  isConnected: true, // REST всегда доступен
   isLoading: false,
   userId: getUserId(),
   conversationId: null,
+  actionFeedback: null,
 
   setOpen: (open) => set({ isOpen: open }),
   toggle: () => set((s) => ({ isOpen: !s.isOpen })),
 
-  addMessage: (msg) =>
-    set((s) => ({ messages: [...s.messages, msg] })),
-
-  addChunk: (text) =>
-    set((s) => {
-      const msgs = [...s.messages];
-      const last = msgs[msgs.length - 1];
-      if (last && last.sender === 'bot') {
-        msgs[msgs.length - 1] = { ...last, text: last.text + text };
-      }
-      return { messages: msgs };
-    }),
+  addMessage: (msg) => {
+    const newMessages = [...get().messages, msg];
+    set({ messages: newMessages });
+    saveHistory(newMessages);
+  },
 
   setLoading: (loading) => set({ isLoading: loading }),
   setConnected: (connected) => set({ isConnected: connected }),
   setConversationId: (id) => set({ conversationId: id }),
 
-  connect: () => {
-    const state = get();
-    if (ws?.readyState === WebSocket.OPEN) return;
-
-    const url = getWsUrl();
-
-    ws = new WebSocket(url);
-    ws.onopen = () => {
-      console.log('[BROM AI] WebSocket connected');
-      set({ isConnected: true });
-      // Отправляем userId серверу
-      ws?.send(JSON.stringify({ type: 'setUser', userId: state.userId }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-
-        switch (data.type) {
-          case 'connected':
-            set({ conversationId: data.sessionId || data.conversationId });
-            break;
-          case 'chunk':
-            get().addChunk(data.text);
-            break;
-          case 'done':
-            set({ isLoading: false });
-            break;
-          case 'error':
-            get().addMessage({
-              id: `err-${Date.now()}`,
-              text: data.text || 'Произошла ошибка',
-              sender: 'bot',
-              timestamp: Date.now(),
-            });
-            set({ isLoading: false });
-            break;
-          case 'pong':
-            break;
-        }
-      } catch (e) {
-        console.error('[BROM AI] Failed to parse WS message', e);
-      }
-    };
-
-    ws.onclose = () => {
-      console.log('[BROM AI] WebSocket disconnected');
-      set({ isConnected: false });
-      // Авто-переподключение через 5 сек
-      reconnectTimer = setTimeout(() => {
-        if (get().isOpen) get().connect();
-      }, 5000);
-    };
-
-    ws.onerror = (err) => {
-      console.error('[BROM AI] WebSocket error', err);
-    };
+  clearHistory: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    set({ messages: [] });
   },
 
-  disconnect: () => {
-    if (reconnectTimer) clearTimeout(reconnectTimer);
-    ws?.close();
-    ws = null;
-    set({ isConnected: false });
-  },
+  setActionFeedback: (feedback) => set({ actionFeedback: feedback }),
 
   sendMessage: (text: string) => {
     const state = get();
@@ -158,43 +128,47 @@ export const useChatStore = create<ChatState>((set, get) => ({
       timestamp: Date.now(),
     };
 
-    set((s) => ({
-      messages: [...s.messages, userMsg],
-      isLoading: true,
-    }));
+    // Сразу добавляем сообщение пользователя и показываем загрузку
+    const messagesWithUser = [...state.messages, userMsg];
+    set({ messages: messagesWithUser, isLoading: true });
+    saveHistory(messagesWithUser);
 
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'message', text, userId: state.userId }));
-    } else {
-      // Fallback: REST API
-      const restUrl = typeof window !== 'undefined' && window.location.hostname === 'brombet.ru'
-        ? '/api/chat'
-        : 'http://localhost:3004/api/chat';
+    // REST API запрос
+    const apiUrl = getApiUrl();
 
-      fetch(restUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, userId: state.userId }),
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, userId: state.userId }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
       })
-        .then((res) => res.json())
-        .then((data) => {
-          get().addMessage({
-            id: `bot-${Date.now()}`,
-            text: data.text || '...',
-            sender: 'bot',
-            timestamp: Date.now(),
-          });
-          set({ isLoading: false });
-        })
-        .catch(() => {
-          get().addMessage({
-            id: `err-${Date.now()}`,
-            text: 'Ошибка соединения. Попробуйте позже.',
-            sender: 'bot',
-            timestamp: Date.now(),
-          });
-          set({ isLoading: false });
-        });
-    }
+      .then((data) => {
+        const botMsg: ChatMessage = {
+          id: `bot-${Date.now()}`,
+          text: data.text || '...',
+          sender: 'bot',
+          timestamp: Date.now(),
+          suggestions: data.suggestions || [],
+          action: data.action || null,
+        };
+        const newMessages = [...get().messages, botMsg];
+        set({ messages: newMessages, isLoading: false });
+        saveHistory(newMessages);
+      })
+      .catch((err) => {
+        console.error('[BROM AI] REST error:', err);
+        const errMsg: ChatMessage = {
+          id: `err-${Date.now()}`,
+          text: 'Ошибка соединения. Попробуйте позже.',
+          sender: 'bot',
+          timestamp: Date.now(),
+        };
+        const newMessages = [...get().messages, errMsg];
+        set({ messages: newMessages, isLoading: false });
+        saveHistory(newMessages);
+      });
   },
 }));

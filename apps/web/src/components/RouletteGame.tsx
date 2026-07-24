@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useI18n } from '@/i18n/I18nProvider';
 
 const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 const BLACK_NUMBERS = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35];
@@ -30,6 +31,7 @@ const PAYOUTS: Record<BetType, number> = {
 };
 
 export default function RouletteGame({ balance, onBalanceChange }: RouletteGameProps) {
+  const { t } = useI18n();
   const [bets, setBets] = useState<Bet[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<number | null>(null);
@@ -93,9 +95,9 @@ export default function RouletteGame({ balance, onBalanceChange }: RouletteGameP
       if (totalWin > 0) {
         setLastWin(totalWin);
         onBalanceChange(balance - totalBet + totalWin);
-        setMessage(`🎉 ${winningNumber} — You won ${totalWin.toFixed(2)}!`);
+        setMessage(t('game.rouletteWin', `🎉 ${winningNumber} — You won ${totalWin.toFixed(2)}!`).replace('{number}', String(winningNumber)).replace('{amount}', totalWin.toFixed(2)));
       } else {
-        setMessage(`${winningNumber} — No win. Try again!`);
+        setMessage(t('game.rouletteLose', `${winningNumber} — No win. Try again!`).replace('{number}', String(winningNumber)));
       }
       setBets([]);
     }, 5000);
@@ -198,7 +200,7 @@ export default function RouletteGame({ balance, onBalanceChange }: RouletteGameP
               disabled:opacity-50 disabled:cursor-not-allowed
               active:scale-95 shadow-lg"
           >
-            {spinning ? '🎡 Spinning...' : '🎲 SPIN'}
+            {spinning ? t('game.rouletteSpinning', '🎡 Spinning...') : t('game.rouletteSpin', '🎲 SPIN')}
           </button>
           {bets.length > 0 && !spinning && (
             <button onClick={clearBets} className="text-sm text-red-400 hover:text-red-300">

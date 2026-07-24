@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Gift, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Users, Clock, Percent } from 'lucide-react';
 import { adminApi } from '../lib/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 interface Bonus {
   id: string;
@@ -26,11 +27,9 @@ const TYPE_LABELS: Record<string, string> = {
   CASHBACK: 'Cashback',
   REFERRAL: 'Referral',
   LOYALTY: 'Loyalty',
-};
-
-const BONUS_VALUE = 'amount' in arguments ? '' : ''; // hack for build
-
-export default function BonusManager() {
+  };
+  export default function BonusManager() {
+  const { t } = useI18n();
   const [bonuses, setBonuses] = useState<Bonus[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -80,14 +79,14 @@ export default function BonusManager() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Gift className="w-5 h-5 text-amber-400" />
-            <h2 className="text-lg font-semibold">Bonuses</h2>
+            <h2 className="text-lg font-semibold">{t('bonuses.title', 'Bonuses')}</h2>
           </div>
           <button
             onClick={() => setShowCreate(!showCreate)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 text-sm font-medium hover:bg-amber-500/30 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Create
+            {t('bonuses.create', 'Create')}
           </button>
         </div>
       </div>
@@ -103,23 +102,23 @@ export default function BonusManager() {
           {showCreate && (
             <div className="px-5 py-4 border-b border-gray-800 bg-gray-800/30">
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Bonus name" className="input" />
+                <input placeholder={t('bonuses.bonusName', 'Bonus name')} className="input" />
                 <select className="input">
-                  <option value="welcome">Welcome</option>
-                  <option value="deposit">Deposit</option>
-                  <option value="free_spins">Free Spins</option>
-                  <option value="cashback">Cashback</option>
-                  <option value="referral">Referral</option>
-                  <option value="no_deposit">No Deposit</option>
+                  <option value="welcome">{t('bonuses.welcome', 'Welcome')}</option>
+                  <option value="deposit">{t('bonuses.deposit', 'Deposit')}</option>
+                  <option value="free_spins">{t('bonuses.freeSpins', 'Free Spins')}</option>
+                  <option value="cashback">{t('bonuses.cashback', 'Cashback')}</option>
+                  <option value="referral">{t('bonuses.referral', 'Referral')}</option>
+                  <option value="no_deposit">{t('bonuses.noDeposit', 'No Deposit')}</option>
                 </select>
-                <input placeholder="Value (e.g. 100% up to 500 TON)" className="input col-span-2" />
-                <input placeholder="Wagering requirement (e.g. 30x)" className="input" type="number" />
-                <input placeholder="Max claims" className="input" type="number" />
+                <input placeholder={t('bonuses.valuePlaceholder', 'Value (e.g. 100% up to 500 TON)')} className="input col-span-2" />
+                <input placeholder={t('bonuses.wageringPlaceholder', 'Wagering requirement (e.g. 30x)')} className="input" type="number" />
+                <input placeholder={t('bonuses.maxClaims', 'Max claims')} className="input" type="number" />
               </div>
               <div className="flex gap-2 mt-3">
-                <button className="btn btn-primary text-sm">Create Bonus</button>
+                <button className="btn btn-primary text-sm">{t('bonuses.createBonus', 'Create Bonus')}</button>
                 <button onClick={() => setShowCreate(false)} className="btn btn-secondary text-sm">
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
               </div>
             </div>
@@ -129,7 +128,7 @@ export default function BonusManager() {
           <div className="divide-y divide-gray-800 max-h-96 overflow-y-auto">
             {bonuses.length === 0 && !loading && (
               <div className="px-5 py-8 text-center text-gray-500 text-sm">
-                No bonuses found in database.
+                {t('bonuses.noBonuses', 'No bonuses found in database.')}
               </div>
             )}
             {bonuses.map(bonus => (
@@ -167,16 +166,16 @@ export default function BonusManager() {
                 <div className="flex items-center gap-4 text-xs text-gray-500">
                   <span className="flex items-center gap-1">
                     <Percent className="w-3 h-3" />
-                    {bonus.wageringRequirement}x wagering
+                    {bonus.wageringRequirement}x {t('bonuses.wagering', 'wagering')}
                   </span>
                   <span className="flex items-center gap-1">
                     <Users className="w-3 h-3" />
-                    {bonus.claimed} active users
+                    {bonus.claimed} {t('bonuses.activeUsers', 'active users')}
                   </span>
                   {bonus.expiresAt && (
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      Expires {new Date(bonus.expiresAt).toLocaleDateString()}
+                      {t('bonuses.expires', 'Expires')} {new Date(bonus.expiresAt).toLocaleDateString()}
                     </span>
                   )}
                 </div>

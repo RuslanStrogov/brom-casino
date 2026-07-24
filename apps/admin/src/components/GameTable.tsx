@@ -3,6 +3,7 @@
 import React from 'react';
 import { MoreHorizontal, TrendingUp, ArrowDownRight, Play } from 'lucide-react';
 import { adminApi } from '../lib/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 interface Game {
   id: string;
@@ -31,6 +32,7 @@ const CATEGORY_BADGES: Record<string, string> = {
 };
 
 export default function GameTable() {
+  const { t } = useI18n();
   const [games, setGames] = React.useState<Game[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [sortBy, setSortBy] = React.useState<'name' | 'bets' | 'rtp'>('bets');
@@ -94,7 +96,7 @@ export default function GameTable() {
       {/* Header */}
       <div className="px-5 py-4 border-b border-gray-800">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Games</h2>
+          <h2 className="text-lg font-semibold">{t('games.title', 'Games')}</h2>
           <div className="flex items-center gap-2">
             {(['bets', 'name', 'rtp'] as const).map(sort => (
               <button
@@ -106,7 +108,7 @@ export default function GameTable() {
                     : 'text-gray-500 hover:text-gray-300'
                 }`}
               >
-                {sort.charAt(0).toUpperCase() + sort.slice(1)}
+                {sort === 'bets' ? t('games.bets', 'Bets') : sort === 'name' ? t('games.name', 'Name') : 'RTP'}
               </button>
             ))}
           </div>
@@ -116,7 +118,7 @@ export default function GameTable() {
       {/* Game List */}
       <div className="divide-y divide-gray-800">
         {sortedGames.length === 0 ? (
-          <div className="px-5 py-8 text-center text-gray-500">No games found</div>
+          <div className="px-5 py-8 text-center text-gray-500">{t('games.noGames', 'No games found')}</div>
         ) : (
           sortedGames.map(game => (
             <div key={game.id} className="px-5 py-3 hover:bg-gray-800/30 transition-colors">
@@ -130,18 +132,18 @@ export default function GameTable() {
                       <p className="font-medium text-sm">{game.name}</p>
                       {getCategoryBadge(game.category)}
                       {game.isNew && (
-                        <span className="badge text-[10px] bg-green-500/10 text-green-400">new</span>
+                        <span className="badge text-[10px] bg-green-500/10 text-green-400">{t('games.new', 'new')}</span>
                       )}
                       {game.isFeatured && (
-                        <span className="badge text-[10px] bg-amber-500/10 text-amber-400">featured</span>
+                        <span className="badge text-[10px] bg-amber-500/10 text-amber-400">{t('games.featured', 'featured')}</span>
                       )}
                       {!game.isActive && (
-                        <span className="badge badge-warning text-[10px]">disabled</span>
+                        <span className="badge badge-warning text-[10px]">{t('games.disabled', 'disabled')}</span>
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">
                       RTP {game.rtp}% • {game.providerId} • {game.volatility.toLowerCase()}
-                      {game.totalBets > 0 && ` • ${game.totalBets} bets`}
+                      {game.totalBets > 0 && ` • ${game.totalBets} ${t('games.bets', 'bets')}`}
                     </p>
                   </div>
                 </div>
@@ -150,7 +152,7 @@ export default function GameTable() {
                     ${game.minBet} – ${game.maxBet}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {game.totalSessions > 0 ? `${game.totalSessions} sessions` : 'No activity'}
+                    {game.totalSessions > 0 ? `${game.totalSessions} ${t('games.sessions', 'sessions')}` : t('games.noActivity', 'No activity')}
                   </p>
                 </div>
               </div>
@@ -173,7 +175,7 @@ export default function GameTable() {
       {/* Footer */}
       <div className="px-5 py-3 border-t border-gray-800">
         <button className="text-sm text-amber-400 hover:text-amber-300 w-full text-center">
-          Manage games →
+          {t('games.manageGames', 'Manage games')} →
         </button>
       </div>
     </div>
