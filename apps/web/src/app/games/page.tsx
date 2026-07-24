@@ -41,6 +41,7 @@ const PROVIDER_META: Record<string, { name: string }> = {
   nolimitcity: { name: 'Nolimit City' },
   slotmill:    { name: 'Slotmill' },
   bgaming:     { name: 'BGaming' },
+  habanero:    { name: 'Habanero' },
   betsoft:     { name: 'Betsoft' },
   quickspin:   { name: 'Quickspin' },
   bigtimegaming: { name: 'Big Time Gaming' },

@@ -7,6 +7,7 @@ export interface GameLaunchParams {
   returnUrl?: string;
   providerId?: string;
   slug?: string;
+  gameName?: string;
 }
 
 export interface GameLaunchResult {

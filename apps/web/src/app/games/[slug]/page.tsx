@@ -33,6 +33,7 @@ const PROVIDER_META: Record<string, { name: string; emoji: string }> = {
   nolimitcity: { name: 'Nolimit City', emoji: '🏙️' },
   slotmill: { name: 'Slotmill', emoji: '⚙️' },
   bgaming: { name: 'BGaming', emoji: '🎪' },
+  habanero: { name: 'Habanero', emoji: '🌶️' },
 };
 
 interface ApiGame {
@@ -139,7 +140,7 @@ export default function GamePage() {
   const providerName = PROVIDER_META[game.providerId]?.name || game.providerId;
   const NativeComponent = OWN_GAME_COMPONENTS[game.slug];
   const isOwnGame = game.providerId === 'own' && !!NativeComponent;
-  const hasWorkingDemo = game.demoAvailable && (game.providerId === 'pragmatic' || game.providerId === 'spribe');
+  const hasWorkingDemo = game.demoAvailable && !isOwnGame;
 
   return (
     <div className="min-h-screen bg-miami-sky">

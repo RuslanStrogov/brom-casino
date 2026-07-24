@@ -40,6 +40,7 @@ export class GenericProvider implements GameProvider {
     'nolimitcity',
     'slotmill',
     'bgaming',
+    'habanero',
     'evolution',
   ];
 
@@ -119,6 +120,16 @@ export class GenericProvider implements GameProvider {
       case 'spribe':
         // Spribe demo (verified working)
         return `https://spribe.co/games/${externalGameId}/demo`;
+
+      case 'bgaming':
+        // BGaming network demo — ALLOWALL, verified working
+        // Uses game name (from params.gameName) in URL
+        return `https://demo.bgaming-network.com/play/${encodeURIComponent(params.gameName || slug)}/FUN?server=demo`;
+
+      case 'habanero':
+        // Habanero demo — no iframe restrictions, verified working
+        // Uses game name in query param
+        return `https://demo.habanero.com/gs/?game=${encodeURIComponent(params.gameName || slug)}&language=en&mode=demo`;
 
       default:
         // All other providers restrict embedding — no public demo URL available

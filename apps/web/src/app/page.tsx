@@ -46,6 +46,7 @@ const PROVIDER_META: Record<string, { name: string; emoji: string }> = {
   nolimitcity: { name: 'Nolimit City', emoji: '🏙️' },
   slotmill: { name: 'Slotmill', emoji: '⚙️' },
   bgaming: { name: 'BGaming', emoji: '🎪' },
+  habanero: { name: 'Habanero', emoji: '🌶️' },
 };
 
 const CATEGORIES = [

@@ -278,6 +278,7 @@ export class GamesService {
         language: 'en',
         providerId: game.providerId,
         slug: game.slug,
+        gameName: game.name,
       });
     }
 

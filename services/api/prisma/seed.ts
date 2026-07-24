@@ -148,13 +148,18 @@ async function main() {
     // Red Tiger
     { providerId: 'redtiger', externalId: '10001_nights', name: '1001 Nights', slug: '1001-nights', category: 'SLOTS' as const, rtp: 95.73, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 200, tags: ['arabian', 'genie', 'features'] },
     { providerId: 'redtiger', externalId: 'mystery_reels', name: 'Mystery Reels', slug: 'mystery-reels', category: 'SLOTS' as const, rtp: 96.31, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 40, tags: ['fruit', 'mystery', 'megaways'] },
+    // BGaming
+    { providerId: 'bgaming', externalId: 'frenzy_clusters', name: 'Frenzy Clusters', slug: 'frenzy-clusters', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 500, tags: ['cluster', 'candy', 'bgaming'] },
+    // Habanero
+    { providerId: 'habanero', externalId: 'hot_dice', name: 'Hot Dice', slug: 'hot-dice', category: 'SLOTS' as const, rtp: 96.8, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 1000, isNew: true, tags: ['dice', 'habanero', 'hot'] },
+    { providerId: 'habanero', externalId: 'egyptian_dreams', name: 'Egyptian Dreams', slug: 'egyptian-dreams', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 500, tags: ['egypt', 'habanero', 'adventure'] },
   ];
 
   const createdGames: { id: string; category: string }[] = [];
 
   for (const game of slotsData) {
-    // Only Pragmatic Play and Spribe have working public demos
-    const demoOk = ['pragmatic', 'spribe'].includes(game.providerId);
+    // Providers with working public embeddable iframe demos
+    const demoOk = ['pragmatic', 'spribe', 'bgaming', 'habanero'].includes(game.providerId);
     const created = await prisma.game.create({
       data: {
         providerId: game.providerId,
