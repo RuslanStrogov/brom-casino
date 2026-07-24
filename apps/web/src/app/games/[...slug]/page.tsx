@@ -66,10 +66,14 @@ const OWN_GAME_COMPONENTS: Record<string, React.FC<{ balance: number; onBalanceC
 };
 
 /** Providers whose demos can be embedded in iframe */
-const IFRAME_PROVIDERS = ['pragmatic', 'spribe', 'bgaming', 'habanero'];
+const IFRAME_PROVIDERS = ['pragmatic', 'spribe', 'bgaming', 'habanero', 'netent'];
 
 /** Providers whose demos work but block iframe — open in new tab */
-const REDIRECT_PROVIDERS = ['netent', 'wazdan', 'evoplay'];
+const REDIRECT_PROVIDERS = [
+  'wazdan', 'evoplay', 'yggdrasil', 'redtiger', 'hacksaw', 'pushgaming',
+  'nolimitcity', 'thunderkick', 'playngo', 'microgaming', 'playtech',
+  'relaxgaming', 'truelab', 'elkstudios', 'slotmill',
+];
 
 /** Provider accent colors for Miami-neon theme */
 const PROVIDER_COLORS: Record<string, string> = {
@@ -328,16 +332,12 @@ export default function GamePage() {
                 neonColor={PROVIDER_COLORS[game.providerId] || '#ff2d95'}
               />
             ) : (
-              /* Broken / restricted provider — Coming Soon */
+              /* Все провайдеры с demoAvailable=true имеют iframe или redirect */
               <div className="flex flex-col items-center justify-center py-24 gap-6">
                 <div className="text-7xl">{PROVIDER_META[game.providerId]?.emoji || '🎮'}</div>
                 <h2 className="text-2xl font-bold text-white text-center">{game.name}</h2>
                 <p className="text-gray-400 text-center max-w-md">
                   {t('game.demoNotAvailable') || 'Демо-режим для этой игры временно недоступен.'}
-                  <br />
-                  <span className="text-sm text-gray-500">
-                    Игры {providerName} требуют агрегатора (SoftSwiss / EveryMatrix) для работы.
-                  </span>
                 </p>
                 <div className="flex gap-3 mt-4">
                   <button

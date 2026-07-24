@@ -33,6 +33,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   nolimitcity: '#6c5ce7',
   slotmill: '#a29bfe',
   bgaming: '#fd79a8',
+  habanero: '#e17055',
 };
 
 const PROVIDER_LOGOS: Record<string, string> = {

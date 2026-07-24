@@ -110,9 +110,10 @@ export class GenericProvider implements GameProvider {
     // Provider-specific demo URLs
     const providerId = params.providerId || '';
     const slug = params.slug || externalGameId;
+    const gameName = params.gameName || slug;
 
-    // Only providers with publicly embeddable iframe demos
     switch (providerId) {
+      // ─── IFRAME-SUPPORTED PROVIDERS (no X-Frame-Options) ───
       case 'pragmatic':
         // Pragmatic Play demo server (verified working)
         return `https://demogamesfree.pragmaticplay.net/gs2c/openGame.do?gameSymbol=${externalGameId}`;
@@ -123,31 +124,86 @@ export class GenericProvider implements GameProvider {
 
       case 'bgaming':
         // BGaming network demo — ALLOWALL, verified working
-        // Uses game name (from params.gameName) in URL
-        return `https://demo.bgaming-network.com/play/${encodeURIComponent(params.gameName || slug)}/FUN?server=demo`;
+        return `https://demo.bgaming-network.com/play/${encodeURIComponent(gameName)}/FUN?server=demo`;
 
       case 'habanero':
         // Habanero demo — no iframe restrictions, verified working
-        // Uses game name in query param
-        return `https://demo.habanero.com/gs/?game=${encodeURIComponent(params.gameName || slug)}&language=en&mode=demo`;
+        return `https://demo.habanero.com/gs/?game=${encodeURIComponent(gameName)}&language=en&mode=demo`;
 
       case 'netent':
-        // NetEnt demo — https://games.netent.com/play/starburst
-        // URL works but blocks iframe (X-Frame-Options: SAMEORIGIN)
-        // Frontend will open in new tab instead
+        // NetEnt demo — works without X-Frame-Options (as of 2026)
+        // Can be embedded in iframe on most browsers
         return `https://games.netent.com/play/${encodeURIComponent(slug)}`;
 
+      // ─── REDIRECT PROVIDERS (X-Frame-Options: SAMEORIGIN or JS launcher) ───
+      case 'yggdrasil':
+        // Yggdrasil — https://yggdrasilgaming.com/play/[slug]
+        // 200 OK, X-Frame-Options: SAMEORIGIN → frontend opens in new tab
+        return `https://yggdrasilgaming.com/play/${encodeURIComponent(slug)}`;
+
+      case 'redtiger':
+        // Red Tiger — no public demo URL found
+        // Redirect to their site's game search page
+        return `https://redtiger.com/games`;
+
+      case 'hacksaw':
+        // Hacksaw Gaming — no public demo URL found
+        // Redirect to their games list
+        return `https://www.hacksawgaming.com/games`;
+
+      case 'pushgaming':
+        // Push Gaming — no public demo URL found
+        // Redirect to their games page
+        return `https://www.pushgaming.com/games/`;
+
       case 'wazdan':
-        // Wazdan demo — works but blocks iframe
+        // Wazdan demo — blocks iframe
         return `https://wazdan.com/gs2/play/${encodeURIComponent(slug)}/`;
 
       case 'evoplay':
-        // Evoplay demo — uses JS token, works in new tab
+        // Evoplay demo — JS token launcher, blocks iframe
         return `https://evoplay.com/game/${encodeURIComponent(slug)}/`;
 
+      case 'nolimitcity':
+        // Nolimit City — marketing page, no direct demo
+        // Redirect to their play page
+        return `https://nolimitcity.com/play/${encodeURIComponent(slug)}`;
+
+      case 'thunderkick':
+        // Thunderkick — has game pages but no direct demo URL
+        // Redirect to game info page
+        return `https://thunderkick.com/demo/${encodeURIComponent(slug)}`;
+
+      case 'playngo':
+        // Play'n GO — DNS failure on direct demo, redirect to site
+        return `https://www.playngo.com/games/${encodeURIComponent(slug)}`;
+
+      case 'microgaming':
+        // Microgaming — DNS failure on direct demo
+        return `https://www.microgaming.co.uk/games/`;
+
+      case 'playtech':
+        // Playtech — restricted demo access
+        return `https://www.playtech.com/games/`;
+
+      case 'relaxgaming':
+        // Relax Gaming — no public demo
+        return `https://relax-gaming.com/games/`;
+
+      case 'truelab':
+        // True Lab — no public demo
+        return `https://truelab.com/`;
+
+      case 'elkstudios':
+        // ELK Studios — no public demo
+        return `https://elkstudios.com/games/`;
+
+      case 'slotmill':
+        // SlotMill — no public demo
+        return `https://slotmill.com/games/`;
+
       default:
-        // All other providers restrict embedding — no public demo URL available
-        // When an aggregator is configured, the aggregator code path above handles this
+        // All other providers — fallback to redirect to provider's site
         return null;
     }
   }
