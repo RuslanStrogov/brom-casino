@@ -192,7 +192,9 @@ function RedirectGameView({
 export default function GamePage() {
   const params = useParams();
   const router = useRouter();
-  const slug = params?.slug as string;
+  const slugParam = params?.slug as string | string[];
+  const [providerId, gameSlug] = Array.isArray(slugParam) ? slugParam : [undefined, slugParam];
+  const slug = gameSlug || slugParam as string;
   const [game, setGame] = useState<ApiGame | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
