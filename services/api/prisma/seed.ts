@@ -153,6 +153,8 @@ async function main() {
   const createdGames: { id: string; category: string }[] = [];
 
   for (const game of slotsData) {
+    // Only Pragmatic Play and Spribe have working public demos
+    const demoOk = ['pragmatic', 'spribe'].includes(game.providerId);
     const created = await prisma.game.create({
       data: {
         providerId: game.providerId,
@@ -168,7 +170,7 @@ async function main() {
         isNew: game.isNew ?? false,
         isJackpot: game.isJackpot ?? false,
         freeSpins: game.freeSpins ?? false,
-        demoAvailable: true,
+        demoAvailable: demoOk,
         tags: game.tags,
         sortOrder: 0,
       },
@@ -186,6 +188,8 @@ async function main() {
   ];
 
   for (const game of tableGamesData) {
+    // Evolution games are live-only — no demo available
+    const demoOk = !['evolution'].includes(game.providerId);
     const created = await prisma.game.create({
       data: {
         providerId: game.providerId,
@@ -198,7 +202,7 @@ async function main() {
         minBet: new Prisma.Decimal(game.minBet.toString()),
         maxBet: new Prisma.Decimal(game.maxBet.toString()),
         isFeatured: game.isFeatured ?? false,
-        demoAvailable: true,
+        demoAvailable: demoOk,
         tags: game.tags,
         sortOrder: 0,
       },
@@ -245,6 +249,38 @@ async function main() {
     const created = await prisma.game.create({
       data: {
         providerId: game.providerId,
+        externalId: game.externalId,
+        name: game.name,
+        slug: game.slug,
+        category: game.category,
+        rtp: new Prisma.Decimal(game.rtp.toString()),
+        volatility: game.volatility,
+        minBet: new Prisma.Decimal(game.minBet.toString()),
+        maxBet: new Prisma.Decimal(game.maxBet.toString()),
+        isFeatured: game.isFeatured ?? false,
+        isNew: game.isNew ?? false,
+        demoAvailable: true,
+        tags: game.tags,
+        sortOrder: 0,
+      },
+    });
+    createdGames.push({ id: created.id, category: created.category });
+  }
+
+  // --- OWN IN-HOUSE GAMES (always work — native React components) ---
+  const ownGamesData = [
+    { externalId: 'crash', name: 'Crash', slug: 'crash', category: 'CRASH' as const, rtp: 97, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 1000, isFeatured: true, isNew: true, tags: ['crash', 'in-house', 'multiplier'] },
+    { externalId: 'dice', name: 'Dice', slug: 'dice', category: 'TABLE' as const, rtp: 97, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, isFeatured: true, tags: ['dice', 'in-house', 'provably-fair'] },
+    { externalId: 'plinko', name: 'Plinko', slug: 'plinko', category: 'TABLE' as const, rtp: 96, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, isFeatured: true, tags: ['plinko', 'in-house', 'risk'] },
+    { externalId: 'blackjack', name: 'Blackjack', slug: 'blackjack', category: 'TABLE' as const, rtp: 99.5, volatility: 'LOW' as const, minBet: 0.5, maxBet: 5000, isFeatured: true, tags: ['blackjack', 'in-house', 'cards'] },
+    { externalId: 'roulette', name: 'Roulette', slug: 'roulette', category: 'TABLE' as const, rtp: 97.3, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 5000, isFeatured: true, tags: ['roulette', 'in-house', 'european'] },
+    { externalId: 'slots', name: 'Slot Machine', slug: 'slots', category: 'SLOTS' as const, rtp: 96, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, isFeatured: true, tags: ['slots', 'in-house', 'classic'] },
+  ];
+
+  for (const game of ownGamesData) {
+    const created = await prisma.game.create({
+      data: {
+        providerId: 'own',
         externalId: game.externalId,
         name: game.name,
         slug: game.slug,

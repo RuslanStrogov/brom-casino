@@ -5,10 +5,14 @@ import { GameProvider, GameLaunchParams, GameInfo, ProviderTransaction } from '.
 /**
  * Generic fallback provider for third-party game studios.
  *
- * All major aggregators (SoftSwiss, EveryMatrix) route through a single
- * casino platform API. This provider returns demo launch URLs for all
- * supported studios. When real API keys are configured, it uses the
- * aggregator platform to generate real game URLs.
+ * Most providers (NetEnt, Microgaming, Play'nGO, etc.) restrict embedding
+ * their games on third-party domains. Only Pragmatic Play ("demogamesfree")
+ * and Spribe ("spribe.co/games") provide publicly embeddable iframe demos.
+ *
+ * For all other providers, `getLaunchUrl` returns null — the frontend shows
+ * a "Coming Soon" state. When a real aggregator (SoftSwiss, EveryMatrix) is
+ * configured via AGGREGATOR_API_URL + AGGREGATOR_API_KEY, this provider
+ * routes through that aggregator's launch API instead.
  */
 @Injectable()
 export class GenericProvider implements GameProvider {
@@ -36,6 +40,7 @@ export class GenericProvider implements GameProvider {
     'nolimitcity',
     'slotmill',
     'bgaming',
+    'evolution',
   ];
 
   constructor(private readonly configService: ConfigService) {
@@ -100,12 +105,12 @@ export class GenericProvider implements GameProvider {
     };
   }
 
-  private buildDemoUrl(externalGameId: string, params: GameLaunchParams): string {
+  private buildDemoUrl(externalGameId: string, params: GameLaunchParams): string | null {
     // Provider-specific demo URLs
     const providerId = params.providerId || '';
     const slug = params.slug || externalGameId;
 
-    // Provider-specific public demo URLs
+    // Only providers with publicly embeddable iframe demos
     switch (providerId) {
       case 'pragmatic':
         // Pragmatic Play demo server (verified working)
@@ -115,64 +120,10 @@ export class GenericProvider implements GameProvider {
         // Spribe demo (verified working)
         return `https://spribe.co/games/${externalGameId}/demo`;
 
-      case 'netent':
-        // NetEnt — may redirect to restricted page, but worth trying
-        return `https://games.netent.com/play/${externalGameId}`;
-
-      case 'thunderkick':
-        // Thunderkick game page (verified working)
-        return `https://www.thunderkick.com/games/${slug}/`;
-
-      case 'nolimitcity':
-        // Nolimit City — may redirect to restricted page
-        return `https://nolimitcity.com/play/${slug}`;
-
-      case 'redtiger':
-        // Red Tiger — may redirect to restricted page
-        return `https://redtiger.com/play/${slug}`;
-
-      case 'hacksaw':
-        // Hacksaw Gaming — may 404 if game not found
-        return `https://hacksawgaming.com/play/${slug}`;
-
-      case 'playtech':
-        // Playtech — may 404
-        return `https://playtech.com/play/${slug}`;
-
-      case 'relaxgaming':
-        // Relax Gaming — may 404
-        return `https://relaxgaming.com/play/${slug}`;
-
-      case 'playngo':
-        // Play'n GO — try official CDN
-        return `https://cdn.playngo.com/play/go/${externalGameId}`;
-
-      case 'microgaming':
-        // Microgaming — try redirector
-        return `https://redirector.quickspin.com/redirector/play/${externalGameId}`;
-
-      case 'yggdrasil':
-        // Yggdrasil — try static
-        return `https://static.yggdrasil.com/games/${slug}`;
-
-      case 'bgaming':
-        return `https://cdn.bgaming.com/play/${slug}`;
-
-      case 'pushgaming':
-        return `https://cdn.pushgaming.com/play/${slug}`;
-
-      case 'elkstudios':
-        return `https://elkstudios.com/play/${slug}`;
-
-      case 'truelab':
-        return `https://truelab.com/play/${slug}`;
-
-      case 'slotmill':
-        return `https://slotmill.com/play/${slug}`;
-
       default:
-        // Fallback — try NetEnt-style URL
-        return `https://games.netent.com/play/${externalGameId}`;
+        // All other providers restrict embedding — no public demo URL available
+        // When an aggregator is configured, the aggregator code path above handles this
+        return null;
     }
   }
 

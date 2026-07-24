@@ -265,6 +265,9 @@ export class GamesService {
     if (!game) throw new NotFoundException('Game not found');
     if (!game.isActive) throw new BadRequestException('Game is not available');
 
+    // Own games don't need a launch URL — they use native React components
+    if (game.providerId === 'own') return null;
+
     const provider = this.providerMap[game.providerId];
     if (provider) {
       return provider.getLaunchUrl(game.externalId, {
