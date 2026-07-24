@@ -22,6 +22,17 @@ const IN_HOUSE_GAMES = [
   { id: 'blackjack',nameKey: 'game.blackjack',  slug: 'blackjack',color: '#ffd60a',  provider: 'In-House' },
 ] as const;
 
+// ─── Providers that support iframe embedding ──────────────────────
+const IFRAME_PROVIDERS = ['pragmatic', 'spribe', 'bgaming', 'habanero', 'netent'];
+
+// ─── External providers (block iframe, shown in collapsible section) ─
+const EXTERNAL_PROVIDERS = [
+  'wazdan', 'evoplay', 'yggdrasil', 'redtiger', 'hacksaw', 'pushgaming',
+  'nolimitcity', 'thunderkick', 'playngo', 'microgaming', 'playtech',
+  'relaxgaming', 'truelab', 'elkstudios', 'slotmill', 'betsoft',
+  'quickspin', 'bigtimegaming', 'irondog',
+];
+
 const PROVIDER_META: Record<string, { name: string }> = {
   pragmatic:   { name: 'Pragmatic Play' },
   evolution:   { name: 'Evolution' },
@@ -95,6 +106,7 @@ export default function GamesLobbyPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [apiGames, setApiGames] = useState<ApiGame[]>([]);
   const [loadingApi, setLoadingApi] = useState(false);
+  const [showExternal, setShowExternal] = useState(false);
   const { t } = useI18n();
 
   const { isFavorite, toggleFavorite } = useFavoritesStore();
@@ -180,6 +192,19 @@ export default function GamesLobbyPage() {
 
     return list;
   }, [allGames, searchQuery, activeCategory, isFavorite, recent]);
+
+  // ─── Split into iframe (main) and external (collapsible) ─────────
+  const iframeGames = useMemo(() => {
+    return filteredGames.filter(
+      g => g.type === 'in-house' || (g.type === 'api' && g.providerId && IFRAME_PROVIDERS.includes(g.providerId))
+    );
+  }, [filteredGames]);
+
+  const externalGames = useMemo(() => {
+    return filteredGames.filter(
+      g => g.type === 'api' && g.providerId && EXTERNAL_PROVIDERS.includes(g.providerId)
+    );
+  }, [filteredGames]);
 
   // ─── Open game ───────────────────────────────────────────────
   const openGame = (slug: string, type: 'in-house' | 'api', providerId?: string) => {
@@ -270,7 +295,7 @@ export default function GamesLobbyPage() {
         </div>
       </section>
 
-      {/* ─── Games Grid - 7 columns ──────────────────────────── */}
+      {/* ─── Games Grid ──────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         {loadingApi && (
           <div className="flex items-center justify-center py-12">
@@ -278,7 +303,7 @@ export default function GamesLobbyPage() {
           </div>
         )}
 
-        {!loadingApi && filteredGames.length === 0 && (
+        {!loadingApi && iframeGames.length === 0 && externalGames.length === 0 && (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🎮</div>
             <h3 className="text-xl font-heading font-bold text-white mb-2">{t('game.noResults')}</h3>
@@ -290,31 +315,98 @@ export default function GamesLobbyPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 md:gap-3">
-          {filteredGames.map((game, idx) => {
-            const displayName = game.type === 'in-house' ? t(game.nameKey as any) : game.name;
-            const slug = game.slug.toLowerCase().replace(/\s+/g, '-');
-            return (
-              <div
-                key={`${game.type}-${game.slug}-${idx}`}
-                style={{ animationDelay: `${(idx % 12) * 50}ms` }}
-              >
-                <NarrowGameCard
-                  name={displayName}
-                  slug={game.slug}
-                  gameId={game.gameId}
-                  provider={game.provider}
-                  imageUrl={`/games/${slug}.svg`}
-                  color={game.color}
-                  onClick={() => openGame(game.slug, game.type, game.type === 'api' ? game.providerId : undefined)}
-                />
+        {/* ─── Main Games Grid (iframe + in-house) ───────────── */}
+        {iframeGames.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 md:gap-3">
+            {iframeGames.map((game, idx) => {
+              const displayName = game.type === 'in-house' ? t(game.nameKey as any) : game.name;
+              const slug = game.slug.toLowerCase().replace(/\s+/g, '-');
+              return (
+                <div
+                  key={`${game.type}-${game.slug}-${idx}`}
+                  style={{ animationDelay: `${(idx % 12) * 50}ms` }}
+                >
+                  <NarrowGameCard
+                    name={displayName}
+                    slug={game.slug}
+                    gameId={game.gameId}
+                    provider={game.provider}
+                    imageUrl={`/games/${slug}.svg`}
+                    color={game.color}
+                    onClick={() => openGame(game.slug, game.type, game.type === 'api' ? game.providerId : undefined)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ─── External Providers (collapsible) ──────────────── */}
+        {externalGames.length > 0 && (
+          <div className="mt-8 border-t border-white/5 pt-6">
+            <button
+              onClick={() => setShowExternal(!showExternal)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-300 group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gradient-to-br from-orange-500/20 to-yellow-500/20 border border-orange-500/20">
+                  🔗
+                </div>
+                <div className="text-left">
+                  <span className="text-white font-medium group-hover:text-miami-pink transition-colors">
+                    Внешние провайдеры
+                  </span>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {externalGames.length} игр — открываются на сайте провайдера
+                  </p>
+                </div>
               </div>
-            );
-          })}
-        </div>
+              <svg
+                className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${
+                  showExternal ? 'rotate-180' : ''
+                }`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <div
+              className={`overflow-hidden transition-all duration-500 ${
+                showExternal ? 'max-h-[5000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 md:gap-3">
+                {externalGames.map((game, idx) => {
+                  const name = game.name || '';
+                  const slug = game.slug.toLowerCase().replace(/\s+/g, '-');
+                  return (
+                    <div
+                      key={`ext-${game.slug}-${idx}`}
+                      style={{ animationDelay: `${(idx % 12) * 50}ms` }}
+                    >
+                      <NarrowGameCard
+                        name={name}
+                        slug={game.slug}
+                        gameId={game.gameId}
+                        provider={game.provider}
+                        imageUrl={`/games/${slug}.svg`}
+                        color="#ff8c00"
+                        onClick={() => openGame(game.slug, game.type, game.type === 'api' ? game.providerId : undefined)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-500/60 text-center mt-4 px-4">
+                ⚡ Эти игры блокируют встраивание в iframe. После нажатия вы будете перенаправлены на сайт провайдера.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* ─── Stats Bar ─────────────────────────────────────── */}
-        {!loadingApi && filteredGames.length > 0 && (
+        {!loadingApi && (iframeGames.length > 0 || externalGames.length > 0) && (
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-miami-green animate-pulse" />
@@ -323,7 +415,9 @@ export default function GamesLobbyPage() {
             <span className="w-1 h-1 rounded-full bg-gray-600" />
             <span>{IN_HOUSE_GAMES.length} in-house</span>
             <span className="w-1 h-1 rounded-full bg-gray-600" />
-            <span>{apiGames.length} {t('game.providers')}</span>
+            <span>{iframeGames.filter(g => g.type === 'api').length} providers</span>
+            <span className="w-1 h-1 rounded-full bg-gray-600" />
+            <span className="text-orange-400/60">{externalGames.length} external</span>
           </div>
         )}
       </section>
