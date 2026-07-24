@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff4500;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#ffd700;stop-opacity:0.15" />
+    </linearGradient>
+    <linearGradient id="bg2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff4500;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#ffd700;stop-opacity:0.05" />
+    </linearGradient>
+    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff4500" />
+      <stop offset="100%" style="stop-color:#ffd700" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowStrong">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="#0a0a1a"/>
+  <rect width="400" height="300" rx="16" fill="url(#bg)"/>
+  <rect width="400" height="300" rx="16" fill="url(#bg2)"/>
+  <rect x="1" y="1" width="398" height="298" rx="15" fill="none" stroke="url(#border)" stroke-width="0.5" opacity="0.5"/>
+  <circle cx="50" cy="250" r="120" fill="#ff4500" opacity="0.08"/>
+  <circle cx="350" cy="50" r="100" fill="#ffd700" opacity="0.08"/>
+  <!-- Dice icon -->
+  <rect x="174" y="90" width="52" height="52" rx="8" fill="none" stroke="#ff4500" stroke-width="3" opacity="0.6" filter="url(#glow)"/>
+  <circle cx="188" cy="104" r="5" fill="#ff4500" opacity="0.8"/>
+  <circle cx="212" cy="128" r="5" fill="#ff4500" opacity="0.8"/>
+  <circle cx="188" cy="128" r="5" fill="#ff4500" opacity="0.8"/>
+  <circle cx="212" cy="104" r="5" fill="#ff4500" opacity="0.8"/>
+  <!-- Fire accents -->
+  <text x="200" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#ffd700" opacity="0.4" filter="url(#glow)">🔥</text>
+  <text x="160" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#ff4500" opacity="0.4" filter="url(#glow)">⚀</text>
+  <text x="240" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#ffd700" opacity="0.4" filter="url(#glow)">⚂</text>
+  <!-- Game name -->
+  <text x="200" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#ffffff" filter="url(#glow)">Hot Dice</text>
+  <!-- Provider badge -->
+  <rect x="135" y="220" width="130" height="24" rx="12" fill="#ff4500" opacity="0.2"/>
+  <text x="200" y="237" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#ffd700">Habanero</text>
+  <!-- Play button -->
+  <circle cx="200" cy="265" r="16" fill="none" stroke="#ff4500" stroke-width="1.5" opacity="0.5"/>
+  <polygon points="193,257 193,273 208,265" fill="#ff4500" opacity="0.5"/>
+</svg>
