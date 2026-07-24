@@ -105,6 +105,7 @@ export class GamesService {
       'nolimitcity': genericProvider,
       'slotmill': genericProvider,
       'bgaming': genericProvider,
+      'habanero': genericProvider,
     };
   }
 
