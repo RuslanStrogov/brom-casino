@@ -47,6 +47,12 @@ const PROVIDER_META: Record<string, { name: string; emoji: string }> = {
   slotmill: { name: 'Slotmill', emoji: '⚙️' },
   bgaming: { name: 'BGaming', emoji: '🎪' },
   habanero: { name: 'Habanero', emoji: '🌶️' },
+  wazdan: { name: 'Wazdan', emoji: '✨' },
+  evoplay: { name: 'Evoplay', emoji: '🎮' },
+  betsoft: { name: 'Betsoft', emoji: '🎲' },
+  quickspin: { name: 'Quickspin', emoji: '💨' },
+  bigtimegaming: { name: 'Big Time Gaming', emoji: '🎯' },
+  irondog: { name: 'Iron Dog Studio', emoji: '🐕' },
 };
 
 const CATEGORIES = [

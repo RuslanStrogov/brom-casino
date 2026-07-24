@@ -39,13 +39,15 @@ const PROVIDER_META: Record<string, { name: string }> = {
   elkstudios:  { name: 'ELK Studios' },
   thunderkick: { name: 'Thunderkick' },
   nolimitcity: { name: 'Nolimit City' },
-  slotmill:    { name: 'Slotmill' },
-  bgaming:     { name: 'BGaming' },
-  habanero:    { name: 'Habanero' },
-  betsoft:     { name: 'Betsoft' },
-  quickspin:   { name: 'Quickspin' },
+  slotmill: { name: 'Slotmill' },
+  bgaming: { name: 'BGaming' },
+  habanero: { name: 'Habanero' },
+  wazdan: { name: 'Wazdan' },
+  evoplay: { name: 'Evoplay' },
+  betsoft: { name: 'Betsoft' },
+  quickspin: { name: 'Quickspin' },
   bigtimegaming: { name: 'Big Time Gaming' },
-  ironDog:     { name: 'Iron Dog Studio' },
+  irondog: { name: 'Iron Dog Studio' },
 };
 
 interface ApiGame {

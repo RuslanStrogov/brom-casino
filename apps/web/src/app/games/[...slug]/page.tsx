@@ -34,6 +34,12 @@ const PROVIDER_META: Record<string, { name: string; emoji: string }> = {
   slotmill: { name: 'Slotmill', emoji: '⚙️' },
   bgaming: { name: 'BGaming', emoji: '🎪' },
   habanero: { name: 'Habanero', emoji: '🌶️' },
+  wazdan: { name: 'Wazdan', emoji: '✨' },
+  evoplay: { name: 'Evoplay', emoji: '🎮' },
+  betsoft: { name: 'Betsoft', emoji: '🎲' },
+  quickspin: { name: 'Quickspin', emoji: '💨' },
+  bigtimegaming: { name: 'Big Time Gaming', emoji: '🎯' },
+  irondog: { name: 'Iron Dog Studio', emoji: '🐕' },
 };
 
 interface ApiGame {
@@ -72,7 +78,8 @@ const IFRAME_PROVIDERS = ['pragmatic', 'spribe', 'bgaming', 'habanero', 'netent'
 const REDIRECT_PROVIDERS = [
   'wazdan', 'evoplay', 'yggdrasil', 'redtiger', 'hacksaw', 'pushgaming',
   'nolimitcity', 'thunderkick', 'playngo', 'microgaming', 'playtech',
-  'relaxgaming', 'truelab', 'elkstudios', 'slotmill',
+  'relaxgaming', 'truelab', 'elkstudios', 'slotmill', 'betsoft',
+  'quickspin', 'bigtimegaming', 'irondog',
 ];
 
 /** Provider accent colors for Miami-neon theme */
@@ -98,6 +105,10 @@ const PROVIDER_COLORS: Record<string, string> = {
   habanero: '#e17055',
   wazdan: '#00cec9',
   evoplay: '#6c5ce7',
+  betsoft: '#fd79a8',
+  quickspin: '#00b894',
+  bigtimegaming: '#e17055',
+  irondog: '#74b9ff',
 };
 
 // ── Redirect Game View (for providers that block iframe) ──

@@ -42,6 +42,12 @@ export class GenericProvider implements GameProvider {
     'bgaming',
     'habanero',
     'evolution',
+    'wazdan',
+    'evoplay',
+    'betsoft',
+    'quickspin',
+    'bigtimegaming',
+    'irondog',
   ];
 
   constructor(private readonly configService: ConfigService) {
@@ -201,6 +207,22 @@ export class GenericProvider implements GameProvider {
       case 'slotmill':
         // SlotMill — no public demo
         return `https://slotmill.com/games/`;
+
+      case 'betsoft':
+        // Betsoft — uses redirect to game page
+        return `https://betsoft.com/games/${encodeURIComponent(slug)}`;
+
+      case 'quickspin':
+        // Quickspin — demo via redirect
+        return `https://quickspin.com/games/${encodeURIComponent(slug)}`;
+
+      case 'bigtimegaming':
+        // Big Time Gaming — redirect to game page
+        return `https://bigtimegaming.com/games/${encodeURIComponent(slug)}`;
+
+      case 'irondog':
+        // Iron Dog Studio — redirect to game page
+        return `https://irondogstudio.com/games/${encodeURIComponent(slug)}`;
 
       default:
         // All other providers — fallback to redirect to provider's site

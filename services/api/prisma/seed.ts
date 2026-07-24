@@ -154,13 +154,70 @@ async function main() {
     // Habanero
     { providerId: 'habanero', externalId: 'hot_dice', name: 'Hot Dice', slug: 'hot-dice', category: 'SLOTS' as const, rtp: 96.8, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 1000, isNew: true, tags: ['dice', 'habanero', 'hot'] },
     { providerId: 'habanero', externalId: 'egyptian_dreams', name: 'Egyptian Dreams', slug: 'egyptian-dreams', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 500, tags: ['egypt', 'habanero', 'adventure'] },
+    { providerId: 'habanero', externalId: '5_lucky_lions', name: '5 Lucky Lions', slug: '5-lucky-lions', category: 'SLOTS' as const, rtp: 96.8, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 1000, tags: ['asian', 'lions', 'habanero'] },
+    { providerId: 'habanero', externalId: 'koi_gate', name: 'Koi Gate', slug: 'koi-gate', category: 'SLOTS' as const, rtp: 96.5, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, tags: ['asian', 'koi', 'habanero'] },
+    // BGaming
+    { providerId: 'bgaming', externalId: 'wild_west', name: 'Wild West', slug: 'wild-west', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 500, tags: ['western', 'bgaming', 'wild'] },
+    { providerId: 'bgaming', externalId: 'lucky_lady', name: "Lucky Lady's Charm", slug: 'lucky-lady-charm', category: 'SLOTS' as const, rtp: 96.5, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, tags: ['charm', 'bgaming', 'lucky'] },
+    // Wazdan
+    { providerId: 'wazdan', externalId: '9_coins', name: '9 Coins', slug: '9-coins', category: 'SLOTS' as const, rtp: 96.33, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 1000, tags: ['coins', 'wazdan', 'classic'] },
+    { providerId: 'wazdan', externalId: 'magic_stars', name: 'Magic Stars', slug: 'magic-stars', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 1000, isNew: true, tags: ['magic', 'stars', 'wazdan'] },
+    { providerId: 'wazdan', externalId: 'sizzling_moon', name: 'Sizzling Moon', slug: 'sizzling-moon', category: 'SLOTS' as const, rtp: 96.4, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, tags: ['moon', 'wazdan', 'retro'] },
+    // Evoplay
+    { providerId: 'evoplay', externalId: 'dungeon_immortal', name: 'Dungeon: Immortal Evil', slug: 'dungeon-immortal-evil', category: 'SLOTS' as const, rtp: 96.0, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, tags: ['dungeon', 'evoplay', 'adventure'] },
+    { providerId: 'evoplay', externalId: 'fruit_super_nova', name: 'Fruit Super Nova', slug: 'fruit-super-nova', category: 'SLOTS' as const, rtp: 96.2, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, tags: ['fruit', 'evoplay', 'classic'] },
+    // More Pragmatic Play
+    { providerId: 'pragmatic', externalId: 'vs20sweetbonanza', name: 'Sweet Bonanza', slug: 'sweet-bonanza', category: 'SLOTS' as const, rtp: 96.48, volatility: 'HIGH' as const, minBet: 0.2, maxBet: 1000, isFeatured: true, freeSpins: true, tags: ['candy', 'scatter', 'multiplier', 'pragmatic'] },
+    { providerId: 'pragmatic', externalId: 'vs20wolfgold', name: 'Wolf Gold', slug: 'wolf-gold', category: 'SLOTS' as const, rtp: 96.0, volatility: 'MEDIUM' as const, minBet: 0.25, maxBet: 1250, tags: ['animals', 'jackpot', 'pragmatic'] },
+    { providerId: 'pragmatic', externalId: 'vs20bassbonanza', name: 'Big Bass Bonanza', slug: 'big-bass-bonanza', category: 'SLOTS' as const, rtp: 96.71, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 1000, tags: ['fishing', 'free-spins', 'pragmatic'] },
+    // More Hacksaw
+    { providerId: 'hacksaw', externalId: 'chaos_crew_2', name: 'Chaos Crew 2', slug: 'chaos-crew-2', category: 'SLOTS' as const, rtp: 96.46, volatility: 'VERY_HIGH' as const, minBet: 0.1, maxBet: 300, isNew: true, tags: ['chaos', 'hacksaw', 'explosive'] },
+    { providerId: 'hacksaw', externalId: 'hand_of_anubis', name: 'Hand of Anubis', slug: 'hand-of-anubis', category: 'SLOTS' as const, rtp: 96.21, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 300, tags: ['egypt', 'anubis', 'hacksaw'] },
+    // More Push Gaming
+    { providerId: 'pushgaming', externalId: 'big_bamboo', name: 'Big Bamboo', slug: 'big-bamboo', category: 'SLOTS' as const, rtp: 96.13, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 100, tags: ['asian', 'bamboo', 'push'] },
+    { providerId: 'pushgaming', externalId: 'fat_panda', name: 'Fat Panda', slug: 'fat-panda', category: 'SLOTS' as const, rtp: 96.64, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 100, tags: ['panda', 'asian', 'push'] },
+    // More Red Tiger
+    { providerId: 'redtiger', externalId: 'dragons_fire', name: "Dragon's Fire", slug: 'dragons-fire', category: 'SLOTS' as const, rtp: 96.2, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 200, tags: ['dragon', 'fire', 'redtiger'] },
+    { providerId: 'redtiger', externalId: 'gonzo_megaways', name: "Gonzo's Quest Megaways", slug: 'gonzo-quest-megaways', category: 'SLOTS' as const, rtp: 96.0, volatility: 'HIGH' as const, minBet: 0.2, maxBet: 1000, isNew: true, tags: ['megaways', 'adventure', 'redtiger'] },
+    // More Yggdrasil
+    { providerId: 'yggdrasil', externalId: 'holmes_stolen', name: 'Holmes and the Stolen Stones', slug: 'holmes-stolen-stones', category: 'SLOTS' as const, rtp: 96.5, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 100, tags: ['detective', 'holmes', 'yggdrasil'] },
+    { providerId: 'yggdrasil', externalId: 'cazino_zeppelin', name: 'Cazino Zeppelin', slug: 'cazino-zeppelin', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.25, maxBet: 125, tags: ['steampunk', 'zeppelin', 'yggdrasil'] },
+    // More NetEnt
+    { providerId: 'netent', externalId: 'blood_suckers', name: 'Blood Suckers', slug: 'blood-suckers', category: 'SLOTS' as const, rtp: 98.0, volatility: 'LOW' as const, minBet: 0.01, maxBet: 50, tags: ['vampire', 'horror', 'netent'] },
+    { providerId: 'netent', externalId: 'finn_swirly', name: 'Finn and the Swirly Spin', slug: 'finn-swirly-spin', category: 'SLOTS' as const, rtp: 96.6, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 200, tags: ['irish', 'finn', 'netent'] },
+    // More Play'n GO
+    { providerId: 'playngo', externalId: 'moon_princess', name: 'Moon Princess', slug: 'moon-princess', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.2, maxBet: 100, tags: ['anime', 'princess', 'playngo'] },
+    { providerId: 'playngo', externalId: 'rise_olympus_100', name: 'Rise of Olympus 100', slug: 'rise-of-olympus-100', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 100, isNew: true, tags: ['greek', 'olympus', 'playngo'] },
+    // More Microgaming
+    { providerId: 'microgaming', externalId: '9_masks_fire', name: '9 Masks of Fire', slug: '9-masks-of-fire', category: 'SLOTS' as const, rtp: 96.31, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 250, tags: ['african', 'masks', 'microgaming'] },
+    { providerId: 'microgaming', externalId: 'break_da_bank', name: 'Break da Bank', slug: 'break-da-bank', category: 'SLOTS' as const, rtp: 96.5, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 100, tags: ['bank', 'classic', 'microgaming'] },
+    // Thunderkick
+    { providerId: 'thunderkick', externalId: 'esqueleto', name: 'Esqueleto Explosivo', slug: 'esqueleto-explosivo', category: 'SLOTS' as const, rtp: 96.2, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 100, tags: ['mexican', 'esqueleto', 'thunderkick'] },
+    { providerId: 'thunderkick', externalId: 'fruitinators', name: 'Fruitinators', slug: 'fruitinators', category: 'SLOTS' as const, rtp: 96.3, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 100, isNew: true, tags: ['fruit', 'cluster', 'thunderkick'] },
+    // Nolimit City
+    { providerId: 'nolimitcity', externalId: 'mental', name: 'Mental', slug: 'mental', category: 'SLOTS' as const, rtp: 96.48, volatility: 'VERY_HIGH' as const, minBet: 0.1, maxBet: 100, tags: ['horror', 'mental', 'nolimit'] },
+    { providerId: 'nolimitcity', externalId: 'deadwood', name: 'Deadwood', slug: 'deadwood', category: 'SLOTS' as const, rtp: 96.47, volatility: 'VERY_HIGH' as const, minBet: 0.1, maxBet: 100, tags: ['western', 'deadwood', 'nolimit'] },
+    // Relax Gaming
+    { providerId: 'relaxgaming', externalId: 'money_train_3', name: 'Money Train 3', slug: 'money-train-3', category: 'SLOTS' as const, rtp: 96.3, volatility: 'VERY_HIGH' as const, minBet: 0.1, maxBet: 500, isFeatured: true, tags: ['western', 'money', 'relax'] },
+    { providerId: 'relaxgaming', externalId: 'temple_tumble', name: 'Temple Tumble', slug: 'temple-tumble', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 500, tags: ['temple', 'adventure', 'relax'] },
+    // Betsoft
+    { providerId: 'betsoft', externalId: 'good_girl', name: 'Good Girl Bad Girl', slug: 'good-girl-bad-girl', category: 'SLOTS' as const, rtp: 96.0, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, tags: ['girls', 'betsoft', 'classic'] },
+    { providerId: 'betsoft', externalId: 'slotfather', name: 'The Slotfather', slug: 'slotfather', category: 'SLOTS' as const, rtp: 96.5, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, isNew: true, tags: ['mafia', 'betsoft', 'classic'] },
+    // Quickspin
+    { providerId: 'quickspin', externalId: 'big_bad_wolf', name: 'Big Bad Wolf', slug: 'big-bad-wolf', category: 'SLOTS' as const, rtp: 97.34, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 100, tags: ['fairy-tale', 'quickspin', 'wolf'] },
+    { providerId: 'quickspin', externalId: 'sakura_fortune', name: 'Sakura Fortune', slug: 'sakura-fortune', category: 'SLOTS' as const, rtp: 96.5, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 100, tags: ['japanese', 'sakura', 'quickspin'] },
+    // Big Time Gaming
+    { providerId: 'bigtimegaming', externalId: 'extra_chilli', name: 'Extra Chilli', slug: 'extra-chilli', category: 'SLOTS' as const, rtp: 96.18, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 500, tags: ['megaways', 'chilli', 'btg'] },
+    { providerId: 'bigtimegaming', externalId: 'white_rabbit', name: 'White Rabbit', slug: 'white-rabbit', category: 'SLOTS' as const, rtp: 96.24, volatility: 'VERY_HIGH' as const, minBet: 0.1, maxBet: 1000, tags: ['alice', 'megaways', 'btg'] },
+    // Iron Dog Studio
+    { providerId: 'irondog', externalId: 'diamond_flash', name: 'Diamond Flash', slug: 'diamond-flash', category: 'SLOTS' as const, rtp: 96.5, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 100, isNew: true, tags: ['diamond', 'irondog', 'flash'] },
   ];
 
   const createdGames: { id: string; category: string }[] = [];
 
   for (const game of slotsData) {
     // Providers with working public embeddable iframe demos
-    const demoOk = ['pragmatic', 'spribe', 'bgaming', 'habanero', 'netent', 'wazdan', 'evoplay'].includes(game.providerId);
+    const demoOk = ['pragmatic', 'spribe', 'bgaming', 'habanero', 'netent', 'wazdan', 'evoplay', 'betsoft', 'quickspin', 'bigtimegaming', 'irondog', 'relaxgaming', 'thunderkick', 'nolimitcity', 'yggdrasil', 'redtiger', 'hacksaw', 'pushgaming', 'playngo', 'microgaming'].includes(game.providerId);
     const created = await prisma.game.create({
       data: {
         providerId: game.providerId,

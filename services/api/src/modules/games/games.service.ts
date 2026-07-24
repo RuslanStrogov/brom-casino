@@ -73,6 +73,10 @@ export class GamesService {
     'truelab': true,       // ✅ redirect — truelab.com/ — works in new tab
     'elkstudios': true,    // ✅ redirect — elkstudios.com/games/ — works in new tab
     'slotmill': true,      // ✅ redirect — slotmill.com/games/ — works in new tab
+    'betsoft': true,       // ✅ redirect — betsoft.com/games/ — works in new tab
+    'quickspin': true,     // ✅ redirect — quickspin.com/games/ — works in new tab
+    'bigtimegaming': true, // ✅ redirect — bigtimegaming.com/games/ — works in new tab
+    'irondog': true,       // ✅ redirect — irondogstudio.com/games/ — works in new tab
   };
 
   constructor(
@@ -111,6 +115,10 @@ export class GamesService {
       'habanero': genericProvider,
       'wazdan': genericProvider,
       'evoplay': genericProvider,
+      'betsoft': genericProvider,
+      'quickspin': genericProvider,
+      'bigtimegaming': genericProvider,
+      'irondog': genericProvider,
     };
   }
 
