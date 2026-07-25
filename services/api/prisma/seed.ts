@@ -338,8 +338,8 @@ async function main() {
 
   // --- SPRIBE TABLE GAMES ---
   const spribeTableGamesData = [
-    { providerId: 'spribe', externalId: 'dice', name: 'Spribe Dice', slug: 'spribe-dice', category: 'DICE' as const, rtp: 99, volatility: 'MEDIUM' as const, minBet: 0.01, maxBet: 10000, isNew: true, tags: ['dice', 'provably-fair', 'spribe'] },
-    { providerId: 'spribe', externalId: 'plinko', name: 'Spribe Plinko', slug: 'spribe-plinko', category: 'PLINKO' as const, rtp: 97, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 5000, isNew: true, tags: ['plinko', 'risk', 'spribe'] },
+    { providerId: 'spribe', externalId: 'dice', name: 'Spribe Dice', slug: 'spribe-dice', category: 'DICE' as const, rtp: 99, volatility: 'MEDIUM' as const, minBet: 0.01, maxBet: 10000, isFeatured: false, isNew: true, tags: ['dice', 'provably-fair', 'spribe'] },
+    { providerId: 'spribe', externalId: 'plinko', name: 'Spribe Plinko', slug: 'spribe-plinko', category: 'PLINKO' as const, rtp: 97, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 5000, isFeatured: false, isNew: true, tags: ['plinko', 'risk', 'spribe'] },
   ];
 
   for (const game of crashGamesData) {

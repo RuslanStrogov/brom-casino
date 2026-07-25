@@ -34,7 +34,7 @@ export class GamesController {
   @ApiResponse({ status: 200, description: 'Games list returned' })
   async listGames(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('limit', new DefaultValuePipe(200), ParseIntPipe) limit: number,
     @Query('category') category?: string,
     @Query('provider') provider?: string,
     @Query('featured') featured?: boolean,
