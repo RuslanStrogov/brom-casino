@@ -7,6 +7,7 @@ import SlotGame from '@/components/SlotGame';
 import CrashGame from '@/components/CrashGame';
 import DiceGame from '@/components/DiceGame';
 import PlinkoGame from '@/components/PlinkoGame';
+import PlinkoGameCanvas from '@/components/PlinkoGameCanvas';
 import RouletteGame from '@/components/RouletteGame';
 import BlackjackGame from '@/components/BlackjackGame';
 import { useBalance } from '@/hooks/useBalance';
@@ -66,16 +67,18 @@ const OWN_GAME_COMPONENTS: Record<string, React.FC<{ balance: number; onBalanceC
   crash: CrashGame,
   dice: DiceGame,
   plinko: PlinkoGame,
+  'plinko-pro': PlinkoGameCanvas,
   roulette: RouletteGame,
   blackjack: BlackjackGame,
   slots: SlotGame,
 };
 
 /** Providers whose demos can be embedded in iframe */
-const IFRAME_PROVIDERS = ['pragmatic', 'spribe', 'bgaming', 'habanero', 'netent'];
+const IFRAME_PROVIDERS = ['pragmatic', 'spribe'];
 
 /** Providers whose demos work but block iframe — open in new tab */
 const REDIRECT_PROVIDERS = [
+  'bgaming', 'habanero', 'netent', 'evolution',
   'wazdan', 'evoplay', 'yggdrasil', 'redtiger', 'hacksaw', 'pushgaming',
   'nolimitcity', 'thunderkick', 'playngo', 'microgaming', 'playtech',
   'relaxgaming', 'truelab', 'elkstudios', 'slotmill', 'betsoft',
@@ -204,6 +207,11 @@ function RedirectGameView({
   );
 }
 
+/** Synthetic game names for own games not in DB (e.g. pro variants) */
+const OWN_GAME_NAMES: Record<string, string> = {
+  'plinko-pro': 'Plinko Pro',
+};
+
 export default function GamePage() {
   const params = useParams();
   const router = useRouter();
@@ -211,12 +219,15 @@ export default function GamePage() {
   const [providerId, gameSlug] = Array.isArray(slugParam) ? slugParam : [undefined, slugParam];
   const slug = gameSlug || slugParam as string;
   const [game, setGame] = useState<ApiGame | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!OWN_GAME_COMPONENTS[slug]);
   const [notFound, setNotFound] = useState(false);
   const { user } = useAuthStore();
   const [balance, setBalance] = useState(0);
   const { balance: apiBalance } = useBalance();
   const { t } = useI18n();
+
+  /** Known own game (no DB entry needed) */
+  const isKnownOwnGame = !!OWN_GAME_COMPONENTS[slug];
 
   useEffect(() => {
     if (apiBalance !== undefined) {
@@ -226,6 +237,30 @@ export default function GamePage() {
 
   useEffect(() => {
     if (!slug) return;
+
+    // If this is a known own-game component, skip API lookup
+    if (isKnownOwnGame) {
+      setGame({
+        id: slug,
+        name: OWN_GAME_NAMES[slug] || slug,
+        slug,
+        providerId: 'own',
+        rtp: null,
+        category: 'in-house',
+        thumbnailUrl: null,
+        bannerUrl: null,
+        volatility: null,
+        minBet: 0,
+        maxBet: 0,
+        isFeatured: false,
+        isNew: true,
+        isJackpot: false,
+        demoAvailable: true,
+        tags: [],
+      });
+      setLoading(false);
+      return;
+    }
 
     const fetchGame = async () => {
       setLoading(true);
@@ -262,7 +297,7 @@ export default function GamePage() {
       }
     };
     fetchGame();
-  }, [slug]);
+  }, [slug, isKnownOwnGame]);
 
   if (loading) {
     return (
@@ -296,8 +331,8 @@ export default function GamePage() {
   const providerName = PROVIDER_META[game.providerId]?.name || game.providerId;
   const NativeComponent = OWN_GAME_COMPONENTS[game.slug];
   const isOwnGame = game.providerId === 'own' && !!NativeComponent;
-  const canIframe = game.demoAvailable && IFRAME_PROVIDERS.includes(game.providerId);
-  const canRedirect = game.demoAvailable && REDIRECT_PROVIDERS.includes(game.providerId);
+  const canIframe = IFRAME_PROVIDERS.includes(game.providerId);
+  const canRedirect = REDIRECT_PROVIDERS.includes(game.providerId);
   const hasAnyDemo = isOwnGame || canIframe || canRedirect;
 
   return (

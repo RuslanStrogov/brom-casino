@@ -18,19 +18,20 @@ const IN_HOUSE_GAMES = [
   { id: 'crash',    nameKey: 'game.crash',      slug: 'crash',    color: '#b44aff',  provider: 'In-House' },
   { id: 'dice',     nameKey: 'game.dice',       slug: 'dice',     color: '#00d4ff',  provider: 'In-House' },
   { id: 'plinko',   nameKey: 'game.plinko',     slug: 'plinko',   color: '#ff6b35',  provider: 'In-House' },
+  { id: 'plinko-pro',nameKey: 'game.plinkoPro', slug: 'plinko-pro',color: '#ff2d95',  provider: 'In-House PRO' },
   { id: 'roulette', nameKey: 'game.roulette',   slug: 'roulette', color: '#39ff14',  provider: 'In-House' },
   { id: 'blackjack',nameKey: 'game.blackjack',  slug: 'blackjack',color: '#ffd60a',  provider: 'In-House' },
 ] as const;
 
 // ─── Providers that support iframe embedding ──────────────────────
-const IFRAME_PROVIDERS = ['pragmatic', 'spribe', 'bgaming', 'habanero', 'netent'];
+const IFRAME_PROVIDERS = ['pragmatic', 'spribe'];
 
 // ─── External providers (block iframe, shown in collapsible section) ─
 const EXTERNAL_PROVIDERS = [
   'wazdan', 'evoplay', 'yggdrasil', 'redtiger', 'hacksaw', 'pushgaming',
   'nolimitcity', 'thunderkick', 'playngo', 'microgaming', 'playtech',
-  'relaxgaming', 'truelab', 'elkstudios', 'slotmill', 'betsoft',
-  'quickspin', 'bigtimegaming', 'irondog',
+  'bgaming', 'habanero', 'netent', 'betsoft', 'quickspin',
+  'bigtimegaming', 'irondog', 'relaxgaming',
 ];
 
 const PROVIDER_META: Record<string, { name: string }> = {
