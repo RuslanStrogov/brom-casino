@@ -30,7 +30,7 @@ const IFRAME_PROVIDERS = ['pragmatic', 'spribe'];
 const EXTERNAL_PROVIDERS = [
   'wazdan', 'evoplay', 'yggdrasil', 'redtiger', 'hacksaw', 'pushgaming',
   'nolimitcity', 'thunderkick', 'playngo', 'microgaming', 'playtech',
-  'bgaming', 'habanero', 'netent', 'betsoft', 'quickspin',
+  'bgaming', 'habanero', 'netent', 'evolution', 'betsoft', 'quickspin',
   'bigtimegaming', 'irondog', 'relaxgaming',
 ];
 
@@ -115,7 +115,6 @@ export default function GamesLobbyPage() {
 
   // ─── Fetch 3rd-party games from API ──────────────────────────
   useEffect(() => {
-    if (!token) return;
     setLoadingApi(true);
     api.getGames(token, {
       category: activeCategory !== 'All' && activeCategory !== 'Favorites' && activeCategory !== 'Recent'

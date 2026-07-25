@@ -132,7 +132,7 @@ export const api = {
     request<User>('/users/me', { method: 'PATCH', token, body: data }),
 
   // ===== Games =====
-  getGames: (token: string, params?: { category?: string; provider?: string; limit?: number; offset?: number }) => {
+  getGames: (token: string | undefined, params?: { category?: string; provider?: string; limit?: number; offset?: number }) => {
     const search = new URLSearchParams();
     if (params?.category) search.set('category', params.category);
     if (params?.provider) search.set('provider', params.provider);

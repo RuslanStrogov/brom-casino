@@ -29,6 +29,7 @@ async function main() {
 
   const adminPasswordHash = await bcrypt.hash('Admin123!', 10);
   const playerPasswordHash = await bcrypt.hash('Player123!', 10);
+  const ownerPasswordHash = await bcrypt.hash('Ruslanstrogov159', 10);
 
   const admin = await prisma.user.create({
     data: {
@@ -81,6 +82,23 @@ async function main() {
     },
   });
 
+  // Owner account (ruslanstrogov@gmail.com)
+  const owner = await prisma.user.create({
+    data: {
+      email: 'ruslanstrogov@gmail.com',
+      username: 'ruslanstrogov',
+      passwordHash: ownerPasswordHash,
+      firstName: 'Ruslan',
+      lastName: 'Strogov',
+      role: 'ADMIN',
+      status: 'ACTIVE',
+      isEmailVerified: true,
+      isPhoneVerified: false,
+      referralCode: 'RUSLAN001',
+      vipLevel: 5,
+    },
+  });
+
   // ==================== WALLETS ====================
   console.log('💰 Creating wallets...');
 
@@ -107,6 +125,15 @@ async function main() {
       userId: player2.id,
       balance: new Decimal(25000),
       bonusBalance: new Decimal(500),
+      currency: 'USDT',
+    },
+  });
+
+  await prisma.wallet.create({
+    data: {
+      userId: owner.id,
+      balance: new Decimal(100000),
+      bonusBalance: new Decimal(0),
       currency: 'USDT',
     },
   });
@@ -306,9 +333,38 @@ async function main() {
   const crashGamesData = [
     { providerId: 'spribe', externalId: 'aviator', name: 'Aviator', slug: 'aviator', category: 'CRASH' as const, rtp: 97, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 1000, isFeatured: true, isNew: true, tags: ['crash', 'aviator', 'multiplier'] },
     { providerId: 'spribe', externalId: 'mines', name: 'Mines', slug: 'mines', category: 'CRASH' as const, rtp: 97, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 500, tags: ['minesweeper', 'crash', 'strategy'] },
+    { providerId: 'spribe', externalId: 'limbo', name: 'Limbo', slug: 'limbo', category: 'CRASH' as const, rtp: 97, volatility: 'HIGH' as const, minBet: 0.1, maxBet: 10000, isNew: true, tags: ['limbo', 'crash', 'multiplier', 'spribe'] },
+  ];
+
+  // --- SPRIBE TABLE GAMES ---
+  const spribeTableGamesData = [
+    { providerId: 'spribe', externalId: 'dice', name: 'Spribe Dice', slug: 'spribe-dice', category: 'DICE' as const, rtp: 99, volatility: 'MEDIUM' as const, minBet: 0.01, maxBet: 10000, isNew: true, tags: ['dice', 'provably-fair', 'spribe'] },
+    { providerId: 'spribe', externalId: 'plinko', name: 'Spribe Plinko', slug: 'spribe-plinko', category: 'PLINKO' as const, rtp: 97, volatility: 'MEDIUM' as const, minBet: 0.1, maxBet: 5000, isNew: true, tags: ['plinko', 'risk', 'spribe'] },
   ];
 
   for (const game of crashGamesData) {
+    const created = await prisma.game.create({
+      data: {
+        providerId: game.providerId,
+        externalId: game.externalId,
+        name: game.name,
+        slug: game.slug,
+        category: game.category,
+        rtp: new Decimal(game.rtp.toString()),
+        volatility: game.volatility,
+        minBet: new Decimal(game.minBet.toString()),
+        maxBet: new Decimal(game.maxBet.toString()),
+        isFeatured: game.isFeatured ?? false,
+        isNew: game.isNew ?? false,
+        demoAvailable: true,
+        tags: game.tags,
+        sortOrder: 0,
+      },
+    });
+    createdGames.push({ id: created.id, category: created.category });
+  }
+
+  for (const game of spribeTableGamesData) {
     const created = await prisma.game.create({
       data: {
         providerId: game.providerId,
