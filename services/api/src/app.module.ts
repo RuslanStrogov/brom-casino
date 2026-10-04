@@ -8,6 +8,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { BonusesModule } from './modules/bonuses/bonuses.module';
 import { KycModule } from './modules/kyc/kyc.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { EasterEggModule } from './modules/easter-egg/easter-egg.module';
 import { GameGateway } from './gateways/game.gateway';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -29,6 +30,7 @@ import { PrismaModule } from './common/prisma.module';
     BonusesModule,
     KycModule,
     AdminModule,
+    EasterEggModule,
   ],
   controllers: [AppController],
   providers: [AppService, GameGateway],

@@ -59,6 +59,7 @@ interface ApiGame {
   isJackpot: boolean;
   demoAvailable: boolean;
   tags: string[];
+  working?: boolean;
 }
 
 /** Map slug → native component for in-house games */
@@ -294,11 +295,12 @@ export default function GamePage() {
   }
 
   const providerName = PROVIDER_META[game.providerId]?.name || game.providerId;
-  const NativeComponent = OWN_GAME_COMPONENTS[game.slug];
-  const isOwnGame = game.providerId === 'own' && !!NativeComponent;
-  const canIframe = game.demoAvailable && IFRAME_PROVIDERS.includes(game.providerId);
-  const canRedirect = game.demoAvailable && REDIRECT_PROVIDERS.includes(game.providerId);
-  const hasAnyDemo = isOwnGame || canIframe || canRedirect;
+    const NativeComponent = OWN_GAME_COMPONENTS[game.slug];
+    const isOwnGame = game.providerId === 'own' && !!NativeComponent;
+    const isWorking = game.working !== false;
+    const canIframe = isWorking && game.demoAvailable && IFRAME_PROVIDERS.includes(game.providerId);
+    const canRedirect = isWorking && game.demoAvailable && REDIRECT_PROVIDERS.includes(game.providerId);
+    const hasAnyDemo = isOwnGame || canIframe || canRedirect;
 
   return (
     <div className="min-h-screen bg-miami-sky">

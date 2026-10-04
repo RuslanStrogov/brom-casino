@@ -68,6 +68,7 @@ interface ApiGame {
   freeSpins: number;
   demoAvailable: boolean;
   tags: string[];
+  working?: boolean;
 }
 
 // Mock playing counts: 99, 77, 55, then 5 random, rest 0
@@ -125,19 +126,20 @@ export default function GamesLobbyPage() {
     }));
 
     const thirdParty = apiGames.map((g, i) => ({
-      id: g.id,
-      name: g.name,
-      slug: g.slug,
-      color: '#ff2d95',
-      provider: PROVIDER_META[g.providerId]?.name ?? g.providerId,
-      providerId: g.providerId,
-      type: 'api' as const,
-      gameId: `api-${g.slug}`,
-      isNew: g.isNew,
-      isJackpot: g.isJackpot,
-      category: g.category,
-      playingCount: getMockPlayingCount(i),
-    }));
+          id: g.id,
+          name: g.name,
+          slug: g.slug,
+          color: '#ff2d95',
+          provider: PROVIDER_META[g.providerId]?.name ?? g.providerId,
+          providerId: g.providerId,
+          type: 'api' as const,
+          gameId: `api-${g.slug}`,
+          isNew: g.isNew,
+          isJackpot: g.isJackpot,
+          category: g.category,
+          disabled: g.working === false,
+          playingCount: getMockPlayingCount(i),
+        }));
 
     return [...inHouse, ...thirdParty];
   }, [apiGames]);
@@ -182,19 +184,20 @@ export default function GamesLobbyPage() {
   }, [allGames, searchQuery, activeCategory, isFavorite, recent]);
 
   // ─── Open game ───────────────────────────────────────────────
-  const openGame = (slug: string, type: 'in-house' | 'api', providerId?: string) => {
-    if (!isAuthenticated) {
-      setShowAuth(true);
-      return;
-    }
-    if (type === 'in-house') {
-      router.push(`/games/${slug}`);
-    } else if (providerId) {
-      router.push(`/games/${providerId}/${slug}`);
-    } else {
-      router.push(`/games/demo/${slug}`);
-    }
-  };
+    const openGame = (slug: string, type: 'in-house' | 'api', providerId?: string, disabled?: boolean) => {
+      if (disabled) return;
+      if (!isAuthenticated) {
+        setShowAuth(true);
+        return;
+      }
+      if (type === 'in-house') {
+        router.push(`/games/${slug}`);
+      } else if (providerId) {
+        router.push(`/games/${providerId}/${slug}`);
+      } else {
+        router.push(`/games/demo/${slug}`);
+      }
+    };
 
   // ─── Render ──────────────────────────────────────────────────
   return (
@@ -300,14 +303,15 @@ export default function GamesLobbyPage() {
                 style={{ animationDelay: `${(idx % 12) * 50}ms` }}
               >
                 <NarrowGameCard
-                  name={displayName}
-                  slug={game.slug}
-                  gameId={game.gameId}
-                  provider={game.provider}
-                  imageUrl={`/games/${slug}.svg`}
-                  color={game.color}
-                  onClick={() => openGame(game.slug, game.type, game.type === 'api' ? game.providerId : undefined)}
-                />
+                                  name={displayName}
+                                  slug={game.slug}
+                                  gameId={game.gameId}
+                                  provider={game.provider}
+                                  imageUrl={`/games/${slug}.svg`}
+                                  color={game.color}
+                                  disabled={'disabled' in game ? game.disabled : false}
+                                  onClick={() => openGame(game.slug, game.type, game.type === 'api' ? game.providerId : undefined, 'disabled' in game ? game.disabled : false)}
+                                />
               </div>
             );
           })}

@@ -50,34 +50,34 @@ export class GamesService {
   /** Map of DB providerId → provider instance */
   private readonly providerMap: Record<string, GameProvider>;
 
-  /** Provider demo status: true = iframe works, false = redirect/open tab needed */
-  private readonly providerDemoStatus: Record<string, boolean> = {
-    'pragmatic': true,     // ✅ iframe — demogamesfree.pragmaticplay.net — verified working
-    'spribe': true,        // ✅ iframe — spribe.co — verified working
-    'bgaming': true,       // ✅ iframe — demo.bgaming-network.com — ALLOWALL
-    'habanero': true,      // ✅ iframe — demo.habanero.com — no XFO
-    'netent': true,        // ✅ iframe — games.netent.com — no XFO (as of 2026)
-    'evolution': false,    // ❌ live-only, no demo
-    'thunderkick': true,   // ✅ redirect — thunderkick.com/demo/ — works in new tab
-    'yggdrasil': true,     // ✅ redirect — yggdrasilgaming.com/play/ — SAMEORIGIN
-    'redtiger': true,      // ✅ redirect — redtiger.com/games — works in new tab
-    'hacksaw': true,       // ✅ redirect — hacksawgaming.com/games — works in new tab
-    'pushgaming': true,    // ✅ redirect — pushgaming.com/games — works in new tab
-    'wazdan': true,        // ✅ redirect — wazdan.com/gs2/play/ — works in new tab
-    'evoplay': true,       // ✅ redirect — evoplay.com/game/ — works in new tab
-    'nolimitcity': true,   // ✅ redirect — nolimitcity.com/play/ — works in new tab
-    'playngo': true,       // ✅ redirect — playngo.com/games/ — works in new tab
-    'microgaming': true,   // ✅ redirect — microgaming.co.uk/games/ — works in new tab
-    'playtech': true,      // ✅ redirect — playtech.com/games/ — works in new tab
-    'relaxgaming': true,   // ✅ redirect — relax-gaming.com/games/ — works in new tab
-    'truelab': true,       // ✅ redirect — truelab.com/ — works in new tab
-    'elkstudios': true,    // ✅ redirect — elkstudios.com/games/ — works in new tab
-    'slotmill': true,      // ✅ redirect — slotmill.com/games/ — works in new tab
-    'betsoft': true,       // ✅ redirect — betsoft.com/games/ — works in new tab
-    'quickspin': true,     // ✅ redirect — quickspin.com/games/ — works in new tab
-    'bigtimegaming': true, // ✅ redirect — bigtimegaming.com/games/ — works in new tab
-    'irondog': true,       // ✅ redirect — irondogstudio.com/games/ — works in new tab
-  };
+  /** Provider demo status: true = iframe or real demo works, false = not working / coming soon */
+    private readonly providerDemoStatus: Record<string, boolean> = {
+      'pragmatic': true,     // ✅ iframe — demogamesfree.pragmaticplay.net — verified working
+      'spribe': false,       // ❌ demo URL (spribe.co/games/X/demo) возвращает 404
+      'bgaming': false,      // ❌ демо заглушка — без агрегатора не работает
+      'habanero': false,     // ❌ демо заглушка — без агрегатора не работает
+      'netent': false,       // ❌ демо заглушка — без агрегатора не работает
+      'evolution': false,    // ❌ live-only, нет демо
+      'thunderkick': false,  // ❌ демо заглушка — без агрегатора не работает
+      'yggdrasil': false,    // ❌ демо заглушка — без агрегатора не работает
+      'redtiger': false,     // ❌ демо заглушка — без агрегатора не работает
+      'hacksaw': false,      // ❌ демо заглушка — без агрегатора не работает
+      'pushgaming': false,   // ❌ демо заглушка — без агрегатора не работает
+      'wazdan': false,       // ❌ демо заглушка — без агрегатора не работает
+      'evoplay': false,      // ❌ демо заглушка — без агрегатора не работает
+      'nolimitcity': false,  // ❌ демо заглушка — без агрегатора не работает
+      'playngo': false,      // ❌ демо заглушка — без агрегатора не работает
+      'microgaming': false,  // ❌ демо заглушка — без агрегатора не работает
+      'playtech': false,     // ❌ демо заглушка — без агрегатора не работает
+      'relaxgaming': false,  // ❌ демо заглушка — без агрегатора не работает
+      'truelab': false,      // ❌ демо заглушка — без агрегатора не работает
+      'elkstudios': false,   // ❌ демо заглушка — без агрегатора не работает
+      'slotmill': false,     // ❌ демо заглушка — без агрегатора не работает
+      'betsoft': false,      // ❌ демо заглушка — без агрегатора не работает
+      'quickspin': false,    // ❌ демо заглушка — без агрегатора не работает
+      'bigtimegaming': false,// ❌ демо заглушка — без агрегатора не работает
+      'irondog': false,      // ❌ демо заглушка — без агрегатора не работает
+    };
 
   constructor(
     private readonly prisma: PrismaService,
@@ -172,10 +172,10 @@ export class GamesService {
     ]);
 
     // Add working status based on provider
-    const gamesWithStatus = games.map((game) => ({
-      ...game,
-      working: this.providerDemoStatus[game.providerId] ?? false,
-    }));
+        const gamesWithStatus = games.map((game) => ({
+          ...game,
+          working: game.providerId === 'own' ? true : (this.providerDemoStatus[game.providerId] ?? false),
+        }));
 
     // Sort: working games first, then non-working
     gamesWithStatus.sort((a, b) => {

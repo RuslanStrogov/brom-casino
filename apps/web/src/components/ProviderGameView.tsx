@@ -227,13 +227,12 @@ export default function ProviderGameView({
           </>
         ) : launchUrl ? (
           <iframe
-            src={launchUrl}
-            className="w-full h-full"
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-            title={gameName}
-          />
+                      src={launchUrl}
+                      className="w-full h-full"
+                      allow="autoplay; fullscreen; microphone; camera; clipboard-read; clipboard-write"
+                      allowFullScreen
+                      title={gameName}
+                    />
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-400">Unable to load game</p>
